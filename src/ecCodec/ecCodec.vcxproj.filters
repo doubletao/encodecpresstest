@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Interface">
+      <UniqueIdentifier>{13d2f5e2-ca90-486f-af3c-84260758c206}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDDefine">
+      <UniqueIdentifier>{c4dc2c44-1e2d-45e2-b701-715a660429b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CodecFFmpeg">
+      <UniqueIdentifier>{71888f3c-3a71-46a1-ad08-022d030c03dd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\ecCodec\IecCodecAudioDecoder.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ecCodec\IecCodecAudioEncoder.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ecCodec\IecCodecFactory.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ecCodec\IecCodecProtocolDecoder.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ecCodec\IecCodecProtocolEncoder.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ecCodec\IecCodecVideoDecoder.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ecCodec\IecCodecVideoEncoder.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="ecCodecFactory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDDefine\SDArray.h">
+      <Filter>SDDefine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDDefine\SDDefine.h">
+      <Filter>SDDefine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDDefine\SDString.h">
+      <Filter>SDDefine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDDefine\SDType.h">
+      <Filter>SDDefine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDDefine\SDVADefine.h">
+      <Filter>SDDefine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDDefine\SDVADefineEx.h">
+      <Filter>SDDefine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ecCodec\ecCodec.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegAudioDecoder.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegAudioEncoder.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegProtocolDecoder.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegProtocolEncoder.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegVideoDecoder.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegVideoEncoder.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\FFmpegFormatConverter.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ecCodec\IecCodecScaler.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegScaler.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ecCodecFactory.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegAudioDecoder.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegAudioEncoder.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegProtocolDecoder.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegProtocolEncoder.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegVideoDecoder.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegVideoEncoder.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\FFmpegFormatConverter.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegScaler.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
