@@ -20,22 +20,23 @@ ecCodecFFmpegVideoDecoder::~ecCodecFFmpegVideoDecoder()
 	Release();
 }
 
-bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(const SDVideoMediaInfo * pSrcVideoInfo)
+bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(const SDVideoMediaInfo & pSrcVideoInfo)
 {
+	Release();
 	//查找解码器
-	AVCodecID codecID = FFmpegFormatCovert::ConvertCodecId(pSrcVideoInfo->enumVideoType);
+	AVCodecID codecID = FFmpegFormatCovert::ConvertCodecId(pSrcVideoInfo.enumVideoType);
 	AVCodec * pVideoCodec = avcodec_find_decoder(codecID);
 	if (pVideoCodec)
 	{
 		//解码参数转成解码上下文
 		m_pCodecCtx = avcodec_alloc_context3(pVideoCodec);
-		m_pCodecCtx->pix_fmt = FFmpegFormatCovert::ConvertPixelFormat(pSrcVideoInfo->enumColorFormat);
-		m_pCodecCtx->width = pSrcVideoInfo->dwWidth;;
-		m_pCodecCtx->height = pSrcVideoInfo->dwHeight;
-		m_pCodecCtx->bit_rate = pSrcVideoInfo->dwDataRateInBitsPerSec;
+		m_pCodecCtx->pix_fmt = FFmpegFormatCovert::ConvertPixelFormat(pSrcVideoInfo.enumColorFormat);
+		m_pCodecCtx->width = pSrcVideoInfo.dwWidth;
+		m_pCodecCtx->height = pSrcVideoInfo.dwHeight;
+		m_pCodecCtx->bit_rate = pSrcVideoInfo.dwDataRateInBitsPerSec;
 		m_pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
-		m_pCodecCtx->extradata = (uint8_t *)pSrcVideoInfo->dwDisplayWidth;
-		m_pCodecCtx->extradata_size = pSrcVideoInfo->dwDisplayHeight;
+		m_pCodecCtx->extradata = (uint8_t *)pSrcVideoInfo.dwDisplayWidth;
+		m_pCodecCtx->extradata_size = pSrcVideoInfo.dwDisplayHeight;
 		if (m_pCodecCtx)
 		{
 			//根据解码上下文打开解码器
@@ -50,7 +51,6 @@ bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(const SDVideoMediaInfo * pSrcVi
 				m_nDesHeight = m_pCodecCtx->height;
 				m_emDesColorFormat = FFmpegFormatCovert::ConvertColorFormat(m_pCodecCtx->pix_fmt);
 				m_bIsInitialized = true;
-				return true;
 			}
 			else
 			{
@@ -66,7 +66,7 @@ bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(const SDVideoMediaInfo * pSrcVi
 	{
 		printf("failed to get codexcontext\n");
 	}
-	return false;
+	return m_bIsInitialized;
 }
 
 bool ecCodecFFmpegVideoDecoder::SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo * pOutBufInfo)
@@ -218,6 +218,7 @@ bool ecCodecFFmpegVideoDecoder::Release()
 	if (m_pCodecCtx)
 	{
 		avcodec_close(m_pCodecCtx);
+		avcodec_free_context(&m_pCodecCtx);
 	}
 	if (m_pFrame)
 	{

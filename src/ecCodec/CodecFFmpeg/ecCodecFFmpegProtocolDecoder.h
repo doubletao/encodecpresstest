@@ -19,6 +19,10 @@ private:
 	AVPacket * m_pVideoPacket;
 	AVFormatContext	* m_pFormatCtx;
 	ecCodecFFmpegVideoDecoder m_VideoDecoder;
+
+	int m_nAudioIndex;
+	ecCodecFFmpegAudioDecoder m_AudioDecoder;
+
 	int64_t m_nCurrentSeekPos;
 	bool m_bSeek;
 public:
@@ -34,6 +38,7 @@ public:
 	virtual bool SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo *pVideoBufInfo, const SDResamplerPara *pResamplerPara);
 	virtual bool GetVideoFrameBufInfo(SDVideoFrameImageBufInfo *pVideoBufInfo, SDResamplerPara *pResamplerPara);
 	virtual SD_UINT32 GetVideoBufferSize();
+	virtual SD_UINT32 GetAudioBufferSize();
 	virtual bool SetVideoDecoderThread(SD_INT32 dwDecoderThread);
 	virtual SD_INT32 GetVideoDecoderThread();
 	virtual bool SetAudioSamplesBufInfo(const SDAudioSamplesBufInfo *pAudioBufInfo);

@@ -17,10 +17,12 @@ class EASY_CODEC_API_EXPORT FFmpegFormatCovert
 public:
 	static AVCodecID ConvertCodecId(SD_VIDEO_TYPE emVideoType);
 	static AVCodecID ConvertCodecId(SD_AUDIO_TYPE emAudioType);
+	static SD_AUDIO_TYPE ConvertAudioType(AVCodecID emCodecID);
 	static int ConvertVideoProfile(SD_CODEC_PROFILE emProfile);
 	static int ConvertAudioProfile(SD_UINT32 emProfile);
 	static AVSampleFormat ConvertSamplesFormat(SD_CHANNELSAMPLE_FORMAT emSampleFormat);
 	static SD_UINT64 ConvertChannelLayout(SD_AUDIO_CHANNELCONFIGURATION channelCfg);
+	static SD_AUDIO_CHANNELCONFIGURATION ConvertChannelLayout(SD_UINT64 channelCfg);
 	//static SD_STREAM_TYPE ConvertStreamType();
 	static SD_VIDEO_TYPE ConvertVideoCodecType(AVCodecID codecID);
 	static SD_UINT32 ConvertVideoCodecSubType(SD_UINT32 codecTag);

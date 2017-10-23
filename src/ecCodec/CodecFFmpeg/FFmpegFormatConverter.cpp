@@ -105,64 +105,119 @@ AVCodecID FFmpegFormatCovert::ConvertCodecId(SD_AUDIO_TYPE emAudioType)
 	AVCodecID codecId = AV_CODEC_ID_NONE;
 	switch (emAudioType)
 	{
-	case AUDIOTYPE_WAVE_PCM:
+	case SDAUDIOTYPE_WAVE_PCM:
 		codecId = AV_CODEC_ID_PCM_DVD;
 		break;
-#if 0
-	case AUDIOTYPE_MP1:
+	case SDAUDIOTYPE_MP1:
 		codecId = AV_CODEC_ID_MP1;
 		break;
-	case AUDIOTYPE_MP2:
+	case SDAUDIOTYPE_MP2:
 		codecId = AV_CODEC_ID_MP2;
 		break;
-	case AUDIOTYPE_MP3:
+	case SDAUDIOTYPE_MP3:
 		codecId = AV_CODEC_ID_MP3;
 		break;
-	case AUDIOTYPE_MPEG4:
+	case SDAUDIOTYPE_MPEG4:
 		codecId = AV_CODEC_ID_MP4ALS;
 		break;
-	case AUDIOTYPE_AAC:
+	case SDAUDIOTYPE_AAC:
 		codecId = AV_CODEC_ID_AAC;
 		break;
-	case AUDIOTYPE_AC3:
+	case SDAUDIOTYPE_AC3:
 		codecId = AV_CODEC_ID_AC3;
 		break;
-	case AUDIOTYPE_DTS:
+	case SDAUDIOTYPE_DTS:
 		codecId = AV_CODEC_ID_DTS;
 		break;
-	case AUDIOTYPE_DRA:
+	case SDAUDIOTYPE_DRA:
 		break;
-	case AUDIOTYPE_AVS:
+	case SDAUDIOTYPE_AVS:
 		codecId = AV_CODEC_ID_AVS;
 		break;
-	case AUDIOTYPE_DolbyE:
+	case SDAUDIOTYPE_DolbyE:
 		break;
-	case AUDIOTYPE_EAC3:
+	case SDAUDIOTYPE_EAC3:
 		break;
-	case AUDIOTYPE_REAL_MEDIA:
+	case SDAUDIOTYPE_REAL_MEDIA:
 		break;
-	case AUDIOTYPE_WINDOWS_MEDIA:
+	case SDAUDIOTYPE_WINDOWS_MEDIA:
 		codecId = AV_CODEC_ID_WMAV1;
 		break;
-	case AUDIOTYPE_QUICKTIME_MOV:
+	case SDAUDIOTYPE_QUICKTIME_MOV:
 		break;
-	case AUDIOTYPE_G711:
+	case SDAUDIOTYPE_G711:
 		break;
-	case AUDIOTYPE_AMRNB:
+	case SDAUDIOTYPE_AMRNB:
 		codecId = AV_CODEC_ID_AMR_NB;
 		break;
-	case AUDIOTYPE_AMRWB:
+	case SDAUDIOTYPE_AMRWB:
 		codecId = AV_CODEC_ID_AMR_WB;
 		break;
-	case AUDIOTYPE_SWFFLV:
+	case SDAUDIOTYPE_SWFFLV:
 		codecId = AV_CODEC_ID_FLV1;
 		break;
-#endif
 	default:
+		codecId = (AVCodecID)emAudioType;
 		break;
 	}
 
 	return codecId;
+}
+
+SD_AUDIO_TYPE FFmpegFormatCovert::ConvertAudioType(AVCodecID emCodecID)
+{
+	SD_AUDIO_TYPE emAudioType = SDAUDIOTYPE_UNKNOW;
+	switch (emCodecID)
+	{
+	case AV_CODEC_ID_PCM_DVD:
+		emAudioType = SDAUDIOTYPE_WAVE_PCM;
+		break;
+	case AV_CODEC_ID_MP1:
+		emAudioType = SDAUDIOTYPE_MP1;
+		break;
+	case AV_CODEC_ID_MP2:
+		emAudioType = SDAUDIOTYPE_MP2;
+		break;
+	case AV_CODEC_ID_MP3:
+		emAudioType = SDAUDIOTYPE_MP3;
+		break;
+	case AV_CODEC_ID_MP4ALS:
+		emAudioType = SDAUDIOTYPE_MPEG4;
+		break;
+	case AV_CODEC_ID_AAC:
+		emAudioType = SDAUDIOTYPE_AAC;
+		break;
+	case AV_CODEC_ID_AC3:
+		emAudioType = SDAUDIOTYPE_AC3;
+		break;
+	case AV_CODEC_ID_DTS:
+		emAudioType = SDAUDIOTYPE_DTS;
+		break;
+	case AV_CODEC_ID_AVS:
+		emAudioType = SDAUDIOTYPE_AVS;
+		break;
+	case AV_CODEC_ID_WMAV1:
+		emAudioType = SDAUDIOTYPE_WINDOWS_MEDIA;
+		break;
+	case SDAUDIOTYPE_QUICKTIME_MOV:
+		break;
+	case SDAUDIOTYPE_G711:
+		break;
+	case AV_CODEC_ID_AMR_NB:
+		emAudioType = SDAUDIOTYPE_AMRNB;
+		break;
+	case AV_CODEC_ID_AMR_WB:
+		emAudioType = SDAUDIOTYPE_AMRWB;
+		break;
+	case AV_CODEC_ID_FLV1:
+		emAudioType = SDAUDIOTYPE_SWFFLV;
+		break;
+	default:
+		emAudioType = (SD_AUDIO_TYPE)emCodecID;
+		break;
+	}
+
+	return emAudioType;
 }
 
 AVPixelFormat FFmpegFormatCovert::ConvertPixelFormat(SD_COLOR_FORMAT emColorFormat)
@@ -351,6 +406,69 @@ SD_UINT64 FFmpegFormatCovert::ConvertChannelLayout(SD_AUDIO_CHANNELCONFIGURATION
 		break;
 	case SDAUDIOCFG_7_0:
 		nChannelLayout = AV_CH_LAYOUT_7POINT0;
+		break;
+	default:
+		break;
+	}
+
+	return nChannelLayout;
+}
+
+SD_AUDIO_CHANNELCONFIGURATION FFmpegFormatCovert::ConvertChannelLayout(SD_UINT64 channelCfg)
+{
+	SD_AUDIO_CHANNELCONFIGURATION nChannelLayout = SDAUDIOCFG_UNKNOW;
+	switch (channelCfg)
+	{
+	case SDAUDIOCFG_UNKNOW:
+		break;
+	case AV_CH_LAYOUT_MONO:
+		nChannelLayout = SDAUDIOCFG_INDEPENDENT;
+		break;
+	case AV_CH_LAYOUT_STEREO:
+		nChannelLayout = SDAUDIOCFG_STEREO;
+		break;
+	case AV_CH_LAYOUT_5POINT1:
+		nChannelLayout = SDAUDIOCFG_5_1;
+		break;
+	case AV_CH_LAYOUT_7POINT1:
+		nChannelLayout = SDAUDIOCFG_7_1;
+		break;
+	case AV_CH_LAYOUT_2_1:
+		nChannelLayout = SDAUDIOCFG_2_1;
+		break;
+	case AV_CH_LAYOUT_3POINT1:
+		nChannelLayout = SDAUDIOCFG_3_0_C;
+		break;
+	case AV_CH_LAYOUT_SURROUND:
+		nChannelLayout = SDAUDIOCFG_3_0_S;
+		break;
+	case SDAUDIOCFG_3_1_C_LFE:
+		break;
+	case SDAUDIOCFG_3_1_S_LFE:
+		break;
+	case AV_CH_LAYOUT_4POINT0:
+		nChannelLayout = SDAUDIOCFG_4_0_C_S;
+		break;
+	case AV_CH_LAYOUT_2_2:
+		nChannelLayout = SDAUDIOCFG_4_0_LS_RS;
+		break;
+	case SDAUDIOCFG_4_1_C_S_LFE:
+		break;
+	case SDAUDIOCFG_4_1_LS_RS_LFE:
+		break;
+	case AV_CH_LAYOUT_5POINT0:
+		nChannelLayout = SDAUDIOCFG_5_0;
+		break;
+	//case SDAUDIOCFG_6_0_LRC_LRSRC:
+	//	break;
+	case SDAUDIOCFG_6_0_FLFR_LR_LRS:
+		break;
+	case SDAUDIOCFG_6_1_LRFC_LRSRC_LFE:
+		break;
+	case SDAUDIOCFG_6_1_FLR_LRLRS_LFE:
+		break;
+	case AV_CH_LAYOUT_7POINT0:
+		nChannelLayout = SDAUDIOCFG_7_0;
 		break;
 	default:
 		break;

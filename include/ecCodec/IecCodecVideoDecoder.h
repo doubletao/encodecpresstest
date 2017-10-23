@@ -5,7 +5,7 @@ class EASY_CODEC_API_EXPORT IecCodecVideoDecoder
 public:
 	// 初始化解码器
 	// pSrcVideoInfo: 视频源格式描述
-	virtual bool InitVideoDecoder(const SDVideoMediaInfo	*pSrcVideoInfo) = 0;
+	virtual bool InitVideoDecoder(const SDVideoMediaInfo & pSrcVideoInfo) = 0;
 
 	// 设置输出视频格式
 	// pOutBufInfo:解码输出帧参数

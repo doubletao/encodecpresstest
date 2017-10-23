@@ -29,3 +29,5 @@
 #include "SDVADefine.h"
 #include "SDVADefineEx.h"
 
+#define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
+

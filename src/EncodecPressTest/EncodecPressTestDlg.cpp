@@ -174,16 +174,20 @@ void CEncodecPressTestDlg::DoPlay()
 						videoFrameImageBufInfo.enumColorFormat = streamMediaInfoEx.sVideoMediaInfo.enumColorFormat;
 						bool bContinue = pDecoder->SetVideoFrameBufInfo(&videoFrameImageBufInfo, nullptr);
 						SD_UINT32 nBufferSize = pDecoder->GetVideoBufferSize();
-						uint8_t * pData = new uint8_t[nBufferSize];
+						uint8_t * pVideoData = new uint8_t[nBufferSize];
+						uint8_t * pAudioData = new uint8_t[nBufferSize];
+						SD_UINT32 numAudioSample = 0;
 						bool bFirst = false;
 						m_ctrSlider.SetRange(0, streamMediaInfoEx.dwVideoFrameNum);
-						m_ctrSlider.SetTicFreq(streamMediaInfoEx.dwVideoFrameNum / 100);
+						m_ctrSlider.SetTicFreq(streamMediaInfoEx.dwVideoFrameNum / 100.0);
 						while (bContinue)
 						{
 							if (WaitForSingleObject(m_evtPlayPause, 0) != WAIT_OBJECT_0)
 							{
 								SDRFrameInfo frameInfo;
-								bContinue = pDecoder->GetVideoBuffer(-1, pData, &frameInfo);
+								bContinue = pDecoder->GetVideoBuffer(-1, pVideoData, &frameInfo);
+
+								pDecoder->GetAudioSamples(-1, 1920, pAudioData, &numAudioSample);
 								m_nDispFrame++;
 								Lock();
 								m_nFrame++;
@@ -194,12 +198,12 @@ void CEncodecPressTestDlg::DoPlay()
 									fopen_s(&file, "out.yuv", "wb+");
 									if (file)
 									{
-										fwrite(pData, 1, nBufferSize, file);  //V
+										fwrite(pVideoData, 1, nBufferSize, file);  //V
 										fclose(file);
 									}
 								}
 
-								m_player.PushFrame(pData, nWidth);
+								m_player.PushFrame(pVideoData, nWidth);
 								if (WaitForSingleObject(m_evtPlayStop, 40) == WAIT_OBJECT_0)
 								{
 									break;
@@ -211,7 +215,7 @@ void CEncodecPressTestDlg::DoPlay()
 								if (m_nFrame != m_nDispFrame)
 								{
 									SDRFrameInfo frameInfo;
-									bContinue = pDecoder->GetVideoBuffer(m_nFrame, pData, &frameInfo);
+									bContinue = pDecoder->GetVideoBuffer(m_nFrame, pVideoData, &frameInfo);
 
 									if (1)
 									{
@@ -219,12 +223,12 @@ void CEncodecPressTestDlg::DoPlay()
 										fopen_s(&file, "out.yuv", "wb+");
 										if (file)
 										{
-											fwrite(pData, 1, nBufferSize, file);  //V
+											fwrite(pVideoData, 1, nBufferSize, file);  //V
 											fclose(file);
 										}
 									}
 
-									m_player.PushFrame(pData, nWidth);
+									m_player.PushFrame(pVideoData, nWidth);
 									m_nDispFrame = m_nFrame;
 								}
 								Unlock();
@@ -234,7 +238,7 @@ void CEncodecPressTestDlg::DoPlay()
 								}
 							}
 						}
-						deleteC(pData);
+						deleteC(pVideoData);
 					}
 				}
 				deleteC(pDecoder);
@@ -335,7 +339,7 @@ void CEncodecPressTestDlg::DoPlay()
 					PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Open File Error"));
 				}
 				m_player.SetBufferFWH(SDL_PIXELFORMAT_IYUV, nWidth, nHeight);
-				uint8_t ** pData = nullptr;
+				uint8_t ** pVideoData = nullptr;
 				int * nLineSize = nullptr;
 				bool bFirst = false;
 				unsigned long long nFrame = 0;
@@ -343,8 +347,8 @@ void CEncodecPressTestDlg::DoPlay()
 				{
 					if (WaitForSingleObject(m_evtPlayPause, 0) != WAIT_OBJECT_0)
 					{
-						bContinue = codec.DecodeOneFrame(pData, nLineSize);
-						m_player.PushYUVFrame(pData, nLineSize);
+						bContinue = codec.DecodeOneFrame(pVideoData, nLineSize);
+						m_player.PushYUVFrame(pVideoData, nLineSize);
 						if (1)
 						{
 							FILE * file;
@@ -352,9 +356,9 @@ void CEncodecPressTestDlg::DoPlay()
 							if (file)
 							{
 								int y_size = nWidth * nHeight;
-								fwrite(pData[0], 1, y_size, file);    //Y 
-								fwrite(pData[1], 1, y_size / 4, file);  //U
-								fwrite(pData[2], 1, y_size / 4, file);  //V
+								fwrite(pVideoData[0], 1, y_size, file);    //Y 
+								fwrite(pVideoData[1], 1, y_size / 4, file);  //U
+								fwrite(pVideoData[2], 1, y_size / 4, file);  //V
 								fclose(file);
 							}
 						}
@@ -385,7 +389,7 @@ void CEncodecPressTestDlg::DoPlay()
 								{
 									frameInfo.emStreamFlag = STREAMSTATE_CONTINUE;   // 标识是第一帧，还是中间帧，还是末尾帧
 								}
-								if (!pEncodec->PutVideoBuffer(*pData, false, &frameInfo))
+								if (!pEncodec->PutVideoBuffer(*pVideoData, false, &frameInfo))
 								{
 									PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("encoder one failed"));
 								}
@@ -692,7 +696,7 @@ void CEncodecPressTestDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrol
 		if (nID == IDC_SLIDER_SEEK)
 		{
 			Lock();
-			//m_nFrame = m_ctrSlider.GetPos();
+			m_nFrame = m_ctrSlider.GetPos();
 			Unlock();
 		}
 	}

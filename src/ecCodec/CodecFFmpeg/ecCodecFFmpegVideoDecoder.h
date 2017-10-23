@@ -24,12 +24,12 @@ public:
 	ecCodecFFmpegVideoDecoder();
 	virtual ~ecCodecFFmpegVideoDecoder();
 public:
-	virtual bool InitVideoDecoder(const SDVideoMediaInfo	*pSrcVideoInfo);
-	virtual bool SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo *pOutBufInfo);
+	virtual bool InitVideoDecoder(const SDVideoMediaInfo & pSrcVideoInfo);
 	virtual bool PutVideoFrame(const SD_UINT8 *pFrameBuffer, const SDRFrameInfo *pFrameInfo);
 	virtual bool SetEndofInput();
 	virtual bool GetUnCompressFrame(SD_UINT8* &lpFrameBuffer, SDRFrameInfo *pFrameInfo);
 	virtual bool GetVideoMediaInfo(SDVideoMediaInfo * mediaInfo);
+	virtual bool SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo *pOutBufInfo);
 	virtual bool IsInitialized();
 	virtual SD_UINT32 GetBufferSize();
 	virtual bool Release();
