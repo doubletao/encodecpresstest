@@ -14,17 +14,20 @@ class ecCodecFFmpegProtocolDecoder :
 	public IecCodecProtocolDecoder
 {
 private:
-	bool m_bIsInitialized;
-	int m_nVideoIndex;
-	AVPacket * m_pVideoPacket;
 	AVFormatContext	* m_pFormatCtx;
+	bool m_bIsInitialized;
+
+	int m_nVideoIndex;
 	ecCodecFFmpegVideoDecoder m_VideoDecoder;
+	AVPacket * m_pVideoPacket;
+	int64_t m_nCurrentVideoSeekPos;
+	bool m_bVideoSeek;
 
 	int m_nAudioIndex;
 	ecCodecFFmpegAudioDecoder m_AudioDecoder;
-
-	int64_t m_nCurrentSeekPos;
-	bool m_bSeek;
+	AVPacket * m_pAudioPacket;
+	int64_t m_nCurrentAudioSeekPos;
+	bool m_bAudioSeek;
 public:
 	ecCodecFFmpegProtocolDecoder();
 	virtual ~ecCodecFFmpegProtocolDecoder();

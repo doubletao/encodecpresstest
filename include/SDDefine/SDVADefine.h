@@ -4283,10 +4283,14 @@ struct SDAudioMediaInfo			// 音频基本属性
 	SD_UINT32			dwSamplesPerSec;	// 每秒采样数量 
 	SD_UINT32			dwAvgBitsPerSec;	// 音频码率 bits
 	SD_UINT32			dwBlockAlign;		// 数据块对齐单位(每个采样样本需要的字节数), 声道数*量化数/8, 量化数(16,20?,24,32...)
+	SD_UINT32			dwFrameSize;
 
 //Below is Version 2 Add.
 	SD_AUDIO_CHANNELCONFIGURATION	enumAudioCFG;		//声道属性
 	SD_CHANNELSAMPLE_FORMAT enumChannelSamplesFormat;	//音频声道采样数据格式
+
+	SD_UINT8 *			extradata;
+	int					extradata_size;
 		
 	SDAudioMediaInfo()
 	{
@@ -4300,6 +4304,8 @@ struct SDAudioMediaInfo			// 音频基本属性
 		dwBlockAlign = 2;
 		enumAudioCFG = SDAUDIOCFG_INDEPENDENT;
 		enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
+		extradata = nullptr;
+		extradata_size = 0;
 	};
 
 	SDAudioMediaInfo(const SDAudioMediaInfo &other)
@@ -4319,6 +4325,8 @@ struct SDAudioMediaInfo			// 音频基本属性
 		dwBlockAlign = other.dwBlockAlign;
 		enumAudioCFG = other.enumAudioCFG;
 		enumChannelSamplesFormat = other.enumChannelSamplesFormat;
+		extradata = other.extradata;
+		extradata_size = other.extradata_size;
 		return *this;
 	};
 
@@ -4343,6 +4351,10 @@ struct SDAudioMediaInfo			// 音频基本属性
 		if (enumAudioCFG != other.enumAudioCFG)
 			return SD_FALSE;
 		if (enumChannelSamplesFormat != other.enumChannelSamplesFormat)
+			return SD_FALSE;
+		if (extradata != other.extradata)
+			return SD_FALSE;
+		if (extradata_size != other.extradata_size)
 			return SD_FALSE;
 
 		return SD_TRUE;
@@ -4369,6 +4381,10 @@ struct SDAudioMediaInfo			// 音频基本属性
 		if (enumAudioCFG != other.enumAudioCFG)
 			return SD_TRUE;
 		if (enumChannelSamplesFormat != other.enumChannelSamplesFormat)
+			return SD_TRUE;
+		if (extradata != other.extradata)
+			return SD_TRUE;
+		if (extradata_size != other.extradata_size)
 			return SD_TRUE;
 
 		return SD_FALSE;

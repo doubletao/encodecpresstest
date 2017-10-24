@@ -21,6 +21,7 @@ public:
 	static int ConvertVideoProfile(SD_CODEC_PROFILE emProfile);
 	static int ConvertAudioProfile(SD_UINT32 emProfile);
 	static AVSampleFormat ConvertSamplesFormat(SD_CHANNELSAMPLE_FORMAT emSampleFormat);
+	static SD_CHANNELSAMPLE_FORMAT ConvertSamplesFormat(AVSampleFormat emSampleFormat);
 	static SD_UINT64 ConvertChannelLayout(SD_AUDIO_CHANNELCONFIGURATION channelCfg);
 	static SD_AUDIO_CHANNELCONFIGURATION ConvertChannelLayout(SD_UINT64 channelCfg);
 	//static SD_STREAM_TYPE ConvertStreamType();

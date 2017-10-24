@@ -151,6 +151,8 @@ void CEncodecPressTestDlg::DoPlay()
 	pWnd = GetDlgItem(IDC_EDIT_FILE_PATH);
 	if (pWnd && ::IsWindow(pWnd->GetSafeHwnd()))
 	{
+		//FILE * pAudioFile = fopen("output.pcm", "wb");
+
 		CString strPath;
 		pWnd->GetWindowText(strPath);
 		std::string cstrPath = ConverCStringToStdString(strPath);
@@ -165,6 +167,8 @@ void CEncodecPressTestDlg::DoPlay()
 					SDStreamMediaInfoEx streamMediaInfoEx;
 					if (pDecoder->GetFileGlobalMediaInfo(&streamMediaInfoEx))
 					{
+						bool bContinue = true;
+#if 0
 						int nWidth = 720;
 						int nHeight = 576;
 						m_player.SetBufferFWH(SDL_PIXELFORMAT_IYUV, nWidth, nHeight);
@@ -173,9 +177,20 @@ void CEncodecPressTestDlg::DoPlay()
 						videoFrameImageBufInfo.dwYSize = nHeight;
 						videoFrameImageBufInfo.enumColorFormat = streamMediaInfoEx.sVideoMediaInfo.enumColorFormat;
 						bool bContinue = pDecoder->SetVideoFrameBufInfo(&videoFrameImageBufInfo, nullptr);
-						SD_UINT32 nBufferSize = pDecoder->GetVideoBufferSize();
-						uint8_t * pVideoData = new uint8_t[nBufferSize];
-						uint8_t * pAudioData = new uint8_t[nBufferSize];
+#endif
+
+						SDAudioSamplesBufInfo audioSamplesBufInfo;
+						audioSamplesBufInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
+						audioSamplesBufInfo.enumChannelSamplesFormat = (SD_CHANNELSAMPLE_FORMAT)1;
+						audioSamplesBufInfo.dwSamplesPerSec = 44100;
+						audioSamplesBufInfo.dwChannels = 2;
+						pDecoder->SetAudioSamplesBufInfo(&audioSamplesBufInfo);
+						SD_UINT32 nVideoBufferSize = pDecoder->GetVideoBufferSize();
+						SD_UINT32 nAudioBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+						uint8_t * pVideoData = new uint8_t[nVideoBufferSize];
+						memset(pVideoData, 0, nVideoBufferSize * sizeof(uint8_t));
+						uint8_t * pAudioData = new uint8_t[nAudioBufferSize];
+						memset(pAudioData, 0, nAudioBufferSize * sizeof(uint8_t));
 						SD_UINT32 numAudioSample = 0;
 						bool bFirst = false;
 						m_ctrSlider.SetRange(0, streamMediaInfoEx.dwVideoFrameNum);
@@ -185,26 +200,29 @@ void CEncodecPressTestDlg::DoPlay()
 							if (WaitForSingleObject(m_evtPlayPause, 0) != WAIT_OBJECT_0)
 							{
 								SDRFrameInfo frameInfo;
-								bContinue = pDecoder->GetVideoBuffer(-1, pVideoData, &frameInfo);
+								//bContinue = pDecoder->GetVideoBuffer(-1, pVideoData, &frameInfo);
+								bContinue = pDecoder->GetAudioSamples(-1, nAudioBufferSize, pAudioData, &numAudioSample);
 
-								pDecoder->GetAudioSamples(-1, 1920, pAudioData, &numAudioSample);
+								//音频先写到文件里
+								//fwrite(pAudioData, 1, numAudioSample, pAudioFile);
+
 								m_nDispFrame++;
 								Lock();
 								m_nFrame++;
 								Unlock();
-								if (1)
+								if (0)
 								{
 									FILE * file;
 									fopen_s(&file, "out.yuv", "wb+");
 									if (file)
 									{
-										fwrite(pVideoData, 1, nBufferSize, file);  //V
+										fwrite(pVideoData, 1, nVideoBufferSize, file);  //V
 										fclose(file);
 									}
 								}
 
-								m_player.PushFrame(pVideoData, nWidth);
-								if (WaitForSingleObject(m_evtPlayStop, 40) == WAIT_OBJECT_0)
+								//m_player.PushFrame(pVideoData, nWidth);
+								if (WaitForSingleObject(m_evtPlayStop, 0) == WAIT_OBJECT_0)
 								{
 									break;
 								}
@@ -223,12 +241,12 @@ void CEncodecPressTestDlg::DoPlay()
 										fopen_s(&file, "out.yuv", "wb+");
 										if (file)
 										{
-											fwrite(pVideoData, 1, nBufferSize, file);  //V
+											fwrite(pVideoData, 1, nVideoBufferSize, file);  //V
 											fclose(file);
 										}
 									}
 
-									m_player.PushFrame(pVideoData, nWidth);
+									//m_player.PushFrame(pVideoData, nWidth);
 									m_nDispFrame = m_nFrame;
 								}
 								Unlock();
@@ -241,6 +259,7 @@ void CEncodecPressTestDlg::DoPlay()
 						deleteC(pVideoData);
 					}
 				}
+				//fclose(pAudioFile);
 				deleteC(pDecoder);
 			}
 			deleteC(ecfactory);

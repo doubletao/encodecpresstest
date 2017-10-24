@@ -10,7 +10,6 @@ ecCodecFFmpegAudioDecoder::ecCodecFFmpegAudioDecoder()
 	, m_pSrcFrame(nullptr)
 	, m_pSwrFrame(nullptr)
 	, m_pSwrCtx(nullptr)
-	, m_pAudioFifo(nullptr)
 {
 }
 
@@ -19,6 +18,8 @@ ecCodecFFmpegAudioDecoder::~ecCodecFFmpegAudioDecoder()
 {
 	Release();
 }
+
+FILE * pAudioFile = nullptr;
 
 bool ecCodecFFmpegAudioDecoder::InitAudioDecoder(const SDAudioMediaInfo & sAudioInfo)
 {
@@ -36,11 +37,23 @@ bool ecCodecFFmpegAudioDecoder::InitAudioDecoder(const SDAudioMediaInfo & sAudio
 			m_pCodecCtx->channels = sAudioInfo.dwChannels;	       												// av_get_channel_layout_nb_channels(m_pCodecCtx->channel_layout);
 			m_pCodecCtx->channel_layout = FFmpegFormatCovert::ConvertChannelLayout(sAudioInfo.enumAudioCFG);	// AV_CH_LAYOUT_STEREO;
 			m_pCodecCtx->thread_count = 1;
-			if (avcodec_open2(m_pCodecCtx, pAudioCodec, nullptr) < 0) 
+			m_pCodecCtx->block_align = sAudioInfo.dwBlockAlign;
+			m_pCodecCtx->extradata = sAudioInfo.extradata;
+			m_pCodecCtx->extradata_size = sAudioInfo.extradata_size;
+			m_pCodecCtx->frame_size = sAudioInfo.dwFrameSize;
+			int nRet = avcodec_open2(m_pCodecCtx, pAudioCodec, nullptr);
+			if (nRet == 0)
 			{
 				m_pSrcFrame = av_frame_alloc();
 				if (m_pSrcFrame)
 				{
+					m_pSrcFrame->channels = m_pCodecCtx->channels;
+					m_pSrcFrame->format = m_pCodecCtx->sample_fmt;
+					m_pSrcFrame->sample_rate = m_pCodecCtx->sample_rate;
+					m_pSrcFrame->channel_layout = m_pCodecCtx->channel_layout;
+					m_pSrcFrame->nb_samples = m_pCodecCtx->frame_size;		// ???
+					
+					fopen_s(&pAudioFile, "output.pcm", "wb");
 					m_bIsInitialized = true;
 				}
 				else
@@ -92,11 +105,6 @@ bool ecCodecFFmpegAudioDecoder::SetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo)
 	int channels = pAudioInfo->dwChannels;
 	int sample_rate = pAudioInfo->dwSamplesPerSec;
 
-	m_pAudioFifo = av_audio_fifo_alloc(format, channels, m_pCodecCtx->frame_size);
-	if (!m_pAudioFifo) {
-		return false;
-	}
-
 	m_pDestBuffer.reset(new SD_UINT8[AVCODEC_MAX_AUDIO_FRAME_SIZE]);
 
 	bool bSwr = (m_pCodecCtx->channels != channels || m_pCodecCtx->sample_fmt != format ||
@@ -120,8 +128,8 @@ bool ecCodecFFmpegAudioDecoder::SetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo)
 		return false;
 	}
 
-	m_pSwrCtx = swr_alloc_set_opts(nullptr, m_pCodecCtx->channel_layout, m_pCodecCtx->sample_fmt,
-		m_pCodecCtx->sample_rate, nChannelLayout, format, pAudioInfo->dwSamplesPerSec, 0, 0);
+	m_pSwrCtx = swr_alloc_set_opts(m_pSwrCtx, m_pSwrFrame->channel_layout, (AVSampleFormat)m_pSwrFrame->format,
+		m_pSwrFrame->sample_rate, m_pCodecCtx->channel_layout, m_pCodecCtx->sample_fmt, m_pCodecCtx->sample_rate, 0, nullptr);
 
 	if (swr_is_initialized(m_pSwrCtx) == 0) {
 		swr_init(m_pSwrCtx);
@@ -140,6 +148,10 @@ bool ecCodecFFmpegAudioDecoder::PutFrame(const SD_UINT8 * pData, const SDRFrameI
 	av_init_packet(&avpkt);
 	avpkt.data = const_cast<uint8_t*>(pData);
 	avpkt.size = pFrameInfo->iSize;
+	avpkt.dts = pFrameInfo->qwDTS;
+	avpkt.pts = pFrameInfo->qwPTS;
+	avpkt.pos = pFrameInfo->dwShowIndex;
+	avpkt.duration = pFrameInfo->qwDuration;
 
 	int ret = avcodec_send_packet(m_pCodecCtx, &avpkt);
 	if (ret < 0) {
@@ -147,7 +159,6 @@ bool ecCodecFFmpegAudioDecoder::PutFrame(const SD_UINT8 * pData, const SDRFrameI
 		return false;
 	}
 	av_packet_unref(&avpkt);
-
 	return true;
 }
 
@@ -162,26 +173,40 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer)
 		return false;
 	}
 
-	int bufSizeRet = m_pCodecCtx->sample_rate * m_pCodecCtx->channels * av_get_bytes_per_sample(m_pCodecCtx->sample_fmt) / 25;
+	int bufSizeRet = av_samples_get_buffer_size(NULL, m_pSwrFrame->channels, m_pSwrFrame->nb_samples, (AVSampleFormat)m_pSwrFrame->format, 1);
 
 	if (m_pSwrCtx && m_pSwrFrame)
 	{
-		int swr_size = swr_convert(m_pSwrCtx, m_pSwrFrame->data, m_pSwrFrame->nb_samples,
+		uint8_t * out_buffer = (uint8_t *)av_malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
+
+		int swr_size = swr_convert(m_pSwrCtx, &out_buffer, AVCODEC_MAX_AUDIO_FRAME_SIZE,
 			(const SD_UINT8**)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
-		av_audio_fifo_write(m_pAudioFifo, (void**)m_pSwrFrame->data, swr_size);
-		bufSizeRet = m_pSwrFrame->sample_rate * m_pSwrFrame->channels * av_get_bytes_per_sample((AVSampleFormat)m_pSwrFrame->format) / 25;
+
+		fwrite(out_buffer, 1, bufSizeRet, pAudioFile);
+
+		lpBuffer = (SD_UINT8 *)m_pSwrFrame->data;
+		bufSizeRet = av_samples_get_buffer_size(NULL, m_pSwrFrame->channels, m_pSwrFrame->nb_samples, (AVSampleFormat)m_pSwrFrame->format, 1);
+
+		av_free(out_buffer);
+
+		return bufSizeRet;
+		//av_audio_fifo_write(m_pAudioFifo, (void**)m_pSwrFrame->data, swr_size);
+		//bufSizeRet = m_pSwrFrame->sample_rate * m_pSwrFrame->channels * av_get_bytes_per_sample((AVSampleFormat)m_pSwrFrame->format) / 25;
 	}
 	else
 	{
-		av_audio_fifo_write(m_pAudioFifo, (void**)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
+		lpBuffer = (SD_UINT8 *)m_pSrcFrame->data;
+		bufSizeRet = av_samples_get_buffer_size(NULL, m_pSrcFrame->channels, m_pSrcFrame->nb_samples, (AVSampleFormat)m_pSrcFrame->format, 1);
+		return bufSizeRet;
+		//av_audio_fifo_write(m_pAudioFifo, (void**)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
 	}
 
-	if (av_audio_fifo_size(m_pAudioFifo) >= bufSizeRet)
-	{
-		av_audio_fifo_read(m_pAudioFifo, (void **)m_pDestBuffer.get(), bufSizeRet);
-		lpBuffer = m_pDestBuffer.get();
-		return bufSizeRet;
-	}
+	//if (av_audio_fifo_size(m_pAudioFifo) >= bufSizeRet)
+	//{
+	//	av_audio_fifo_read(m_pAudioFifo, (void **)m_pDestBuffer.get(), bufSizeRet);
+	//	lpBuffer = m_pDestBuffer.get();
+	//	return bufSizeRet;
+	//}
 
 	return 0;
 }
@@ -224,11 +249,10 @@ bool ecCodecFFmpegAudioDecoder::Release()
 		swr_close(m_pSwrCtx);
 		swr_free(&m_pSwrCtx);
 	}
-	if (m_pAudioFifo)
-	{
-		av_audio_fifo_free(m_pAudioFifo);
-		m_pAudioFifo = nullptr;
-	}
 	m_bIsInitialized = false;
+	if (pAudioFile)
+	{
+		fclose(pAudioFile);
+	}
 	return true;
 }

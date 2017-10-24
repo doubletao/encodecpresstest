@@ -9,9 +9,12 @@ ecCodecFFmpegProtocolDecoder::ecCodecFFmpegProtocolDecoder()
 	, m_nVideoIndex(-1)
 	, m_pFormatCtx(nullptr)
 	, m_pVideoPacket(nullptr)
+	, m_pAudioPacket(nullptr)
 	, m_nAudioIndex(-1)
-	, m_nCurrentSeekPos(0)
-	, m_bSeek(false)
+	, m_nCurrentVideoSeekPos(0)
+	, m_bVideoSeek(false)
+	, m_nCurrentAudioSeekPos(0)
+	, m_bAudioSeek(false)
 {
 }
 
@@ -74,7 +77,7 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 					}
 					else
 					{
-						printf("failed to get codecparam\n");
+						printf("failed to get video codecparam\n");
 					}
 				}
 				else
@@ -89,6 +92,7 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 					//根据编码格式查找解码器
 					//先拿到解码参数
 					AVCodecParameters * pAudioCodecParm = m_pFormatCtx->streams[m_nAudioIndex]->codecpar;
+					AVStream * pStream = m_pFormatCtx->streams[m_nAudioIndex];
 					if (pAudioCodecParm)
 					{
 						SDAudioMediaInfo audioInfo; 
@@ -100,26 +104,38 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 						audioInfo.dwAvgBitsPerSec = pAudioCodecParm->bit_rate;	// 音频码率 bits
 						audioInfo.dwBlockAlign = pAudioCodecParm->block_align;		// 数据块对齐单位(每个采样样本需要的字节数), 声道数*量化数/8, 量化数(16,20?,24,32...										//Below is Version 2 Add.
 						audioInfo.enumAudioCFG = FFmpegFormatCovert::ConvertChannelLayout(pAudioCodecParm->channel_layout);		//声道属性
-						audioInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Unknow;	//音频声道采样数据格式
+						audioInfo.enumChannelSamplesFormat = FFmpegFormatCovert::ConvertSamplesFormat((AVSampleFormat)pAudioCodecParm->format);	//音频声道采样数据格式
+						audioInfo.extradata = pAudioCodecParm->extradata;
+						audioInfo.extradata_size = pAudioCodecParm->extradata_size;
+						if (pAudioCodecParm->frame_size > 0)
+						{
+							audioInfo.dwFrameSize = pAudioCodecParm->frame_size;
+						}
+						else
+						{
+							audioInfo.dwFrameSize = pAudioCodecParm->codec_tag;
+						}
 						audioInfo.dwStruSize = sizeof(SDAudioMediaInfo);			// 结构大小
 						//创建解码器
 						if (m_AudioDecoder.InitAudioDecoder(audioInfo))
 						{
+							m_pAudioPacket = (AVPacket *)av_malloc(sizeof(AVPacket));
+							av_init_packet(m_pAudioPacket);
 							m_bIsInitialized = true;
 						}
 						else
 						{
-							printf("failed to initial video decoder\n");
+							printf("failed to initial audio decoder\n");
 						}
 					}
 					else
 					{
-						printf("failed to get codecparam\n");
+						printf("failed to get audio codecparam\n");
 					}
 				}
 				else
 				{
-					printf("failed to find video stream\n");
+					printf("failed to find audio stream\n");
 				}
 				if (m_bIsInitialized)
 				{
@@ -355,7 +371,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex,
 			SDRFrameInfo frameInfo;
 			SD_UINT8 * pCompressFrame = nullptr;
 			AVRational time_base = m_pFormatCtx->streams[m_nVideoIndex]->time_base;
-			m_nCurrentSeekPos = m_pFormatCtx->streams[m_nVideoIndex]->start_time + av_rescale(dwCurFrameShowIndex, time_base.den, time_base.num);
+			m_nCurrentVideoSeekPos = m_pFormatCtx->streams[m_nVideoIndex]->start_time + av_rescale(dwCurFrameShowIndex, time_base.den, time_base.num);
 			while (GetVideoFrame(dwCurFrameShowIndex, pCompressFrame, &frameInfo) && pCompressFrame)
 			{
 				if (m_VideoDecoder.PutVideoFrame(pCompressFrame, &frameInfo))
@@ -377,7 +393,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex,
 							pFrameInfo->dwShowIndex = pFrameInfo->dwFrameIndex;
 							pFrameInfo->emFrameType = frameInfo.emFrameType;
 							pFrameInfo->extradata_size = 0;
-							if (!m_bSeek)
+							if (!m_bVideoSeek)
 							{
 								return true;
 							}
@@ -401,23 +417,23 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 			bool bContinue = false;
 			if (dwCurFrameShowIndex != (SD_UINT64)-1)
 			{
-				if (m_bSeek)
+				if (m_bVideoSeek)
 				{
 					bContinue = true;
 				}
 				else
 				{
-					if (m_nCurrentSeekPos == 0)
+					if (m_nCurrentVideoSeekPos == 0)
 					{
-						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentSeekPos, AVSEEK_FLAG_FRAME);
+						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos, AVSEEK_FLAG_FRAME);
 						if (nRet >= 0)
 						{
 							bContinue = true;
 						}
 					}
-					else if (m_nCurrentSeekPos <= pVideoStream->duration)
+					else if (m_nCurrentVideoSeekPos <= pVideoStream->duration)
 					{
-						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentSeekPos, AVSEEK_FLAG_BACKWARD);
+						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos, AVSEEK_FLAG_BACKWARD);
 						if (nRet >= 0)
 						{
 							bContinue = true;
@@ -428,7 +444,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 						//seek pos已经到头了，直接退出
 						return false;
 					}
-					m_bSeek = true;
+					m_bVideoSeek = true;
 				}
 			}
 			else
@@ -450,11 +466,11 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 						//找出视频流
 						continue;
 					}
-					if (m_bSeek)
+					if (m_bVideoSeek)
 					{
-						if (m_pVideoPacket->dts >= m_nCurrentSeekPos)
+						if (m_pVideoPacket->dts >= m_nCurrentVideoSeekPos)
 						{
-							m_bSeek = false;
+							m_bVideoSeek = false;
 						}
 					}
 					pFrameBuf = m_pVideoPacket->data;
@@ -485,41 +501,33 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 			SDRFrameInfo frameInfo;
 			SD_UINT8 * pCompressFrame = nullptr;
 			AVRational time_base = m_pFormatCtx->streams[m_nAudioIndex]->time_base;
-			m_nCurrentSeekPos = m_pFormatCtx->streams[m_nAudioIndex]->start_time + av_rescale(dwCurSamplePos, time_base.den, time_base.num);
+			m_nCurrentAudioSeekPos = m_pFormatCtx->streams[m_nAudioIndex]->start_time + av_rescale(dwCurSamplePos, time_base.den, time_base.num);
 			AVStream * pAudioStream = m_pFormatCtx->streams[m_nAudioIndex];
-			int i = 0;
-			i++;
-#if 0
-			while (GetAudioFrame(dwCurSamplePos, , &frameInfo) && pCompressFrame)
+			while (GetAudioFrame(dwCurSamplePos, dwSampleNum, pCompressFrame, &frameInfo) && pCompressFrame)
 			{
-				if (m_VideoDecoder.PutVideoFrame(pCompressFrame, &frameInfo))
+				if (m_AudioDecoder.PutFrame(pCompressFrame, &frameInfo))
 				{
-					if (pFrameBuf && m_VideoDecoder.GetUnCompressFrame(pFrameBuf, &frameInfo))
-					{
-						if (pFrameInfo)
-						{
-							pFrameInfo->iVersion = 0;
-							pFrameInfo->emDataType = STREAM_DATATYPE_VIDEO;
-							pFrameInfo->emStreamFlag = frameInfo.emStreamFlag;
-							pFrameInfo->iSize = GetVideoBufferSize();
-							pFrameInfo->dwFrameIndex = dwCurFrameShowIndex;
-							pFrameInfo->dwFrameNum = 1;
-							pFrameInfo->iSamplesOffset = 0;
-							pFrameInfo->qwDTS = frameInfo.qwDTS;
-							pFrameInfo->qwPTS = frameInfo.qwPTS;
-							pFrameInfo->qwDuration = frameInfo.qwDuration;
-							pFrameInfo->dwShowIndex = pFrameInfo->dwFrameIndex;
-							pFrameInfo->emFrameType = frameInfo.emFrameType;
-							pFrameInfo->extradata_size = 0;
-							if (!m_bSeek)
-							{
-								return true;
-							}
-						}
-					}
+					SD_UINT8 * pSamples = nullptr;
+					int nBufferSize = m_AudioDecoder.GetSample(pSamples);
+					//if (nBufferSize > 0)
+					//{
+					//	int nCopySize = nBufferSize;
+					//	if (nCopySize > dwSampleNum)
+					//	{
+					//		nCopySize = dwSampleNum;
+					//	}
+					//	memcpy(pSamplesBuf, pSamples, nCopySize);
+					//	if (pdwRetSampleNum)
+					//	{
+					//		*pdwRetSampleNum = nBufferSize;
+					//	}
+					//	if (!m_bVideoSeek)
+					//	{
+					//		return true;
+					//	}
+					//}
 				}
 			}
-#endif
 		}
 	}
 	return false;
@@ -527,7 +535,89 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 
 bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex, SD_UINT32 dwFrameNum, SD_UINT8 *& pFrameBuf, SDRFrameInfo * pFrameInfo)
 {
-	return false;
+	bool bRet = false;
+	if (m_bIsInitialized)
+	{
+		AVStream * pAudioStream = m_pFormatCtx->streams[m_nAudioIndex];
+		if (pAudioStream)
+		{
+			bool bContinue = false;
+			if (dwCurFrameStreamIndex != (SD_UINT32)-1)
+			{
+				if (m_bAudioSeek)
+				{
+					bContinue = true;
+				}
+				else
+				{
+					if (m_nCurrentAudioSeekPos == 0)
+					{
+						int nRet = av_seek_frame(m_pFormatCtx, m_nAudioIndex, m_nCurrentAudioSeekPos, AVSEEK_FLAG_FRAME);
+						if (nRet >= 0)
+						{
+							bContinue = true;
+						}
+					}
+					else if (m_nCurrentAudioSeekPos <= pAudioStream->duration)
+					{
+						int nRet = av_seek_frame(m_pFormatCtx, m_nAudioIndex, m_nCurrentAudioSeekPos, AVSEEK_FLAG_BACKWARD);
+						if (nRet >= 0)
+						{
+							bContinue = true;
+						}
+					}
+					else
+					{
+						//seek pos已经到头了，直接退出
+						return false;
+					}
+					m_bAudioSeek = true;
+				}
+			}
+			else
+			{
+				bContinue = true;
+			}
+			if (bContinue)
+			{
+				while (m_pAudioPacket)
+				{
+					av_packet_unref(m_pAudioPacket);
+					if (av_read_frame(m_pFormatCtx, m_pAudioPacket) < 0)
+					{
+						//没读到，直接返回（可能是文件尾）
+						return false;
+					}
+					if (m_pAudioPacket->stream_index != m_nAudioIndex)
+					{
+						//找出音频流
+						continue;
+					}
+					if (m_bAudioSeek)
+					{
+						if (m_pAudioPacket->dts >= m_nCurrentAudioSeekPos)
+						{
+							m_bAudioSeek = false;
+						}
+					}
+					pFrameBuf = m_pAudioPacket->data;
+
+					if (pFrameInfo)
+					{
+						pFrameInfo->iSize = m_pAudioPacket->size;
+						pFrameInfo->qwDTS = m_pAudioPacket->dts;
+						pFrameInfo->qwPTS = m_pAudioPacket->pts;
+						pFrameInfo->qwDuration = m_pAudioPacket->duration;
+						pFrameInfo->dwShowIndex = m_pAudioPacket->pos;
+						pFrameInfo->emStreamFlag = m_pAudioPacket->pts == 0 ? STREAMSTATE_BEGIN : STREAMSTATE_CONTINUE;
+					}
+					bRet = true;
+					break;
+				}
+			}
+		}
+	}
+	return bRet;
 }
 
 bool ecCodecFFmpegProtocolDecoder::Release()
@@ -545,8 +635,16 @@ bool ecCodecFFmpegProtocolDecoder::Release()
 		m_pVideoPacket = nullptr;
 	}
 	m_VideoDecoder.Release();
+	if (m_pAudioPacket)
+	{
+		av_packet_free(&m_pAudioPacket);
+		m_pAudioPacket = nullptr;
+	}
+	m_AudioDecoder.Release();
 	m_bIsInitialized = false;
-	m_nCurrentSeekPos = 0;
-	m_bSeek = false;
+	m_nCurrentVideoSeekPos = 0;
+	m_bVideoSeek = false;
+	m_nCurrentAudioSeekPos = 0;
+	m_bAudioSeek = false;
 	return true;
 }

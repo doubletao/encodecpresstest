@@ -305,9 +305,9 @@ int FFmpegFormatCovert::ConvertAudioProfile(SD_UINT32 emProfile)
 AVSampleFormat FFmpegFormatCovert::ConvertSamplesFormat(SD_CHANNELSAMPLE_FORMAT emSampleFormat)
 {
 	AVSampleFormat avSampleFmt = AV_SAMPLE_FMT_NONE;
-#if 0
 	switch (emSampleFormat)
 	{
+#if 0
 	case SAMPLE_FMT_U8:
 		avSampleFmt = AV_SAMPLE_FMT_U8;
 		break;
@@ -344,11 +344,19 @@ AVSampleFormat FFmpegFormatCovert::ConvertSamplesFormat(SD_CHANNELSAMPLE_FORMAT 
 	case SAMPLE_FMT_S64P:
 		avSampleFmt = AV_SAMPLE_FMT_S64P;
 		break;
+#endif
+	case 0:
 	default:
+		avSampleFmt = (AVSampleFormat)emSampleFormat;
 		break;
 	}
-#endif
 	return avSampleFmt;
+}
+
+SD_CHANNELSAMPLE_FORMAT FFmpegFormatCovert::ConvertSamplesFormat(AVSampleFormat emSampleFormat)
+{
+	SD_CHANNELSAMPLE_FORMAT emSampleRet = SDCHANNELSAMPLESFORMAT_Unknow;
+	return SD_CHANNELSAMPLE_FORMAT(emSampleFormat);
 }
 
 SD_UINT64 FFmpegFormatCovert::ConvertChannelLayout(SD_AUDIO_CHANNELCONFIGURATION channelCfg)

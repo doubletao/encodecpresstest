@@ -19,7 +19,6 @@ private:
 	AVFrame	* m_pSrcFrame;
 	AVFrame*		m_pSwrFrame;
 	SwrContext*		m_pSwrCtx;
-	AVAudioFifo*	m_pAudioFifo;
 	std::unique_ptr<SD_UINT8[]> m_pDestBuffer;
 public:
 	ecCodecFFmpegAudioDecoder();
