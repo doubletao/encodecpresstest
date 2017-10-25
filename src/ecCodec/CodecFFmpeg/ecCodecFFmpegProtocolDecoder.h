@@ -16,6 +16,8 @@ class ecCodecFFmpegProtocolDecoder :
 private:
 	AVFormatContext	* m_pFormatCtx;
 	bool m_bIsInitialized;
+	int64_t m_nCurrentFrame;
+	int64_t m_nCurrentSample;
 
 	int m_nVideoIndex;
 	ecCodecFFmpegVideoDecoder m_VideoDecoder;

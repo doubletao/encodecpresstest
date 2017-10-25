@@ -193,18 +193,20 @@ void CEncodecPressTestDlg::DoPlay()
 						bool bFirst = false;
 						m_ctrSlider.SetRange(0, streamMediaInfoEx.dwVideoFrameNum);
 						m_ctrSlider.SetTicFreq(streamMediaInfoEx.dwVideoFrameNum / 100.0);
+						int64_t nAudioPos = 0;
 						while (bContinue)
 						{
 							if (WaitForSingleObject(m_evtPlayPause, 0) != WAIT_OBJECT_0)
 							{
 								SDRFrameInfo frameInfo;
-								bContinue = pDecoder->GetVideoBuffer(-1, pVideoData, &frameInfo);
-								bContinue = pDecoder->GetAudioSamples(-1, nAudioBufferSize, pAudioData, &numAudioSample);
+								bContinue = pDecoder->GetVideoBuffer(m_nDispFrame, pVideoData, &frameInfo);
+								bContinue = pDecoder->GetAudioSamples(nAudioPos, nAudioBufferSize, pAudioData, &numAudioSample);
 
 								//音频先写到文件里
 								fwrite(pAudioData, 1, numAudioSample, pAudioFile);
 
 								m_nDispFrame++;
+								nAudioPos += numAudioSample;
 								Lock();
 								m_nFrame++;
 								Unlock();
@@ -232,7 +234,7 @@ void CEncodecPressTestDlg::DoPlay()
 								{
 									SDRFrameInfo frameInfo;
 									bContinue = pDecoder->GetAudioSamples(m_nFrame, nAudioBufferSize, pAudioData, &numAudioSample);
-									bContinue = pDecoder->GetVideoBuffer(-1, pVideoData, &frameInfo);
+									bContinue = pDecoder->GetVideoBuffer(m_nFrame, pVideoData, &frameInfo);
 
 									if (0)
 									{

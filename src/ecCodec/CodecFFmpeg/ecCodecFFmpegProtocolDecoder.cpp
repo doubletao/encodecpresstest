@@ -15,6 +15,8 @@ ecCodecFFmpegProtocolDecoder::ecCodecFFmpegProtocolDecoder()
 	, m_bVideoSeek(false)
 	, m_nCurrentAudioSeekPos(0)
 	, m_bAudioSeek(false)
+	, m_nCurrentFrame(0)
+	, m_nCurrentSample(0)
 {
 }
 
@@ -362,8 +364,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex,
 		{
 			SDRFrameInfo frameInfo;
 			SD_UINT8 * pCompressFrame = nullptr;
-			AVRational time_base = m_pFormatCtx->streams[m_nVideoIndex]->time_base;
-			m_nCurrentVideoSeekPos = m_pFormatCtx->streams[m_nVideoIndex]->start_time + av_rescale(dwCurFrameShowIndex, time_base.den, time_base.num);
+			m_nCurrentVideoSeekPos = dwCurFrameShowIndex;
 			while (GetVideoFrame(dwCurFrameShowIndex, pCompressFrame, &frameInfo) && pCompressFrame)
 			{
 				if (m_VideoDecoder.PutVideoFrame(pCompressFrame, &frameInfo))
@@ -380,6 +381,11 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex,
 							pFrameInfo->dwFrameNum = 1;
 							pFrameInfo->iSamplesOffset = 0;
 							pFrameInfo->qwDTS = frameInfo.qwDTS;
+							//每次根据dts来校正当前帧
+							if (frameInfo.qwDTS >= 0)
+							{
+								m_nCurrentFrame = av_rescale(frameInfo.qwDTS, m_pFormatCtx->streams[m_nVideoIndex]->time_base.num, m_pFormatCtx->streams[m_nVideoIndex]->time_base.den);
+							}
 							pFrameInfo->qwPTS = frameInfo.qwPTS;
 							pFrameInfo->qwDuration = frameInfo.qwDuration;
 							pFrameInfo->dwShowIndex = pFrameInfo->dwFrameIndex;
@@ -407,7 +413,8 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 		if (pVideoStream)
 		{
 			bool bContinue = false;
-			if (dwCurFrameShowIndex != (SD_UINT64)-1)
+			int64_t nSeekGap = dwCurFrameShowIndex - m_nCurrentFrame;
+			if (false && abs(nSeekGap) > 3)
 			{
 				if (m_bVideoSeek)
 				{
@@ -415,7 +422,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 				}
 				else
 				{
-					if (m_nCurrentVideoSeekPos == 0)
+					if (m_nCurrentVideoSeekPos <= pVideoStream->time_base.den * 1.0 / pVideoStream->time_base.num)
 					{
 						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos, AVSEEK_FLAG_FRAME);
 						if (nRet >= 0)
@@ -492,14 +499,18 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 		{
 			SDRFrameInfo frameInfo;
 			SD_UINT8 * pCompressFrame = nullptr;
-			AVRational time_base = m_pFormatCtx->streams[m_nAudioIndex]->time_base;
-			m_nCurrentAudioSeekPos = m_pFormatCtx->streams[m_nAudioIndex]->start_time + av_rescale(dwCurSamplePos, time_base.den, time_base.num);
-			AVStream * pAudioStream = m_pFormatCtx->streams[m_nAudioIndex];
+			m_nCurrentAudioSeekPos = dwCurSamplePos;
 			while (GetAudioFrame(dwCurSamplePos, dwSampleNum, pCompressFrame, &frameInfo) && pCompressFrame)
 			{
 				if (m_AudioDecoder.PutFrame(pCompressFrame, &frameInfo))
 				{
 					int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf);
+					//每次根据dts来校正当前帧
+					if (frameInfo.qwDTS >= 0)
+					{
+						int nGap = frameInfo.qwDTS - m_nCurrentSample;
+						m_nCurrentSample = frameInfo.qwDTS;
+					}
 					if (pdwRetSampleNum)
 					{
 						*pdwRetSampleNum = nBufferSize;
@@ -524,7 +535,8 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 		if (pAudioStream)
 		{
 			bool bContinue = false;
-			if (dwCurFrameStreamIndex != (SD_UINT32)-1)
+			int64_t nSeekGap = dwCurFrameStreamIndex - m_nCurrentSample;
+			if (false && abs(nSeekGap) > 3)
 			{
 				if (m_bAudioSeek)
 				{
@@ -532,7 +544,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 				}
 				else
 				{
-					if (m_nCurrentAudioSeekPos == 0)
+					if (m_nCurrentAudioSeekPos <= pAudioStream->time_base.den * 1.0 / pAudioStream->time_base.num)
 					{
 						int nRet = av_seek_frame(m_pFormatCtx, m_nAudioIndex, m_nCurrentAudioSeekPos, AVSEEK_FLAG_FRAME);
 						if (nRet >= 0)
@@ -622,6 +634,8 @@ bool ecCodecFFmpegProtocolDecoder::Release()
 		av_packet_free(&m_pAudioPacket);
 		m_pAudioPacket = nullptr;
 	}
+	m_nCurrentFrame = 0;
+	m_nCurrentSample = 0;
 	m_AudioDecoder.Release();
 	m_bIsInitialized = false;
 	m_nCurrentVideoSeekPos = 0;
