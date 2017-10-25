@@ -4283,7 +4283,6 @@ struct SDAudioMediaInfo			// 音频基本属性
 	SD_UINT32			dwSamplesPerSec;	// 每秒采样数量 
 	SD_UINT32			dwAvgBitsPerSec;	// 音频码率 bits
 	SD_UINT32			dwBlockAlign;		// 数据块对齐单位(每个采样样本需要的字节数), 声道数*量化数/8, 量化数(16,20?,24,32...)
-	SD_UINT32			dwFrameSize;
 
 //Below is Version 2 Add.
 	SD_AUDIO_CHANNELCONFIGURATION	enumAudioCFG;		//声道属性

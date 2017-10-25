@@ -107,14 +107,6 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 						audioInfo.enumChannelSamplesFormat = FFmpegFormatCovert::ConvertSamplesFormat((AVSampleFormat)pAudioCodecParm->format);	//音频声道采样数据格式
 						audioInfo.extradata = pAudioCodecParm->extradata;
 						audioInfo.extradata_size = pAudioCodecParm->extradata_size;
-						if (pAudioCodecParm->frame_size > 0)
-						{
-							audioInfo.dwFrameSize = pAudioCodecParm->frame_size;
-						}
-						else
-						{
-							audioInfo.dwFrameSize = pAudioCodecParm->codec_tag;
-						}
 						audioInfo.dwStruSize = sizeof(SDAudioMediaInfo);			// 结构大小
 						//创建解码器
 						if (m_AudioDecoder.InitAudioDecoder(audioInfo))
@@ -431,7 +423,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 							bContinue = true;
 						}
 					}
-					else if (m_nCurrentVideoSeekPos <= pVideoStream->duration)
+					else if (m_nCurrentVideoSeekPos <= pVideoStream->nb_frames)
 					{
 						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos, AVSEEK_FLAG_BACKWARD);
 						if (nRet >= 0)
@@ -507,25 +499,15 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 			{
 				if (m_AudioDecoder.PutFrame(pCompressFrame, &frameInfo))
 				{
-					SD_UINT8 * pSamples = nullptr;
-					int nBufferSize = m_AudioDecoder.GetSample(pSamples);
-					//if (nBufferSize > 0)
-					//{
-					//	int nCopySize = nBufferSize;
-					//	if (nCopySize > dwSampleNum)
-					//	{
-					//		nCopySize = dwSampleNum;
-					//	}
-					//	memcpy(pSamplesBuf, pSamples, nCopySize);
-					//	if (pdwRetSampleNum)
-					//	{
-					//		*pdwRetSampleNum = nBufferSize;
-					//	}
-					//	if (!m_bVideoSeek)
-					//	{
-					//		return true;
-					//	}
-					//}
+					int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf);
+					if (pdwRetSampleNum)
+					{
+						*pdwRetSampleNum = nBufferSize;
+					}
+					if (!m_bVideoSeek)
+					{
+						return true;
+					}
 				}
 			}
 		}
@@ -558,7 +540,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 							bContinue = true;
 						}
 					}
-					else if (m_nCurrentAudioSeekPos <= pAudioStream->duration)
+					else if (m_nCurrentAudioSeekPos <= pAudioStream->nb_frames)
 					{
 						int nRet = av_seek_frame(m_pFormatCtx, m_nAudioIndex, m_nCurrentAudioSeekPos, AVSEEK_FLAG_BACKWARD);
 						if (nRet >= 0)
