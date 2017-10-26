@@ -33,9 +33,11 @@ bool FFmpegVideoDecoder::InitVideoDecoder(const SVideoMediaInfo	*pSrcVideoInfo)
 	m_pCodecCtx->width = pSrcVideoInfo->dwWidth;
 	m_pCodecCtx->height = pSrcVideoInfo->dwHeight;
 	m_pCodecCtx->pix_fmt = pixelFormat;
-	m_pCodecCtx->flags2 |= CODEC_FLAG2_FAST;
 	m_pCodecCtx->thread_count = 1;
-
+	if (codecId == AV_CODEC_ID_H264) {
+		m_pCodecCtx->flags2 |= CODEC_FLAG2_FAST;
+	}
+	
 	if (avcodec_open2(m_pCodecCtx, pVideoCodec, nullptr)) {
 		return false;
 	}

@@ -37,6 +37,10 @@ bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(const SDVideoMediaInfo & pSrcVi
 		m_pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
 		m_pCodecCtx->extradata = (uint8_t *)pSrcVideoInfo.dwDisplayWidth;
 		m_pCodecCtx->extradata_size = pSrcVideoInfo.dwDisplayHeight;
+		//if (m_pCodecCtx->codec_id == AV_CODEC_ID_H264) 
+		//{
+		//	m_pCodecCtx->flags2 |= CODEC_FLAG2_FAST;
+		//}
 		if (m_pCodecCtx)
 		{
 			//根据解码上下文打开解码器
