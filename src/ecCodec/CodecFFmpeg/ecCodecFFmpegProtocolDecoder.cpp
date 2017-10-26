@@ -373,6 +373,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex,
 					{
 						if (pFrameInfo)
 						{
+							m_nCurrentFrame = dwCurFrameShowIndex;
 							pFrameInfo->iVersion = 0;
 							pFrameInfo->emDataType = STREAM_DATATYPE_VIDEO;
 							pFrameInfo->emStreamFlag = frameInfo.emStreamFlag;
@@ -381,11 +382,6 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex,
 							pFrameInfo->dwFrameNum = 1;
 							pFrameInfo->iSamplesOffset = 0;
 							pFrameInfo->qwDTS = frameInfo.qwDTS;
-							//每次根据dts来校正当前帧
-							if (frameInfo.qwDTS >= 0)
-							{
-								m_nCurrentFrame = av_rescale(frameInfo.qwDTS, m_pFormatCtx->streams[m_nVideoIndex]->time_base.num, m_pFormatCtx->streams[m_nVideoIndex]->time_base.den);
-							}
 							pFrameInfo->qwPTS = frameInfo.qwPTS;
 							pFrameInfo->qwDuration = frameInfo.qwDuration;
 							pFrameInfo->dwShowIndex = pFrameInfo->dwFrameIndex;
@@ -414,7 +410,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 		{
 			bool bContinue = false;
 			int64_t nSeekGap = dwCurFrameShowIndex - m_nCurrentFrame;
-			if (false && abs(nSeekGap) > 3)
+			if (dwCurFrameShowIndex != (SD_UINT64)-1 && abs(nSeekGap) > 3)
 			{
 				if (m_bVideoSeek)
 				{
@@ -505,12 +501,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 				if (m_AudioDecoder.PutFrame(pCompressFrame, &frameInfo))
 				{
 					int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf);
-					//每次根据dts来校正当前帧
-					if (frameInfo.qwDTS >= 0)
-					{
-						int nGap = frameInfo.qwDTS - m_nCurrentSample;
-						m_nCurrentSample = frameInfo.qwDTS;
-					}
+					m_nCurrentSample = dwCurSamplePos;
 					if (pdwRetSampleNum)
 					{
 						*pdwRetSampleNum = nBufferSize;
@@ -535,8 +526,14 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 		if (pAudioStream)
 		{
 			bool bContinue = false;
-			int64_t nSeekGap = dwCurFrameStreamIndex - m_nCurrentSample;
-			if (false && abs(nSeekGap) > 3)
+			int nBuferSize = m_AudioDecoder.GetBufferSize();
+			int64_t nSeekGap = 0;
+			if (nBuferSize > 0)
+			{
+				nSeekGap = (dwCurFrameStreamIndex - m_nCurrentSample) / nBuferSize;
+			}
+			
+			if (dwCurFrameStreamIndex != (SD_UINT32)-1 && abs(nSeekGap) > 3)
 			{
 				if (m_bAudioSeek)
 				{

@@ -199,8 +199,8 @@ void CEncodecPressTestDlg::DoPlay()
 							if (WaitForSingleObject(m_evtPlayPause, 0) != WAIT_OBJECT_0)
 							{
 								SDRFrameInfo frameInfo;
+								bContinue = pDecoder->GetAudioSamples(-1, nAudioBufferSize, pAudioData, &numAudioSample);
 								bContinue = pDecoder->GetVideoBuffer(m_nDispFrame, pVideoData, &frameInfo);
-								bContinue = pDecoder->GetAudioSamples(nAudioPos, nAudioBufferSize, pAudioData, &numAudioSample);
 
 								//音频先写到文件里
 								fwrite(pAudioData, 1, numAudioSample, pAudioFile);
@@ -233,8 +233,11 @@ void CEncodecPressTestDlg::DoPlay()
 								if (m_nFrame != m_nDispFrame)
 								{
 									SDRFrameInfo frameInfo;
-									bContinue = pDecoder->GetAudioSamples(m_nFrame, nAudioBufferSize, pAudioData, &numAudioSample);
 									bContinue = pDecoder->GetVideoBuffer(m_nFrame, pVideoData, &frameInfo);
+									if (bContinue)
+									{
+										bContinue = pDecoder->GetAudioSamples(-1, nAudioBufferSize, pAudioData, &numAudioSample);
+									}
 
 									if (0)
 									{
