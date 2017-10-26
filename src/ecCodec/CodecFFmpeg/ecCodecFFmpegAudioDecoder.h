@@ -10,6 +10,8 @@ extern "C"
 }
 #include <memory>
 
+#define DEBUG_USE_RESAMPLER
+
 class ecCodecFFmpegAudioDecoder :
 	public IecCodecAudioDecoder
 {
@@ -17,7 +19,12 @@ private:
 	bool m_bIsInitialized;
 	AVCodecContext * m_pCodecCtx;
 	AVFrame	* m_pSrcFrame;
+#ifdef DEBUG_USE_RESAMPLER
 	ecCodecFFmpegResampler m_AudioResampler;
+#else
+	AVFrame*		m_pSwrFrame;
+	SwrContext*		m_pSwrCtx;
+#endif
 public:
 	ecCodecFFmpegAudioDecoder();
 	virtual ~ecCodecFFmpegAudioDecoder();

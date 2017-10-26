@@ -52,8 +52,8 @@ bool ecCodecFFmpegResampler::InitResampler(SD_UINT64 nDesChannelLayout, SD_CHANN
 						{
 							av_frame_free(&m_pSwrFrame);
 						}
-						m_bIsInitialized = true;
 					}
+					m_bIsInitialized = true;
 					return true;
 				}
 			}
