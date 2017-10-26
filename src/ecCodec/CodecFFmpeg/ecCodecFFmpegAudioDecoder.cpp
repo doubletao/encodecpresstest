@@ -174,6 +174,14 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer)
 				return 0;
 			}
 		}
+		else
+		{
+			if (av_frame_get_buffer(m_pSwrFrame, 0) < 0)
+			{
+				av_frame_free(&m_pSwrFrame);
+				return 0;
+			}
+		}
 
 		int swr_size = swr_convert(m_pSwrCtx, m_pSwrFrame->data, AVCODEC_MAX_AUDIO_FRAME_SIZE,
 			(const SD_UINT8**)m_pSrcFrame->data, m_pSrcFrame->nb_samples);

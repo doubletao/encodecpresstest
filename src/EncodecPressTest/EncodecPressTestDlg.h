@@ -17,6 +17,8 @@ private:
 	unsigned int m_nEncoderCount;
 	unsigned long long m_nFrame;
 	unsigned long long m_nDispFrame;
+	int m_nTimebaseDen;
+	int m_nTimebaseNum;
 	CRITICAL_SECTION m_lock;
 private:
 	CWinThread * m_pThread;

@@ -167,6 +167,8 @@ void CEncodecPressTestDlg::DoPlay()
 					SDStreamMediaInfoEx streamMediaInfoEx;
 					if (pDecoder->GetFileGlobalMediaInfo(&streamMediaInfoEx))
 					{
+						m_nTimebaseDen = streamMediaInfoEx.sVideoMediaInfo.dwStandardRate;
+						m_nTimebaseNum = streamMediaInfoEx.sVideoMediaInfo.dwStandardScale;
 						bool bContinue = true;
 						int nWidth = 720;
 						int nHeight = 576;
@@ -233,11 +235,8 @@ void CEncodecPressTestDlg::DoPlay()
 								if (m_nFrame != m_nDispFrame)
 								{
 									SDRFrameInfo frameInfo;
-									bContinue = pDecoder->GetVideoBuffer(m_nFrame, pVideoData, &frameInfo);
-									if (bContinue)
-									{
-										bContinue = pDecoder->GetAudioSamples(-1, nAudioBufferSize, pAudioData, &numAudioSample);
-									}
+									pDecoder->GetVideoBuffer(m_nFrame, pVideoData, &frameInfo);
+									pDecoder->GetAudioSamples(-1, nAudioBufferSize, pAudioData, &numAudioSample);
 
 									if (0)
 									{

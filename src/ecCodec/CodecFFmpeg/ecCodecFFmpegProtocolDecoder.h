@@ -2,6 +2,7 @@
 #include "IecCodecProtocolDecoder.h"
 #include "ecCodecFFmpegVideoDecoder.h"
 #include "ecCodecFFmpegAudioDecoder.h"
+#include <queue>
 
 extern "C"
 {
@@ -30,9 +31,16 @@ private:
 	AVPacket * m_pAudioPacket;
 	int64_t m_nCurrentAudioSeekPos;
 	bool m_bAudioSeek;
+
+	std::queue<AVPacket *> m_queVideoPack;
+	std::queue<AVPacket *> m_queAudioPack;
 public:
 	ecCodecFFmpegProtocolDecoder();
 	virtual ~ecCodecFFmpegProtocolDecoder();
+protected:
+	void ReleasePackQue(std::queue<AVPacket *> & m_queVideoPack);
+	void ReleaseVideoPackQue();
+	void ReleaseAudioPackQue();
 public:
 	virtual bool SetSourcePath(const char * pFullPath);
 	virtual bool GetFileGlobalMediaInfo(SDStreamMediaInfo *psMediaInfo);
