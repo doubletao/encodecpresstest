@@ -603,3 +603,41 @@ bool FFmpegFormatCovert::ConvertBufferToPData(SD_UINT8 * pFrameBuf, uint32_t * p
 	}
 	return false;
 }
+
+bool FFmpegFormatCovert::ConvertPDataToBuffer(unsigned char ** pInData, int * pInLinesize, SD_UINT8 * pFrameBuf, uint32_t nSize, AVSampleFormat sample_fmt, int channels, int nb_samples)
+{
+	int data_size = av_get_bytes_per_sample(sample_fmt);
+	if (data_size <= 0) 
+	{
+		return false;
+	}
+	SD_UINT64 nCursor = 0;
+	for (int i = 0; i < nb_samples; i++)
+	{ 
+		for (int ch = 0; ch < channels; ch++)
+		{
+			memcpy(pFrameBuf + nCursor, pInData[ch] + data_size * i, data_size);
+			nCursor += data_size;
+		}
+	}
+	return true;
+}
+
+bool FFmpegFormatCovert::ConvertBufferToPData(SD_UINT8 * pFrameBuf, uint32_t * pSize, unsigned char ** pOutData, int * pOutLinesize, AVSampleFormat sample_fmt, int channels, int nb_samples)
+{
+	int data_size = av_get_bytes_per_sample(sample_fmt);
+	if (data_size <= 0)
+	{
+		return false;
+	}
+	SD_UINT64 nCursor = 0;
+	for (int i = 0; i < nb_samples; i++)
+	{
+		for (int ch = 0; ch < channels; ch++)
+		{
+			memcpy(pOutData[ch] + data_size * i, pFrameBuf + nCursor, data_size);
+			nCursor += data_size;
+		}
+	}
+	return true;
+}

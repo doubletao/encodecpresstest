@@ -17,6 +17,7 @@
     <ClInclude Include="..\..\include\ecCodec\IecCodecFactory.h" />
     <ClInclude Include="..\..\include\ecCodec\IecCodecProtocolDecoder.h" />
     <ClInclude Include="..\..\include\ecCodec\IecCodecProtocolEncoder.h" />
+    <ClInclude Include="..\..\include\ecCodec\IecCodecResampler.h" />
     <ClInclude Include="..\..\include\ecCodec\IecCodecScaler.h" />
     <ClInclude Include="..\..\include\ecCodec\IecCodecVideoDecoder.h" />
     <ClInclude Include="..\..\include\ecCodec\IecCodecVideoEncoder.h" />
@@ -30,6 +31,7 @@
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegAudioEncoder.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegProtocolDecoder.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegProtocolEncoder.h" />
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegResampler.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegScaler.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegVideoDecoder.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegVideoEncoder.h" />
@@ -41,6 +43,7 @@
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegAudioEncoder.cpp" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegProtocolDecoder.cpp" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegProtocolEncoder.cpp" />
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegResampler.cpp" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegScaler.cpp" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegVideoDecoder.cpp" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegVideoEncoder.cpp" />

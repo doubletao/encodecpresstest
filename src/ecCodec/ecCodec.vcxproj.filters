@@ -96,6 +96,12 @@
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegScaler.h">
       <Filter>CodecFFmpeg</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\ecCodec\IecCodecResampler.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegResampler.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ecCodecFactory.cpp">
@@ -123,6 +129,9 @@
       <Filter>CodecFFmpeg</Filter>
     </ClCompile>
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegScaler.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegResampler.cpp">
       <Filter>CodecFFmpeg</Filter>
     </ClCompile>
   </ItemGroup>

@@ -8,8 +8,6 @@ ecCodecFFmpegAudioDecoder::ecCodecFFmpegAudioDecoder()
 	: m_pCodecCtx(nullptr)
 	, m_bIsInitialized(false)
 	, m_pSrcFrame(nullptr)
-	, m_pSwrFrame(nullptr)
-	, m_pSwrCtx(nullptr)
 {
 }
 
@@ -101,29 +99,14 @@ bool ecCodecFFmpegAudioDecoder::SetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo)
 	int channels = pAudioInfo->dwChannels;
 	int sample_rate = pAudioInfo->dwSamplesPerSec;
 
-	m_pDestBuffer.reset(new SD_UINT8[AVCODEC_MAX_AUDIO_FRAME_SIZE]);
-
 	bool bSwr = (m_pCodecCtx->channels != channels || m_pCodecCtx->sample_fmt != format ||
 		m_pCodecCtx->sample_rate != sample_rate);
 	if (!bSwr) { // 无需重采样直接返回
 		return true;
 	}
 
-	SD_UINT64 nChannelLayout = FFmpegFormatCovert::ConvertChannelLayout(pAudioInfo->enumAudioCFG);
-
-	m_pSwrFrame = av_frame_alloc();
-	m_pSwrFrame->channels = channels;
-	m_pSwrFrame->format = format;
-	m_pSwrFrame->sample_rate = sample_rate;
-	m_pSwrFrame->channel_layout = nChannelLayout;
-	m_pSwrFrame->nb_samples = m_pCodecCtx->frame_size;		// ???
-
-	m_pSwrCtx = swr_alloc_set_opts(m_pSwrCtx, m_pSwrFrame->channel_layout, (AVSampleFormat)m_pSwrFrame->format,
-		m_pSwrFrame->sample_rate, m_pCodecCtx->channel_layout, m_pCodecCtx->sample_fmt, m_pCodecCtx->sample_rate, 0, nullptr);
-
-	if (swr_is_initialized(m_pSwrCtx) == 0) {
-		swr_init(m_pSwrCtx);
-	}
+	m_AudioResampler.InitResampler(FFmpegFormatCovert::ConvertChannelLayout(pAudioInfo->enumAudioCFG), pAudioInfo->enumChannelSamplesFormat, sample_rate,
+		m_pCodecCtx->channel_layout, FFmpegFormatCovert::ConvertSamplesFormat(m_pCodecCtx->sample_fmt), m_pCodecCtx->sample_rate, channels, m_pCodecCtx->frame_size);
 
 	return true;
 }
@@ -163,31 +146,22 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer)
 		return 0;
 	}
 
-	if (m_pSwrCtx && m_pSwrFrame)
+	if (m_AudioResampler.IsInitialized())
 	{
-		if (m_pSwrFrame->nb_samples == 0)
+		if (m_AudioResampler.GetBufferSize() <= 0)
 		{
-			m_pSwrFrame->nb_samples = m_pSrcFrame->nb_samples;
-			if (av_frame_get_buffer(m_pSwrFrame, 0) < 0)
-			{
-				av_frame_free(&m_pSwrFrame);
-				return 0;
-			}
-		}
-		else
-		{
-			if (av_frame_get_buffer(m_pSwrFrame, 0) < 0)
-			{
-				av_frame_free(&m_pSwrFrame);
-				return 0;
-			}
+			m_AudioResampler.SetSamplesPerFrame(m_pSrcFrame->nb_samples);
 		}
 
-		int swr_size = swr_convert(m_pSwrCtx, m_pSwrFrame->data, AVCODEC_MAX_AUDIO_FRAME_SIZE,
-			(const SD_UINT8**)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
+#if 0
+		FFmpegFormatCovert::ConvertPDataToBuffer(m_pSrcFrame->data, &m_pSrcFrame->nb_samples, lpBuffer, AVCODEC_MAX_AUDIO_FRAME_SIZE, (AVSampleFormat)m_pSrcFrame->format, 2, m_pSrcFrame->nb_samples);
+		m_AudioResampler.Resample(lpBuffer, GetBufferSize(), lpBuffer);
+#else
+		int swr_size = m_AudioResampler.Resample(&lpBuffer, AVCODEC_MAX_AUDIO_FRAME_SIZE,
+			(const uint8_t **)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
+#endif
 
-		int bufSizeRet = av_samples_get_buffer_size(NULL, m_pSwrFrame->channels, m_pSwrFrame->nb_samples, (AVSampleFormat)m_pSwrFrame->format, 1);
-		memcpy(lpBuffer, m_pSwrFrame->data[0], m_pSwrFrame->linesize[0]);
+		int bufSizeRet = m_AudioResampler.GetBufferSize();
 
 		return bufSizeRet;
 	}
@@ -203,9 +177,9 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer)
 
 SD_UINT32 ecCodecFFmpegAudioDecoder::GetBufferSize()
 {
-	if (m_pSwrFrame)
+	if (m_AudioResampler.IsInitialized())
 	{
-		return av_samples_get_buffer_size(nullptr, m_pSwrFrame->channels, m_pSwrFrame->nb_samples, (AVSampleFormat)m_pSwrFrame->format, 1);
+		return m_AudioResampler.GetBufferSize();
 	}
 	else if (m_pSrcFrame)
 	{
@@ -230,15 +204,7 @@ bool ecCodecFFmpegAudioDecoder::Release()
 	{
 		av_frame_free(&m_pSrcFrame);
 	}
-	if (m_pSwrFrame)
-	{
-		av_frame_free(&m_pSwrFrame);
-	}
-	if (m_pSwrCtx)
-	{
-		swr_close(m_pSwrCtx);
-		swr_free(&m_pSwrCtx);
-	}
 	m_bIsInitialized = false;
+	m_AudioResampler.Release();
 	return true;
 }

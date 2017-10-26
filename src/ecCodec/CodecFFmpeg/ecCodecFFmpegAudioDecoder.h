@@ -1,11 +1,11 @@
 #pragma once
 #include "IecCodecAudioDecoder.h"
+#include "ecCodecFFmpegResampler.h"
 extern "C"
 {
 #include "libavutil\pixfmt.h"
 #include "libavformat\avformat.h"
 #include "libavutil\imgutils.h"
-#include "libavutil\audio_fifo.h"
 #include "libswresample\swresample.h"
 }
 #include <memory>
@@ -17,9 +17,7 @@ private:
 	bool m_bIsInitialized;
 	AVCodecContext * m_pCodecCtx;
 	AVFrame	* m_pSrcFrame;
-	AVFrame*		m_pSwrFrame;
-	SwrContext*		m_pSwrCtx;
-	std::unique_ptr<SD_UINT8[]> m_pDestBuffer;
+	ecCodecFFmpegResampler m_AudioResampler;
 public:
 	ecCodecFFmpegAudioDecoder();
 	virtual ~ecCodecFFmpegAudioDecoder();

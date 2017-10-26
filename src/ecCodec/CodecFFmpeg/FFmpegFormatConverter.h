@@ -38,6 +38,10 @@ public:
 		enum AVPixelFormat pix_fmt, int width, int height, int align);
 	static bool ConvertBufferToPData(SD_UINT8 * pFrameBuf, uint32_t * pSize, unsigned char ** pOutData, int * pOutLinesize,
 		enum AVPixelFormat pix_fmt, int width, int height, int align);
+	static bool ConvertPDataToBuffer(unsigned char ** pInData, int * pInLinesize, SD_UINT8 * pFrameBuf, uint32_t nSize,
+		enum AVSampleFormat sample_fmt, int nchannels, int nb_samples);
+	static bool ConvertBufferToPData(SD_UINT8 * pFrameBuf, uint32_t * pSize, unsigned char ** pOutData, int * pOutLinesize,
+		enum AVSampleFormat sample_fmt, int nchannels, int nb_samples);
 };
 
 #endif // __FFMPEG_FORMATCONVERTER_H_INCLUDED__

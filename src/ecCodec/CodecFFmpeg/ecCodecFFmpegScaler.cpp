@@ -25,6 +25,7 @@ ecCodecFFmpegScaler::~ecCodecFFmpegScaler()
 
 bool ecCodecFFmpegScaler::InitScaler(SD_UINT32 nSrcWidth, SD_UINT32 nSrcHeight, SD_COLOR_FORMAT emSrcColorFormat, SD_UINT32 nDesWidth, SD_UINT32 nDesHeight, SD_COLOR_FORMAT emDesColorFormat)
 {
+	Release();
 	m_nSrcWidth = nSrcWidth;
 	m_nSrcHeight = nSrcHeight;
 	m_emSrcPixFmt = FFmpegFormatCovert::ConvertPixelFormat(emSrcColorFormat);
@@ -87,7 +88,7 @@ bool ecCodecFFmpegScaler::InitScaler(SD_UINT32 nSrcWidth, SD_UINT32 nSrcHeight, 
 	return true;
 }
 
-bool ecCodecFFmpegScaler::Scale(SD_UINT8 * pInBuf, SD_UINT8 *& pOutBuf)
+bool ecCodecFFmpegScaler::Scale(SD_UINT8 * pInBuf, SD_UINT8 * pOutBuf)
 {
 	if (m_bInitialized)
 	{

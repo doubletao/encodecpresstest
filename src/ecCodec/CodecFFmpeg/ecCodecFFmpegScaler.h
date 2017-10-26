@@ -27,7 +27,7 @@ public:
 	virtual ~ecCodecFFmpegScaler();
 public:
 	virtual bool InitScaler(SD_UINT32 nSrcWidth, SD_UINT32 nSrcHeight, SD_COLOR_FORMAT emSrcColorFormat, SD_UINT32 nDesWidth, SD_UINT32 nDesHeight, SD_COLOR_FORMAT emDesColorFormat);
-	virtual bool Scale(SD_UINT8 * pInBuf, SD_UINT8 * &pOutBuf);
+	virtual bool Scale(SD_UINT8 * pInBuf, SD_UINT8 * pOutBuf);
 	bool Scale(uint8_t ** pInData, uint8_t **& pOutData);
 	int * GetDesLineSize();
 	virtual bool IsInitialized();
