@@ -745,11 +745,6 @@ bool ecCodecFFmpegProtocolDecoder::Release()
 {
 	m_nVideoIndex = -1;
 	m_nAudioIndex = -1;
-	if (m_pFormatCtx)
-	{
-		avformat_free_context(m_pFormatCtx);
-		m_pFormatCtx = nullptr;
-	}
 	if (m_pVideoPacket)
 	{
 		av_packet_free(&m_pVideoPacket);
@@ -761,11 +756,16 @@ bool ecCodecFFmpegProtocolDecoder::Release()
 		av_packet_free(&m_pAudioPacket);
 		m_pAudioPacket = nullptr;
 	}
+	m_AudioDecoder.Release();
 	ReleaseAudioPackQue();
 	ReleaseVideoPackQue();
+	if (m_pFormatCtx)
+	{
+		avformat_free_context(m_pFormatCtx);
+		m_pFormatCtx = nullptr;
+	}
 	m_nCurrentFrame = 0;
 	m_nCurrentSample = 0;
-	m_AudioDecoder.Release();
 	m_bIsInitialized = false;
 	m_nCurrentVideoSeekPos = 0;
 	m_bVideoSeek = false;

@@ -30,31 +30,34 @@ bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(const SDVideoMediaInfo & pSrcVi
 	{
 		//解码参数转成解码上下文
 		m_pCodecCtx = avcodec_alloc_context3(pVideoCodec);
-		m_pCodecCtx->pix_fmt = FFmpegFormatCovert::ConvertPixelFormat(pSrcVideoInfo.enumColorFormat);
-		m_pCodecCtx->width = pSrcVideoInfo.dwWidth;
-		m_pCodecCtx->height = pSrcVideoInfo.dwHeight;
-		m_pCodecCtx->bit_rate = pSrcVideoInfo.dwDataRateInBitsPerSec;
-		m_pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
-		m_pCodecCtx->extradata = (uint8_t *)pSrcVideoInfo.dwDisplayWidth;
-		m_pCodecCtx->extradata_size = pSrcVideoInfo.dwDisplayHeight;
-		//if (m_pCodecCtx->codec_id == AV_CODEC_ID_H264) 
-		//{
-		//	m_pCodecCtx->flags2 |= CODEC_FLAG2_FAST;
-		//}
 		if (m_pCodecCtx)
 		{
-			//根据解码上下文打开解码器
+			m_pCodecCtx->pix_fmt = FFmpegFormatCovert::ConvertPixelFormat(pSrcVideoInfo.enumColorFormat);
+			m_pCodecCtx->width = pSrcVideoInfo.dwWidth;
+			m_pCodecCtx->height = pSrcVideoInfo.dwHeight;
+			m_pCodecCtx->bit_rate = pSrcVideoInfo.dwDataRateInBitsPerSec;
+			m_pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
+			m_pCodecCtx->extradata = (uint8_t *)pSrcVideoInfo.dwDisplayWidth;
+			m_pCodecCtx->extradata_size = pSrcVideoInfo.dwDisplayHeight;
+			//if (m_pCodecCtx->codec_id == AV_CODEC_ID_H264) 
+			//{
+			//	m_pCodecCtx->flags2 |= CODEC_FLAG2_FAST;
+			//}
+				//根据解码上下文打开解码器
 			if (avcodec_open2(m_pCodecCtx, pVideoCodec, nullptr) == 0)
 			{
+				m_pFrame = av_frame_alloc();
 				if (m_pFrame)
 				{
-					av_frame_free(&m_pFrame);
+					m_nDesWidth = m_pCodecCtx->width;
+					m_nDesHeight = m_pCodecCtx->height;
+					m_emDesColorFormat = FFmpegFormatCovert::ConvertColorFormat(m_pCodecCtx->pix_fmt);
+					m_bIsInitialized = true;
 				}
-				m_pFrame = av_frame_alloc();
-				m_nDesWidth = m_pCodecCtx->width;
-				m_nDesHeight = m_pCodecCtx->height;
-				m_emDesColorFormat = FFmpegFormatCovert::ConvertColorFormat(m_pCodecCtx->pix_fmt);
-				m_bIsInitialized = true;
+				else
+				{
+					printf("failed to create srcframe\n");
+				}
 			}
 			else
 			{
@@ -63,7 +66,7 @@ bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(const SDVideoMediaInfo & pSrcVi
 		}
 		else
 		{
-			printf("failed to find codec\n");
+			printf("failed to create codecctx\n");
 		}
 	}
 	else
@@ -224,7 +227,8 @@ bool ecCodecFFmpegVideoDecoder::Release()
 	if (m_pCodecCtx)
 	{
 		avcodec_close(m_pCodecCtx);
-		avcodec_free_context(&m_pCodecCtx);
+		//若打开则在formatctx释放时会崩溃，理论上来说不应该这样，具体原因待查
+		//avcodec_free_context(&m_pCodecCtx);
 	}
 	if (m_pFrame)
 	{
