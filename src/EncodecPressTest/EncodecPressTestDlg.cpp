@@ -214,7 +214,7 @@ void CEncodecPressTestDlg::DoPlay()
 								bContinue = pDecoder->GetVideoBuffer(m_nDispFrame, pVideoData, &frameInfo);
 
 								//音频先写到文件里
-								fwrite(pAudioData, 1, pDecoder->GetAudioBufferSize(), pAudioFile);
+								fwrite(pAudioData, 1, numAudioSample * 4, pAudioFile);
 
 								m_nDispFrame++;
 								
