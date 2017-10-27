@@ -34,6 +34,8 @@ private:
 
 	std::queue<AVPacket *> m_queVideoPack;
 	std::queue<AVPacket *> m_queAudioPack;
+
+	CRITICAL_SECTION m_lock;
 public:
 	ecCodecFFmpegProtocolDecoder();
 	virtual ~ecCodecFFmpegProtocolDecoder();
@@ -61,6 +63,9 @@ public:
 	virtual bool GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_UINT32 dwSampleNum, SD_UINT8* pSamplesBuf, SD_UINT32* pdwRetSampleNum);
 	virtual bool GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex, SD_UINT32 dwFrameNum, SD_UINT8* &pFrameBuf, SDRFrameInfo *pFrameInfo);
 	virtual bool Release();
+
+	void Lock();
+	void Unlock();
 };
 
 

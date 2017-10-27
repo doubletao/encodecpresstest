@@ -18,12 +18,14 @@ ecCodecFFmpegProtocolDecoder::ecCodecFFmpegProtocolDecoder()
 	, m_nCurrentFrame(0)
 	, m_nCurrentSample(0)
 {
+	InitializeCriticalSection(&m_lock);
 }
 
 
 ecCodecFFmpegProtocolDecoder::~ecCodecFFmpegProtocolDecoder()
 {
 	Release();
+	DeleteCriticalSection(&m_lock);
 }
 
 bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
@@ -450,7 +452,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 						double dTm = pVideoStream->duration * av_q2d(pVideoStream->time_base);
 						pVideoStream->nb_frames = dTm * av_q2d(pVideoStream->r_frame_rate);
 					}
-					if (m_nCurrentVideoSeekPos <= pVideoStream->time_base.den * 1.0 / pVideoStream->time_base.num)
+					if (m_nCurrentVideoSeekPos <= pVideoStream->r_frame_rate.num * 1.0 / pVideoStream->r_frame_rate.den)
 					{
 						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos, AVSEEK_FLAG_FRAME);
 						if (nRet >= 0)
@@ -489,14 +491,19 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 					//如果缓存队列中有值，则取队列中值
 					do
 					{
-						if (m_queVideoPack.size() > 0)
+						Lock();
+						size_t nVideoPackQueSize = m_queVideoPack.size();
+						Unlock();
+						if (nVideoPackQueSize > 0)
 						{
 							if (m_pVideoPacket)
 							{
 								av_packet_free(&m_pVideoPacket);
 							}
+							Lock();
 							m_pVideoPacket = m_queVideoPack.front();
 							m_queVideoPack.pop();
+							Unlock();
 							break;
 						}
 						if (!m_pVideoPacket)
@@ -514,7 +521,9 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 					if (m_pVideoPacket->stream_index != m_nVideoIndex)
 					{
 						//找出视频流，如果发现音频，则暂存到音频队列里
+						Lock();
 						m_queAudioPack.push(m_pVideoPacket);
+						Unlock();
 						m_pVideoPacket = nullptr;
 						continue;
 					}
@@ -558,14 +567,21 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 				if (m_AudioDecoder.PutFrame(pCompressFrame, &frameInfo))
 				{
 					int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf);
-					m_nCurrentSample = dwCurSamplePos;
-					if (pdwRetSampleNum)
+					if (nBufferSize > 0)
 					{
-						*pdwRetSampleNum = nBufferSize;
+						m_nCurrentSample = dwCurSamplePos;
+						if (pdwRetSampleNum)
+						{
+							*pdwRetSampleNum = nBufferSize;
+						}
+						if (!m_bVideoSeek)
+						{
+							return true;
+						}
 					}
-					if (!m_bVideoSeek)
+					else
 					{
-						return true;
+						return false;
 					}
 				}
 			}
@@ -634,14 +650,19 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 				{
 					do
 					{
-						if (m_queAudioPack.size() > 0)
+						Lock();
+						size_t nAudioPackQueSize = m_queAudioPack.size();
+						Unlock();
+						if (nAudioPackQueSize > 0)
 						{
 							if (m_pAudioPacket)
 							{
 								av_packet_free(&m_pAudioPacket);
 							}
+							Lock();
 							m_pAudioPacket = m_queAudioPack.front();
 							m_queAudioPack.pop();
+							Unlock();
 							break;
 						}
 						if (!m_pAudioPacket)
@@ -659,7 +680,9 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 					if (m_pAudioPacket->stream_index != m_nAudioIndex)
 					{
 						//找出音频流，如果发现视频，则暂存到队列里
+						Lock();
 						m_queVideoPack.push(m_pAudioPacket);
+						Unlock();
 						m_pAudioPacket = nullptr;
 						continue;
 					}
@@ -706,12 +729,16 @@ void ecCodecFFmpegProtocolDecoder::ReleasePackQue(std::queue<AVPacket*>& m_quePa
 
 void ecCodecFFmpegProtocolDecoder::ReleaseVideoPackQue()
 {
+	Lock();
 	ReleasePackQue(m_queVideoPack);
+	Unlock();
 }
 
 void ecCodecFFmpegProtocolDecoder::ReleaseAudioPackQue()
 {
+	Lock();
 	ReleasePackQue(m_queAudioPack);
+	Unlock();
 }
 
 bool ecCodecFFmpegProtocolDecoder::Release()
@@ -745,4 +772,14 @@ bool ecCodecFFmpegProtocolDecoder::Release()
 	m_nCurrentAudioSeekPos = 0;
 	m_bAudioSeek = false;
 	return true;
+}
+
+void ecCodecFFmpegProtocolDecoder::Lock()
+{
+	EnterCriticalSection(&m_lock);
+}
+
+void ecCodecFFmpegProtocolDecoder::Unlock()
+{
+	LeaveCriticalSection(&m_lock);
 }
