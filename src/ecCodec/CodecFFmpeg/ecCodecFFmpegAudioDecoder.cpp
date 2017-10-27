@@ -8,6 +8,12 @@ ecCodecFFmpegAudioDecoder::ecCodecFFmpegAudioDecoder()
 	: m_pCodecCtx(nullptr)
 	, m_bIsInitialized(false)
 	, m_pSrcFrame(nullptr)
+	, m_pAudioFifo(nullptr)
+	, m_nDesChannelLayout(0)
+	, m_emDesSampleFormat(AV_SAMPLE_FMT_NONE)
+	, m_nDesSampleRate(0)
+	, m_nDesChannelCount(0)
+	, m_nLastSampleNum(0)
 #ifndef DEBUG_USE_RESAMPLER
 	, m_pSwrFrame(nullptr)
 	, m_pSwrCtx(nullptr)
@@ -51,6 +57,11 @@ bool ecCodecFFmpegAudioDecoder::InitAudioDecoder(const SDAudioMediaInfo & sAudio
 					m_pSrcFrame->sample_rate = m_pCodecCtx->sample_rate;
 					m_pSrcFrame->channel_layout = m_pCodecCtx->channel_layout;
 					m_pSrcFrame->nb_samples = m_pCodecCtx->frame_size;		// ???
+
+					m_nDesChannelLayout = m_pCodecCtx->channel_layout;
+					m_emDesSampleFormat = m_pCodecCtx->sample_fmt;
+					m_nDesSampleRate = m_pCodecCtx->sample_rate;
+					m_nDesChannelCount = m_pCodecCtx->channels;
 					
 					m_bIsInitialized = true;
 				}
@@ -98,6 +109,11 @@ bool ecCodecFFmpegAudioDecoder::SetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo)
 		return false;
 	}
 
+	m_nDesChannelLayout = FFmpegFormatCovert::ConvertChannelLayout(pAudioInfo->enumAudioCFG);
+	m_emDesSampleFormat = FFmpegFormatCovert::ConvertSamplesFormat(pAudioInfo->enumChannelSamplesFormat);
+	m_nDesSampleRate = pAudioInfo->dwSamplesPerSec;
+	m_nDesChannelCount = pAudioInfo->dwChannels;
+
 	AVSampleFormat format = FFmpegFormatCovert::ConvertSamplesFormat(pAudioInfo->enumChannelSamplesFormat);
 
 	int channels = pAudioInfo->dwChannels;
@@ -105,7 +121,9 @@ bool ecCodecFFmpegAudioDecoder::SetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo)
 
 	bool bSwr = (m_pCodecCtx->channels != channels || m_pCodecCtx->sample_fmt != format ||
 		m_pCodecCtx->sample_rate != sample_rate);
-	if (!bSwr) { // 无需重采样直接返回
+
+	if (!bSwr) 
+	{ // 无需重采样直接返回
 		return true;
 	}
 
@@ -157,16 +175,38 @@ bool ecCodecFFmpegAudioDecoder::PutFrame(const SD_UINT8 * pData, const SDRFrameI
 	return true;
 }
 
-int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer)
+int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSampleNum)
 {
 	if (!m_pCodecCtx || !m_pSrcFrame) {
 		return 0;
 	}
 
 	int ret = avcodec_receive_frame(m_pCodecCtx, m_pSrcFrame);
-	if (ret < 0) {
+	if (ret < 0) 
+	{
 		return 0;
 	}
+
+	if (nSampleNum != m_nLastSampleNum)
+	{
+		if (m_pAudioFifo)
+		{
+			av_audio_fifo_free(m_pAudioFifo);
+			m_pAudioFifo = nullptr;
+		}
+	}
+
+	if (!m_pAudioFifo)
+	{
+		m_pAudioFifo = av_audio_fifo_alloc(m_emDesSampleFormat, m_nDesChannelCount, nSampleNum);
+	}
+	if (!m_pAudioFifo)
+	{
+		//无法获取sample数
+		printf("failed to get nb_samples");
+		return -1;
+	}
+	m_nLastSampleNum = nSampleNum;
 
 #ifdef DEBUG_USE_RESAMPLER
 	if (m_AudioResampler.IsInitialized())
@@ -175,7 +215,6 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer)
 		{
 			m_AudioResampler.SetSamplesPerFrame(m_pSrcFrame->nb_samples);
 		}
-
 #if 0
 		FFmpegFormatCovert::ConvertPDataToBuffer(m_pSrcFrame->data, &m_pSrcFrame->nb_samples, lpBuffer, AVCODEC_MAX_AUDIO_FRAME_SIZE, (AVSampleFormat)m_pSrcFrame->format, 2, m_pSrcFrame->nb_samples);
 		if (0)
@@ -191,9 +230,7 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer)
 			(const uint8_t **)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
 #endif
 
-		int bufSizeRet = m_AudioResampler.GetBufferSize();
-
-		return bufSizeRet;
+		av_audio_fifo_write(m_pAudioFifo, (void**)&lpBuffer, swr_size);
 	}
 #else
 	if (m_pSwrCtx && m_pSwrFrame)
@@ -227,8 +264,13 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer)
 #endif
 	else
 	{
-		int bufSizeRet = av_samples_get_buffer_size(NULL, m_pSrcFrame->channels, m_pSrcFrame->nb_samples, (AVSampleFormat)m_pSrcFrame->format, 1);
-		memcpy(lpBuffer, m_pSrcFrame->data[0], m_pSrcFrame->linesize[0]);
+		av_audio_fifo_write(m_pAudioFifo, (void**)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
+	}
+
+	int bufSizeRet = av_samples_get_buffer_size(NULL, m_nDesChannelCount, nSampleNum, m_emDesSampleFormat, 1);
+	if (av_audio_fifo_size(m_pAudioFifo) >= bufSizeRet)
+	{
+		av_audio_fifo_read(m_pAudioFifo, (void **)&lpBuffer, bufSizeRet);
 		return bufSizeRet;
 	}
 
@@ -265,11 +307,17 @@ bool ecCodecFFmpegAudioDecoder::Release()
 	if (m_pCodecCtx)
 	{
 		avcodec_close(m_pCodecCtx);
-		avcodec_free_context(&m_pCodecCtx);
+		//若打开则在formatctx释放时会崩溃，理论上来说不应该这样，具体原因待查
+		//avcodec_free_context(&m_pCodecCtx);
 	}
 	if (m_pSrcFrame)
 	{
 		av_frame_free(&m_pSrcFrame);
+	}
+	if (m_pAudioFifo)
+	{
+		av_audio_fifo_free(m_pAudioFifo);
+		m_pAudioFifo = nullptr;
 	}
 #ifdef DEBUG_USE_RESAMPLER
 	m_AudioResampler.Release();

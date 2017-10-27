@@ -95,11 +95,9 @@ public:
 	//		 比如 mp1 音频帧由384个采样构成；Mpeg1 Layer3(mp3) 音频帧由1152个采样构成。
 	//		 调用该函数前需要调用bool IsCanReadAudioFrame()来确定当前格式是否支持读取压缩数据
 	//		dwCurFrameStreamIndex：	帧序号
-	//		dwFrameNum:				欲获取的帧数
 	//		pFrameBuf:				压缩音频数据(由编解码模块内部分配内存)
 	//		pFrameInfo:				帧信息描述
 	virtual bool GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex,
-		SD_UINT32 dwFrameNum,
 		SD_UINT8* &pFrameBuf,
 		SDRFrameInfo *pFrameInfo
 	) = 0;

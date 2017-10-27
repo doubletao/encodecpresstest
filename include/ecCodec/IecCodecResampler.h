@@ -11,7 +11,7 @@ public:
 
 	// 设置输出视频格式
 	// pOutBufInfo:解码输出帧参数
-	virtual SD_INT32 Resample(SD_UINT8 * pInBuf, SD_INT32 nBufSize, SD_UINT8 * pOutBuf) = 0;
+	virtual SD_INT32 Resample(SD_UINT8 * pInBuf, SD_UINT8 * pOutBuf) = 0;
 
 	virtual bool IsInitialized() = 0;
 	virtual SD_UINT32 GetBufferSize() = 0;

@@ -20,8 +20,10 @@ public:
 	virtual bool GetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo) = 0;
 
 	// 得到解码后的音频PCM采样,采样格式由SetAudioSamplesBufInfo决定
-	// 返回值:PCM采样的字节数量
-	virtual int  GetSample(SD_UINT8* &lpBuffer) = 0;
+	// 返回值:成功则返回PCM采样的字节数量，
+	//失败则返回负数
+	//如果返回0，说明frame不足以凑足当前要求的采样数，需要继续put
+	virtual int  GetSample(SD_UINT8* &lpBuffer, SD_UINT32 nSampleNum) = 0;
 
 	//得到buffer大小
 	virtual SD_UINT32 GetBufferSize() = 0;

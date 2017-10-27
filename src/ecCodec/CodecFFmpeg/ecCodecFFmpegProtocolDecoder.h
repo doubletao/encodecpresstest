@@ -61,7 +61,7 @@ public:
 	virtual bool GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex, SD_UINT8* pFrameBuf, SDRFrameInfo *pFrameInfo = NULL);
 	virtual bool GetVideoFrame(SD_UINT64 dwCurFrameStreamIndex, SD_UINT8* &pFrameBuf, SDRFrameInfo *pFrameInfo = NULL);
 	virtual bool GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_UINT32 dwSampleNum, SD_UINT8* pSamplesBuf, SD_UINT32* pdwRetSampleNum);
-	virtual bool GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex, SD_UINT32 dwFrameNum, SD_UINT8* &pFrameBuf, SDRFrameInfo *pFrameInfo);
+	virtual bool GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex, SD_UINT8* &pFrameBuf, SDRFrameInfo *pFrameInfo);
 	virtual bool Release();
 
 	void Lock();

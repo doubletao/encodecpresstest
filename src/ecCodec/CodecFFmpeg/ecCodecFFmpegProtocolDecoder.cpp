@@ -172,6 +172,15 @@ bool ecCodecFFmpegProtocolDecoder::GetFileGlobalMediaInfo(SDStreamMediaInfo * ps
 	if (m_VideoDecoder.IsInitialized())
 	{
 		m_VideoDecoder.GetVideoMediaInfo(&psMediaInfo->sVideoMediaInfo);
+		if (m_nVideoIndex > -1)
+		{
+			AVStream * pVideoFrame = m_pFormatCtx->streams[m_nVideoIndex];
+			if (pVideoFrame)
+			{
+				psMediaInfo->sVideoMediaInfo.dwStandardRate = pVideoFrame->r_frame_rate.num;
+				psMediaInfo->sVideoMediaInfo.dwStandardScale = pVideoFrame->r_frame_rate.den;
+			}
+		}
 	}
 
 	if (m_AudioDecoder.IsInitialized())
@@ -205,6 +214,15 @@ bool ecCodecFFmpegProtocolDecoder::GetFileGlobalMediaInfo(SDStreamMediaInfoEx * 
 		if (m_VideoDecoder.IsInitialized())
 		{
 			m_VideoDecoder.GetVideoMediaInfo(&psMediaInfoEx->sVideoMediaInfo);
+			if (m_nVideoIndex > -1)
+			{
+				AVStream * pVideoFrame = m_pFormatCtx->streams[m_nVideoIndex];
+				if (pVideoFrame)
+				{
+					psMediaInfoEx->sVideoMediaInfo.dwStandardRate = pVideoFrame->r_frame_rate.num;
+					psMediaInfoEx->sVideoMediaInfo.dwStandardScale = pVideoFrame->r_frame_rate.den;
+				}
+			}
 		}
 
 		if (m_AudioDecoder.IsInitialized())
@@ -276,7 +294,7 @@ bool ecCodecFFmpegProtocolDecoder::Start()
 			SD_UINT32 nAudioBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
 			uint8_t * pAudioData = new uint8_t[nAudioBufferSize];
 			memset(pAudioData, 0, nAudioBufferSize * sizeof(uint8_t));
-			bRet |= GetAudioSamples(0, AVCODEC_MAX_AUDIO_FRAME_SIZE, pAudioData, nullptr);
+			bRet |= GetAudioSamples(0, 1, pAudioData, nullptr);
 			deleteC(pAudioData);
 		}
 	}
@@ -562,11 +580,11 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 			SDRFrameInfo frameInfo;
 			SD_UINT8 * pCompressFrame = nullptr;
 			m_nCurrentAudioSeekPos = dwCurSamplePos;
-			while (GetAudioFrame(dwCurSamplePos, dwSampleNum, pCompressFrame, &frameInfo) && pCompressFrame)
+			while (GetAudioFrame(dwCurSamplePos, pCompressFrame, &frameInfo) && pCompressFrame)
 			{
 				if (m_AudioDecoder.PutFrame(pCompressFrame, &frameInfo))
 				{
-					int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf);
+					int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf, dwSampleNum);
 					if (nBufferSize > 0)
 					{
 						m_nCurrentSample = dwCurSamplePos;
@@ -579,6 +597,10 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 							return true;
 						}
 					}
+					else if (nBufferSize == 0)
+					{
+						continue;
+					}
 					else
 					{
 						return false;
@@ -590,7 +612,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 	return false;
 }
 
-bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex, SD_UINT32 dwFrameNum, SD_UINT8 *& pFrameBuf, SDRFrameInfo * pFrameInfo)
+bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex, SD_UINT8 *& pFrameBuf, SDRFrameInfo * pFrameInfo)
 {
 	bool bRet = false;
 	if (m_bIsInitialized)

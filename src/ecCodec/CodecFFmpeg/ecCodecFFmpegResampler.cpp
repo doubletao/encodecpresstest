@@ -87,7 +87,7 @@ SD_INT32 ecCodecFFmpegResampler::Resample(uint8_t ** out, int out_count, const u
 	return 0;
 }
 
-SD_INT32 ecCodecFFmpegResampler::Resample(SD_UINT8 * pInBuf, SD_INT32 nBufSize, SD_UINT8 * pOutBuf)
+SD_INT32 ecCodecFFmpegResampler::Resample(SD_UINT8 * pInBuf, SD_UINT8 * pOutBuf)
 {
 	if (m_pSwrFrame->nb_samples == 0)
 	{
@@ -112,8 +112,7 @@ SD_INT32 ecCodecFFmpegResampler::Resample(SD_UINT8 * pInBuf, SD_INT32 nBufSize, 
 			else
 			{
 				FFmpegFormatCovert::ConvertBufferToPData(pInBuf, nullptr, pFrame->data, pFrame->linesize, (AVSampleFormat)pFrame->format, m_nChannelCount, m_nSamplesPerFrame);
-				Resample(&pOutBuf, AVCODEC_MAX_AUDIO_FRAME_SIZE, (const uint8_t **)pFrame->data, pFrame->nb_samples);
-				bufSizeRet = GetBufferSize();
+				bufSizeRet = Resample(&pOutBuf, AVCODEC_MAX_AUDIO_FRAME_SIZE, (const uint8_t **)pFrame->data, pFrame->nb_samples);
 			}
 		}
 		if (pFrame)
