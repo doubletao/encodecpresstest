@@ -176,7 +176,7 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer)
 			m_AudioResampler.SetSamplesPerFrame(m_pSrcFrame->nb_samples);
 		}
 
-#if 1
+#if 0
 		FFmpegFormatCovert::ConvertPDataToBuffer(m_pSrcFrame->data, &m_pSrcFrame->nb_samples, lpBuffer, AVCODEC_MAX_AUDIO_FRAME_SIZE, (AVSampleFormat)m_pSrcFrame->format, 2, m_pSrcFrame->nb_samples);
 		if (0)
 		{

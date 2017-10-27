@@ -22,7 +22,8 @@ public:
 	virtual IecCodecVideoEncoder * GetVideoEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
 	virtual IecCodecAudioDecoder * GetAudioDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
 	virtual IecCodecAudioEncoder * GetAudioEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
+	virtual bool DeleteProtocolDecoder(IecCodecProtocolDecoder *& pObj) = 0;
 };
 
 EASY_CODEC_API_EXPORT	IecCodecFactory * ecCodec_CreateCodecFactory();
-EASY_CODEC_API_EXPORT	bool	ecCodec_ReleaseCodecFactory(IecCodecFactory * pCodecFactory);
+EASY_CODEC_API_EXPORT	bool	ecCodec_ReleaseCodecFactory(IecCodecFactory *& pCodecFactory);

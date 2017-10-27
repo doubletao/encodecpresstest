@@ -262,10 +262,10 @@ void CEncodecPressTestDlg::DoPlay()
 						deleteC(pVideoData);
 					}
 				}
-				fclose(pAudioFile);
-				deleteC(pDecoder);
+				fclose(pAudioFile); 
+				ecfactory->DeleteProtocolDecoder(pDecoder);
 			}
-			deleteC(ecfactory);
+			ecCodec_ReleaseCodecFactory(ecfactory);
 		}
 #if 0
 		FFmpegVADecoder codec;

@@ -14,5 +14,6 @@ public:
 	virtual IecCodecVideoEncoder * GetVideoEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
 	virtual IecCodecAudioDecoder * GetAudioDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
 	virtual IecCodecAudioEncoder * GetAudioEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
+	virtual bool DeleteProtocolDecoder(IecCodecProtocolDecoder *& pObj);
 };
 

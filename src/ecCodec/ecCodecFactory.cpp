@@ -13,7 +13,7 @@ EASY_CODEC_API_EXPORT	IecCodecFactory * ecCodec_CreateCodecFactory()
 	IecCodecFactory * pCodecFactory = new ecCodecFactory;
 	return pCodecFactory;
 }
-EASY_CODEC_API_EXPORT	bool	ecCodec_ReleaseCodecFactory(IecCodecFactory * pCodecFactory)
+EASY_CODEC_API_EXPORT	bool	ecCodec_ReleaseCodecFactory(IecCodecFactory *& pCodecFactory)
 {
 	deleteC(pCodecFactory);
 	return true;
@@ -69,4 +69,12 @@ IecCodecAudioDecoder * ecCodecFactory::GetAudioDecoder(EmCodecProvider emCodecPr
 IecCodecAudioEncoder * ecCodecFactory::GetAudioEncoder(EmCodecProvider emCodecProvider)
 {
 	return nullptr;
+}
+
+bool ecCodecFactory::DeleteProtocolDecoder(IecCodecProtocolDecoder *& pObj)
+{
+	pObj->Release();
+	delete pObj;
+	pObj = nullptr;
+	return true;
 }
