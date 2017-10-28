@@ -214,7 +214,7 @@ void CEncodecPressTestDlg::DoPlay()
 							{
 								SDRFrameInfo frameInfo;
 								bContinue = pDecoder->GetVideoBuffer(m_nDispFrame, pVideoData, &frameInfo);
-								bContinue = pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
+								bContinue = pDecoder->GetAudioSamples(nAudioPos, SamplePerFrame, pAudioData, &numAudioSample);
 
 								//音频先写到文件里
 								fwrite(pAudioData, 1, numAudioSample * 4, pAudioFile);
@@ -247,8 +247,8 @@ void CEncodecPressTestDlg::DoPlay()
 								if (m_nFrame != m_nDispFrame)
 								{
 									SDRFrameInfo frameInfo;
-									pDecoder->GetVideoBuffer(m_nFrame, pVideoData, &frameInfo);
-									pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
+									pDecoder->GetAudioSamples(m_nFrame * SamplePerFrame, SamplePerFrame, pAudioData, &numAudioSample);
+									pDecoder->GetVideoBuffer(-1, pVideoData, &frameInfo);
 
 									strMsg.Format(_T("m_nFrame=%d, m_nFrame * SamplePerFrame=%d"), m_nFrame, m_nFrame * SamplePerFrame);
 									PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());

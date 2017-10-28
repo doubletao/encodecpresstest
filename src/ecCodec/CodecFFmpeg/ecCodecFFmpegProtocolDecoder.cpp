@@ -667,9 +667,17 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 				}
 				else
 				{
+					//转换sample数到时间进而转为时码
+					int64_t time_stamp = 0;
+					if (m_nSrcSamplePerSec > 0)
+					{
+						double dTm = m_nCurrentAudioSeekPos * 1.0 / m_nSrcSamplePerSec;
+						AVRational time_base = m_pFormatCtx->streams[m_nAudioIndex]->time_base;
+						time_stamp = m_pFormatCtx->streams[m_nAudioIndex]->start_time + av_rescale(dTm, time_base.den, time_base.num);
+					}
 					if (m_nCurrentAudioSeekPos <= m_nSrcSamplePerSec)
 					{
-						int nRet = av_seek_frame(m_pFormatCtx, m_nAudioIndex, m_nCurrentAudioSeekPos, AVSEEK_FLAG_FRAME);
+						int nRet = av_seek_frame(m_pFormatCtx, m_nAudioIndex, time_stamp, AVSEEK_FLAG_FRAME);
 						if (nRet >= 0)
 						{
 							bContinue = true;
@@ -677,7 +685,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 					}
 					else if (m_nCurrentAudioSeekPos <= pAudioStream->nb_frames)
 					{
-						int nRet = av_seek_frame(m_pFormatCtx, m_nAudioIndex, m_nCurrentAudioSeekPos, AVSEEK_FLAG_BACKWARD);
+						int nRet = av_seek_frame(m_pFormatCtx, m_nAudioIndex, time_stamp, AVSEEK_FLAG_BACKWARD);
 						if (nRet >= 0)
 						{
 							bContinue = true;
