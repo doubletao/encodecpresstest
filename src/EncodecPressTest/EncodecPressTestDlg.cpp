@@ -113,6 +113,8 @@ void CEncodecPressTestDlg::PausePlay()
 	}
 }
 
+CString strMsg;
+
 void CEncodecPressTestDlg::DoPlay()
 {
 	CWnd * pEncodecNumWnd = GetDlgItem(IDC_EDIT_ENCODER_COUNT);
@@ -198,28 +200,27 @@ void CEncodecPressTestDlg::DoPlay()
 							//每秒的视频帧数
 							double dFramePerSec = streamMediaInfoEx.sVideoMediaInfo.dwStandardRate * 1.0 / streamMediaInfoEx.sVideoMediaInfo.dwStandardScale;
 							//每秒的采样数
-							double dSamplePerSec = streamMediaInfoEx.sAudioMediaInfo.dwSamplesPerSec;
+							double dSamplePerSec = audioSamplesBufInfo.dwSamplesPerSec;
 							//每帧对应的sample数=每秒的采样数/每秒的视频帧数
 							SamplePerFrame = dSamplePerSec / dFramePerSec;
 						}
 						bool bFirst = false;
 						m_ctrSlider.SetRange(0, streamMediaInfoEx.dwVideoFrameNum);
 						m_ctrSlider.SetTicFreq(streamMediaInfoEx.dwVideoFrameNum / 100.0);
+						uint32_t nAudioPos = 0;
 						while (bContinue)
 						{
 							if (WaitForSingleObject(m_evtPlayPause, 0) != WAIT_OBJECT_0)
 							{
 								SDRFrameInfo frameInfo;
-								bContinue = pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
 								bContinue = pDecoder->GetVideoBuffer(m_nDispFrame, pVideoData, &frameInfo);
+								bContinue = pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
 
 								//音频先写到文件里
 								fwrite(pAudioData, 1, numAudioSample * 4, pAudioFile);
 
 								m_nDispFrame++;
-								
-								SD_UINT64 nVideoPos = 0;
-								SD_UINT64 nAudioPos = 0;
+								nAudioPos += numAudioSample;
 								Lock();
 								m_nFrame++;
 								Unlock();
@@ -248,6 +249,9 @@ void CEncodecPressTestDlg::DoPlay()
 									SDRFrameInfo frameInfo;
 									pDecoder->GetVideoBuffer(m_nFrame, pVideoData, &frameInfo);
 									pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
+
+									strMsg.Format(_T("m_nFrame=%d, m_nFrame * SamplePerFrame=%d"), m_nFrame, m_nFrame * SamplePerFrame);
+									PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
 
 									if (0)
 									{

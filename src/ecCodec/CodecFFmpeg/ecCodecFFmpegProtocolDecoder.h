@@ -30,6 +30,8 @@ private:
 	ecCodecFFmpegAudioDecoder m_AudioDecoder;
 	AVPacket * m_pAudioPacket;
 	int64_t m_nCurrentAudioSeekPos;
+	int32_t m_nDesSamplePerSec;
+	int32_t m_nSrcSamplePerSec;
 	bool m_bAudioSeek;
 
 	std::queue<AVPacket *> m_queVideoPack;

@@ -17,6 +17,8 @@ ecCodecFFmpegProtocolDecoder::ecCodecFFmpegProtocolDecoder()
 	, m_bAudioSeek(false)
 	, m_nCurrentFrame(0)
 	, m_nCurrentSample(0)
+	, m_nDesSamplePerSec(0)
+	, m_nSrcSamplePerSec(0)
 {
 	InitializeCriticalSection(&m_lock);
 }
@@ -115,6 +117,7 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 						//创建解码器
 						if (m_AudioDecoder.InitAudioDecoder(audioInfo))
 						{
+							m_nSrcSamplePerSec = audioInfo.dwSamplesPerSec;
 							m_pAudioPacket = (AVPacket *)av_malloc(sizeof(AVPacket));
 							av_init_packet(m_pAudioPacket);
 							m_bIsInitialized = true;
@@ -187,6 +190,10 @@ bool ecCodecFFmpegProtocolDecoder::GetFileGlobalMediaInfo(SDStreamMediaInfo * ps
 	{
 		psMediaInfo->dwAudioStreamCount = 1;//不管有几个，解码器目前只解一个
 		m_AudioDecoder.GetAudioMediaInfo(&psMediaInfo->sAudioMediaInfo);
+		if (m_nDesSamplePerSec < 1)
+		{
+			m_nDesSamplePerSec = psMediaInfo->sAudioMediaInfo.dwSamplesPerSec;
+		}
 	}
 	//字幕信息目前不解
 	psMediaInfo->dwSubtitleStreamCount = 0;
@@ -229,6 +236,10 @@ bool ecCodecFFmpegProtocolDecoder::GetFileGlobalMediaInfo(SDStreamMediaInfoEx * 
 		{
 			psMediaInfoEx->dwAudioStreamCount = 1;//不管有几个，解码器目前只解一个
 			m_AudioDecoder.GetAudioMediaInfo(&psMediaInfoEx->sAudioMediaInfo);
+			if (m_nDesSamplePerSec < 1)
+			{
+				m_nDesSamplePerSec = psMediaInfoEx->sAudioMediaInfo.dwSamplesPerSec;
+			}
 		}
 		//字幕信息目前不解
 		psMediaInfoEx->dwSubtitleStreamCount = 0;
@@ -375,6 +386,7 @@ bool ecCodecFFmpegProtocolDecoder::SetAudioSamplesBufInfo(const SDAudioSamplesBu
 		mediaInfo.enumChannelSamplesFormat = pAudioBufInfo->enumChannelSamplesFormat;
 		if (m_AudioDecoder.SetAudioMediaInfo(&mediaInfo))
 		{
+			m_nDesSamplePerSec = pAudioBufInfo->dwSamplesPerSec;
 			return true;
 		}
 	}
@@ -395,6 +407,10 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamplesBufInfo(SDAudioSamplesBufInfo 
 			pAudioBufInfo->dwBlockAlign = mediaInfo.dwBlockAlign;							// 数据块对齐单位(每个采样样本需要的字节数), 声道数*量化数/8, 量化数(16,20?,24,32...)
 			pAudioBufInfo->enumAudioCFG = mediaInfo.enumAudioCFG;				// 声道属性
 			pAudioBufInfo->enumChannelSamplesFormat = mediaInfo.enumChannelSamplesFormat;	// 音频声道采样数据格式
+			if (m_nDesSamplePerSec < 1)
+			{
+				m_nDesSamplePerSec = mediaInfo.dwSamplesPerSec;
+			}
 			return true;
 		}
 	}
@@ -440,6 +456,10 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex,
 						}
 					}
 				}
+				else
+				{
+					return false;
+				}
 			}
 		}
 	}
@@ -455,6 +475,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 		if (pVideoStream)
 		{
 			bool bContinue = false;
+			//对于视频来说，gap单位为帧，3帧以内都视为顺播
 			int64_t nSeekGap = dwCurFrameShowIndex - m_nCurrentFrame;
 			if (dwCurFrameShowIndex != (SD_UINT64)-1 && abs(nSeekGap) > 3)
 			{
@@ -580,6 +601,12 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 			SDRFrameInfo frameInfo;
 			SD_UINT8 * pCompressFrame = nullptr;
 			m_nCurrentAudioSeekPos = dwCurSamplePos;
+			//转换到源采样率单位
+			if (m_nDesSamplePerSec > 0
+				&& m_nSrcSamplePerSec > 0)
+			{
+				m_nCurrentAudioSeekPos = m_nCurrentAudioSeekPos * 1.0 / m_nDesSamplePerSec * m_nSrcSamplePerSec;
+			}
 			while (GetAudioFrame(dwCurSamplePos, pCompressFrame, &frameInfo) && pCompressFrame)
 			{
 				if (m_AudioDecoder.PutFrame(pCompressFrame, &frameInfo))
@@ -606,6 +633,10 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 						return false;
 					}
 				}
+				else
+				{
+					return false;
+				}
 			}
 		}
 	}
@@ -621,13 +652,14 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 		if (pAudioStream)
 		{
 			bool bContinue = false;
-			int nBuferSize = m_AudioDecoder.GetBufferSize();
+			//对于音频来说，gap单位为毫秒，100毫秒以内都视为顺播
 			int64_t nSeekGap = 0;
-			if (nBuferSize > 0)
+			if (dwCurFrameStreamIndex != (SD_UINT32)-1 && m_nSrcSamplePerSec > 0)
 			{
-				nSeekGap = (dwCurFrameStreamIndex - m_nCurrentSample) / nBuferSize;
+				nSeekGap = dwCurFrameStreamIndex - m_nCurrentSample;
+				nSeekGap = nSeekGap * 1000.0 / m_nDesSamplePerSec;
 			}
-			if (dwCurFrameStreamIndex != (SD_UINT32)-1 && abs(nSeekGap) > 3)
+			if (abs(nSeekGap) > 100)
 			{
 				if (m_bAudioSeek)
 				{
@@ -635,7 +667,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 				}
 				else
 				{
-					if (m_nCurrentAudioSeekPos <= pAudioStream->time_base.den * 1.0 / pAudioStream->time_base.num)
+					if (m_nCurrentAudioSeekPos <= m_nSrcSamplePerSec)
 					{
 						int nRet = av_seek_frame(m_pFormatCtx, m_nAudioIndex, m_nCurrentAudioSeekPos, AVSEEK_FLAG_FRAME);
 						if (nRet >= 0)
@@ -767,6 +799,8 @@ bool ecCodecFFmpegProtocolDecoder::Release()
 {
 	m_nVideoIndex = -1;
 	m_nAudioIndex = -1;
+	m_nDesSamplePerSec = 0;
+	m_nSrcSamplePerSec = 0;
 	if (m_pVideoPacket)
 	{
 		av_packet_free(&m_pVideoPacket);

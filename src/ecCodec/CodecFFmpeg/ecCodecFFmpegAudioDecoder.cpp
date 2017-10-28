@@ -167,7 +167,26 @@ bool ecCodecFFmpegAudioDecoder::PutFrame(const SD_UINT8 * pData, const SDRFrameI
 	avpkt.duration = pFrameInfo->qwDuration;
 
 	int ret = avcodec_send_packet(m_pCodecCtx, &avpkt);
-	if (ret < 0) {
+	if (ret < 0) 
+	{
+		switch (ret)
+		{
+		case AVERROR(EAGAIN):
+			printf("EAGAIN");
+			break;
+		case AVERROR_EOF:
+			printf("AVERROR_EOF");
+			break;
+		case AVERROR(EINVAL):
+			printf("EINVAL");
+			break;
+		case AVERROR(ENOMEM):
+			printf("ENOMEM");
+			break;
+		default:
+			printf("UNKONWN");
+			break;
+		}
 		av_packet_unref(&avpkt);
 		return false;
 	}
@@ -267,11 +286,10 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 		av_audio_fifo_write(m_pAudioFifo, (void**)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
 	}
 
-	int bufSizeRet = av_samples_get_buffer_size(NULL, m_nDesChannelCount, nSampleNum, m_emDesSampleFormat, 1);
-	if (av_audio_fifo_size(m_pAudioFifo) >= bufSizeRet)
+	if (av_audio_fifo_size(m_pAudioFifo) >= nSampleNum)
 	{
-		av_audio_fifo_read(m_pAudioFifo, (void **)&lpBuffer, bufSizeRet);
-		return bufSizeRet;
+		av_audio_fifo_read(m_pAudioFifo, (void **)&lpBuffer, nSampleNum);
+		return nSampleNum;
 	}
 
 	return 0;
