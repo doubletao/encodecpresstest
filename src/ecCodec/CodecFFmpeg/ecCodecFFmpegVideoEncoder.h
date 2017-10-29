@@ -1,6 +1,7 @@
 #pragma once
 #include "IecCodecVideoEncoder.h"
 #include "ecCodecFFmpegScaler.h"
+#include <memory>
 extern "C"
 {
 #include "libavutil\pixfmt.h"
@@ -15,9 +16,13 @@ public:
 	ecCodecFFmpegVideoEncoder();
 	virtual ~ecCodecFFmpegVideoEncoder();
 private:
+	int m_extradataSize;
 	AVFrame* m_pSourceFrame;
+	AVFrame* m_pScaleFrame;
 	SD_INT64 m_pts;
-	AVCodecContext * m_pCodecCtx;
+	AVCodecContext* m_pCodecCtx;
+	SwsContext* m_pSwsCtx;
+	std::unique_ptr<SD_UINT8[]> m_pDestBuffer;
 public:
 	virtual bool InitVideoEncoder(const SDVideoMediaInfo *pDesVideoInfo);
 	virtual bool SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo *pVideoBufInfo);
@@ -25,5 +30,6 @@ public:
 	virtual bool SetEndofInput();
 	virtual bool GetCompressFrame(SD_UINT8* &pFrameBuffer, SDRFrameInfo *pFrameInfo);
 	virtual bool Release();
+	AVCodecContext* GetCodecContext() const;
 };
 
