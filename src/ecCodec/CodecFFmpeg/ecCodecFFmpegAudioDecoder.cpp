@@ -234,18 +234,32 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 		{
 			m_AudioResampler.SetSamplesPerFrame(m_pSrcFrame->nb_samples);
 		}
-#if 1
+#if 0
 		int data_size = av_get_bytes_per_sample((AVSampleFormat)m_pSrcFrame->format);
-		FFmpegFormatCovert::ConvertPDataToBuffer(m_pSrcFrame->data, &m_pSrcFrame->nb_samples, lpBuffer, nSampleNum * data_size, (AVSampleFormat)m_pSrcFrame->format, 2, m_pSrcFrame->nb_samples);
+		FFmpegFormatCovert::ConvertPDataToBuffer(m_pSrcFrame->data, &m_pSrcFrame->nb_samples, lpBuffer, nSampleNum * data_size, 
+			(AVSampleFormat)m_pSrcFrame->format, 2, m_pSrcFrame->nb_samples);
 		if (0)
 		{
 			FILE * fp_debug = nullptr;
 			fopen_s(&fp_debug, "debug.pcm", "ab");
-			fwrite(lpBuffer, 1, av_samples_get_buffer_size(nullptr, m_pSrcFrame->channels, m_pSrcFrame->nb_samples, (AVSampleFormat)m_pSrcFrame->format, 1), fp_debug);
+			fwrite(lpBuffer, 1, av_samples_get_buffer_size(nullptr, m_pSrcFrame->channels, m_pSrcFrame->nb_samples, 
+				(AVSampleFormat)m_pSrcFrame->format, 1), fp_debug);
 			fclose(fp_debug);
 		}
-		int swr_size = m_AudioResampler.Resample(lpBuffer, (SD_UINT8 *)&lpBuffer);
+		int swr_size = m_AudioResampler.Resample(lpBuffer, lpBuffer);
 #else
+		int data_size = av_get_bytes_per_sample((AVSampleFormat)m_pSrcFrame->format);
+		//FFmpegFormatCovert::ConvertPDataToBuffer(m_pSrcFrame->data, &m_pSrcFrame->nb_samples, lpBuffer, nSampleNum * data_size,
+		//	(AVSampleFormat)m_pSrcFrame->format, 2, m_pSrcFrame->nb_samples);
+		if (0)
+		{
+			FILE * fp_debug = nullptr;
+			fopen_s(&fp_debug, "debug.pcm", "ab");
+			//fwrite(lpBuffer, 1, av_samples_get_buffer_size(nullptr, m_pSrcFrame->channels, m_pSrcFrame->nb_samples,
+			//	(AVSampleFormat)m_pSrcFrame->format, 1), fp_debug);
+			fwrite(m_pSrcFrame->data[0], 1, m_pSrcFrame->linesize[0], fp_debug);
+			fclose(fp_debug);
+		}
 		int swr_size = m_AudioResampler.Resample(&lpBuffer, AVCODEC_MAX_AUDIO_FRAME_SIZE,
 			(const uint8_t **)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
 #endif
