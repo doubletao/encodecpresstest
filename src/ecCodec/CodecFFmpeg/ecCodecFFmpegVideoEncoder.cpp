@@ -55,7 +55,7 @@ bool ecCodecFFmpegVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDestV
 		m_pCodecCtx->gop_size = pDestVideoInfo->dwGOPSize;
 		m_pCodecCtx->max_b_frames = 3;
 		//该参数应当根据AVOutputFormat::flags & AVFMT_GLOBALHEADER来判定是否应该设置
-		//m_pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+		m_pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
 		//限制输出文件的profile。这个参数将覆盖其它所有值，此选项能保证输出profile兼容的视频流。如果使用了这个选项，将不能进行无损压缩（qp 0 or crf 0）。
 		//m_pCodecCtx->profile = FFmpegFormatCovert::ConvertVideoProfile(pDestVideoInfo->enumVideoSubType);
 

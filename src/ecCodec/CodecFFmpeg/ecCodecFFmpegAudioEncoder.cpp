@@ -109,7 +109,8 @@ bool ecCodecFFmpegAudioEncoder::WriteSample(const SD_UINT8 * pData, SD_UINT32 iS
 		return false;
 	}
 
-	int nSamples = iSize / m_nBytesPerSrcSample;
+	//int nSamples = iSize / m_nBytesPerSrcSample;
+	int nSamples = iSize;
 
 	if (!m_pSwrFrame || m_pSwrFrame->nb_samples<nSamples)
 	{

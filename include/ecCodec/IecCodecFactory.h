@@ -17,12 +17,17 @@ class EASY_CODEC_API_EXPORT IecCodecFactory
 {
 public:
 	virtual IecCodecProtocolDecoder * GetProtocolDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
-	virtual IecCodecProtocolEncoder * GetProtocolEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
-	virtual IecCodecVideoDecoder * GetVideoDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
-	virtual IecCodecVideoEncoder * GetVideoEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
-	virtual IecCodecAudioDecoder * GetAudioDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
-	virtual IecCodecAudioEncoder * GetAudioEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
 	virtual bool DeleteProtocolDecoder(IecCodecProtocolDecoder *& pObj) = 0;
+	virtual IecCodecProtocolEncoder * GetProtocolEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
+	virtual bool DeleteProtocolEncoder(IecCodecProtocolEncoder *& pObj) = 0;
+	virtual IecCodecVideoDecoder * GetVideoDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
+	virtual bool DeleteVideoDecoder(IecCodecVideoDecoder *& pObj) = 0;
+	virtual IecCodecVideoEncoder * GetVideoEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
+	virtual bool DeleteVideoEncoder(IecCodecVideoEncoder *& pObj) = 0;
+	virtual IecCodecAudioDecoder * GetAudioDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
+	virtual bool DeleteAudioDecoder(IecCodecAudioDecoder *& pObj) = 0;
+	virtual IecCodecAudioEncoder * GetAudioEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
+	virtual bool DeleteAudioEncoder(IecCodecAudioEncoder *& pObj) = 0;
 };
 
 EASY_CODEC_API_EXPORT	IecCodecFactory * ecCodec_CreateCodecFactory();

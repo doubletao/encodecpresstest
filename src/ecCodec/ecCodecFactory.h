@@ -9,11 +9,16 @@ public:
 	virtual ~ecCodecFactory();
 
 	virtual IecCodecProtocolDecoder * GetProtocolDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
-	virtual IecCodecProtocolEncoder * GetProtocolEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
-	virtual IecCodecVideoDecoder * GetVideoDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
-	virtual IecCodecVideoEncoder * GetVideoEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
-	virtual IecCodecAudioDecoder * GetAudioDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
-	virtual IecCodecAudioEncoder * GetAudioEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
 	virtual bool DeleteProtocolDecoder(IecCodecProtocolDecoder *& pObj);
+	virtual IecCodecProtocolEncoder * GetProtocolEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
+	virtual bool DeleteProtocolEncoder(IecCodecProtocolEncoder *& pObj);
+	virtual IecCodecVideoDecoder * GetVideoDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
+	virtual bool DeleteVideoDecoder(IecCodecVideoDecoder *& pObj);
+	virtual IecCodecVideoEncoder * GetVideoEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
+	virtual bool DeleteVideoEncoder(IecCodecVideoEncoder *& pObj);
+	virtual IecCodecAudioDecoder * GetAudioDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
+	virtual bool DeleteAudioDecoder(IecCodecAudioDecoder *& pObj);
+	virtual IecCodecAudioEncoder * GetAudioEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
+	virtual bool DeleteAudioEncoder(IecCodecAudioEncoder *& pObj);
 };
 

@@ -41,7 +41,7 @@ bool FFmpegAudioEncoder::InitAudioEncoder(const SAudioMediaInfo &sAudioInfo)
 	m_pCodecCtx->time_base.den = m_pCodecCtx->sample_rate;
 	m_pCodecCtx->codec_type = AVMEDIA_TYPE_AUDIO;
 	m_pCodecCtx->thread_count = 1;
-	m_pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+	//m_pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
 	if (m_pCodecCtx->codec_id == AV_CODEC_ID_AAC) {
 		m_pCodecCtx->profile = FF_PROFILE_AAC_LOW;

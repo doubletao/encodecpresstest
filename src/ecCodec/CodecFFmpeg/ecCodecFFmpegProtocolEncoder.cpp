@@ -31,7 +31,7 @@ bool ecCodecFFmpegProtocolEncoder::SetSinkFile(const SDStreamMediaInfo * pStream
 	AVOutputFormat* pOutputFormat = m_pFormatCtx->oformat;
 	if (pOutputFormat->flags & AVFMT_GLOBALHEADER)
 	{
-		assert(false);
+		//assert(false);
 	}
 
 	pOutputFormat->flags &= ~AVFMT_NOTIMESTAMPS;
@@ -40,13 +40,15 @@ bool ecCodecFFmpegProtocolEncoder::SetSinkFile(const SDStreamMediaInfo * pStream
 		assert(false);
 	}
 
-	if (pStreamMediaInfo->dwVideoStreamCount > 0 && !CreateVideoStream(pStreamMediaInfo->sVideoMediaInfo)) {
+	if (pStreamMediaInfo->dwVideoStreamCount > 0 && !CreateVideoStream(pStreamMediaInfo->sVideoMediaInfo)) 
+	{
 		avformat_free_context(m_pFormatCtx);
 		m_pFormatCtx = nullptr;
 		return false;
 	}
 
-	if (pStreamMediaInfo->dwAudioStreamCount > 0 && !CreateAudioStream(pStreamMediaInfo->sAudioMediaInfo)) {
+	if (pStreamMediaInfo->dwAudioStreamCount > 0 && !CreateAudioStream(pStreamMediaInfo->sAudioMediaInfo))
+	{
 		avformat_free_context(m_pFormatCtx);
 		m_pFormatCtx = nullptr;
 		return false;
@@ -212,8 +214,10 @@ bool ecCodecFFmpegProtocolEncoder::PutAudioSamples(const SD_UINT8 * pSamplesBuf,
 
 	SDRFrameInfo frameInfo;
 	SD_UINT8* pCompressFrame = nullptr;
-	while (m_pAudioEncoder->GetCompressFrame(pCompressFrame, &frameInfo)) {
-		if (!PutAudioFrame(pCompressFrame, &frameInfo)) {
+	while (m_pAudioEncoder->GetCompressFrame(pCompressFrame, &frameInfo)) 
+	{
+		if (!PutAudioFrame(pCompressFrame, &frameInfo)) 
+		{
 			return false;
 		}
 	}
@@ -232,7 +236,7 @@ bool ecCodecFFmpegProtocolEncoder::PutAudioFrame(const SD_UINT8 * pFrameBuf, con
 	avpkt.data = const_cast<SD_UINT8*>(pFrameBuf);
 	avpkt.size = pFrameInfo->iSize;
 	avpkt.pts = pFrameInfo->qwPTS;
-	//avpkt.dts = pFrameInfo->qwDTS;
+	avpkt.dts = pFrameInfo->qwDTS;
 	//avpkt.duration = pFrameInfo->qwDuration;
 	avpkt.stream_index = m_pAudioStream->index;
 
@@ -257,20 +261,19 @@ bool ecCodecFFmpegProtocolEncoder::Release()
 	if (m_pFormatCtx)
 	{
 		//循环获取尚未写入的帧
-		while (true)
-		{
-			SDRFrameInfo frameInfo;
-			SD_UINT8* pCompressFrame = nullptr;
-			if (!m_pVideoEncoder->GetCompressFrame(pCompressFrame, &frameInfo)) {
-				break;
-			}
-			PutVideoFrame(pCompressFrame, &frameInfo);
-		}
-		int ret = av_interleaved_write_frame(m_pFormatCtx, nullptr);
-		if (ret < 0) {
-			return false;
-		}
-
+		//while (true)
+		//{
+		//	SDRFrameInfo frameInfo;
+		//	SD_UINT8* pCompressFrame = nullptr;
+		//	if (m_pVideoEncoder && !m_pVideoEncoder->GetCompressFrame(pCompressFrame, &frameInfo)) {
+		//		break;
+		//	}
+		//	PutVideoFrame(pCompressFrame, &frameInfo);
+		//}
+		//int ret = av_interleaved_write_frame(m_pFormatCtx, nullptr);
+		//if (ret < 0) {
+		//	return false;
+		//}
 		int nRet = av_write_trailer(m_pFormatCtx);
 		if (nRet != 0)
 		{

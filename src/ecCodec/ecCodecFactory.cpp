@@ -15,7 +15,8 @@ EASY_CODEC_API_EXPORT	IecCodecFactory * ecCodec_CreateCodecFactory()
 }
 EASY_CODEC_API_EXPORT bool ecCodec_ReleaseCodecFactory(IecCodecFactory *& pCodecFactory)
 {
-	deleteC(pCodecFactory);
+	delete pCodecFactory;
+	pCodecFactory = nullptr;
 	return true;
 }
 
@@ -48,27 +49,132 @@ IecCodecProtocolDecoder * ecCodecFactory::GetProtocolDecoder(EmCodecProvider emC
 
 IecCodecProtocolEncoder * ecCodecFactory::GetProtocolEncoder(EmCodecProvider emCodecProvider)
 {
-	return nullptr;
+	IecCodecProtocolEncoder * pProtocolEncoder = nullptr;
+	switch (emCodecProvider)
+	{
+	case EMCodec_FFmpeg:
+	{
+		pProtocolEncoder = new ecCodecFFmpegProtocolEncoder;
+	}
+	break;
+	case EMCodec_Intel:
+		break;
+	default:
+		break;
+	}
+	return pProtocolEncoder;
 }
 
 IecCodecVideoDecoder * ecCodecFactory::GetVideoDecoder(EmCodecProvider emCodecProvider)
 {
-	return nullptr;
+	IecCodecVideoDecoder * pVideoDecoder = nullptr;
+	switch (emCodecProvider)
+	{
+	case EMCodec_FFmpeg:
+	{
+		pVideoDecoder = new ecCodecFFmpegVideoDecoder;
+	}
+	break;
+	case EMCodec_Intel:
+		break;
+	default:
+		break;
+	}
+	return pVideoDecoder;
 }
 
 IecCodecVideoEncoder * ecCodecFactory::GetVideoEncoder(EmCodecProvider emCodecProvider)
 {
-	return nullptr;
+	IecCodecVideoEncoder * pVideoEncoder = nullptr;
+	switch (emCodecProvider)
+	{
+	case EMCodec_FFmpeg:
+	{
+		pVideoEncoder = new ecCodecFFmpegVideoEncoder;
+	}
+	break;
+	case EMCodec_Intel:
+		break;
+	default:
+		break;
+	}
+	return pVideoEncoder;
 }
 
 IecCodecAudioDecoder * ecCodecFactory::GetAudioDecoder(EmCodecProvider emCodecProvider)
 {
-	return nullptr;
+	IecCodecAudioDecoder * pAudioDecoder = nullptr;
+	switch (emCodecProvider)
+	{
+	case EMCodec_FFmpeg:
+	{
+		pAudioDecoder = new ecCodecFFmpegAudioDecoder;
+	}
+	break;
+	case EMCodec_Intel:
+		break;
+	default:
+		break;
+	}
+	return pAudioDecoder;
 }
 
 IecCodecAudioEncoder * ecCodecFactory::GetAudioEncoder(EmCodecProvider emCodecProvider)
 {
-	return nullptr;
+	IecCodecAudioEncoder * pAudioEncoder = nullptr;
+	switch (emCodecProvider)
+	{
+	case EMCodec_FFmpeg:
+	{
+		pAudioEncoder = new ecCodecFFmpegAudioEncoder;
+	}
+	break;
+	case EMCodec_Intel:
+		break;
+	default:
+		break;
+	}
+	return pAudioEncoder;
+}
+
+bool ecCodecFactory::DeleteProtocolEncoder(IecCodecProtocolEncoder *& pObj)
+{
+	pObj->Release();
+	delete pObj;
+	pObj = nullptr;
+	return true;
+}
+
+bool ecCodecFactory::DeleteVideoDecoder(IecCodecVideoDecoder *& pObj)
+{
+	pObj->Release();
+	delete pObj;
+	pObj = nullptr;
+	return true;
+}
+
+bool ecCodecFactory::DeleteVideoEncoder(IecCodecVideoEncoder *& pObj)
+{
+	pObj->Release();
+	delete pObj;
+	pObj = nullptr;
+	return true;
+}
+
+bool ecCodecFactory::DeleteAudioDecoder(IecCodecAudioDecoder *& pObj)
+{
+	pObj->Release();
+	delete pObj;
+	pObj = nullptr;
+	return true;
+}
+
+bool ecCodecFactory::DeleteAudioEncoder(IecCodecAudioEncoder *& pObj)
+{
+	pObj->Release();
+	delete pObj;
+	pObj = nullptr;
+	return true;
 }
 
 bool ecCodecFactory::DeleteProtocolDecoder(IecCodecProtocolDecoder *& pObj)
