@@ -106,7 +106,7 @@ AVCodecID FFmpegFormatCovert::ConvertCodecId(SD_AUDIO_TYPE emAudioType)
 	switch (emAudioType)
 	{
 	case SDAUDIOTYPE_WAVE_PCM:
-		codecId = AV_CODEC_ID_PCM_DVD;
+		codecId = AV_CODEC_ID_PCM_S16LE;
 		break;
 	case SDAUDIOTYPE_MP1:
 		codecId = AV_CODEC_ID_MP1;

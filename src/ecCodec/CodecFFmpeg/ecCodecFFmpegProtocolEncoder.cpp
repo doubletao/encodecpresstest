@@ -206,23 +206,40 @@ bool ecCodecFFmpegProtocolEncoder::PutVideoFrame(const SD_UINT8 * pFrameBuf, con
 
 bool ecCodecFFmpegProtocolEncoder::PutAudioSamples(const SD_UINT8 * pSamplesBuf, SD_UINT32 dwSampleNum)
 {
-	if (!m_pAudioEncoder) {
+	if (!m_pAudioStream || !m_pAudioEncoder) {
 		return false;
 	}
 
-	bool ret = m_pAudioEncoder->WriteSample(pSamplesBuf, dwSampleNum, false);
-
-	SDRFrameInfo frameInfo;
-	SD_UINT8* pCompressFrame = nullptr;
-	while (m_pAudioEncoder->GetCompressFrame(pCompressFrame, &frameInfo)) 
+	//如果流格式为PCM，则不走音频编码器，直接往流里边写
+	if (m_pAudioStream->codecpar->codec_id == FFmpegFormatCovert::ConvertCodecId(SDAUDIOTYPE_WAVE_PCM))
 	{
-		if (!PutAudioFrame(pCompressFrame, &frameInfo)) 
+		int data_size = av_get_bytes_per_sample((AVSampleFormat)m_pAudioStream->codecpar->format) * m_pAudioStream->codecpar->channels;
+		SDRFrameInfo frameInfo;
+		frameInfo.iSize = dwSampleNum * data_size;
+		frameInfo.qwPTS = 0;
+		frameInfo.qwDTS = 0;
+		frameInfo.qwDuration = 0;
+		if (!PutAudioFrame(pSamplesBuf, &frameInfo))
 		{
 			return false;
 		}
+		return true;
 	}
+	else
+	{
+		bool ret = m_pAudioEncoder->WriteSample(pSamplesBuf, dwSampleNum, false);
 
-	return true;
+		SDRFrameInfo frameInfo;
+		SD_UINT8* pCompressFrame = nullptr;
+		while (m_pAudioEncoder->GetCompressFrame(pCompressFrame, &frameInfo))
+		{
+			if (!PutAudioFrame(pCompressFrame, &frameInfo))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
 }
 
 bool ecCodecFFmpegProtocolEncoder::PutAudioFrame(const SD_UINT8 * pFrameBuf, const SDRFrameInfo * pFrameInfo)
@@ -237,7 +254,7 @@ bool ecCodecFFmpegProtocolEncoder::PutAudioFrame(const SD_UINT8 * pFrameBuf, con
 	avpkt.size = pFrameInfo->iSize;
 	avpkt.pts = pFrameInfo->qwPTS;
 	avpkt.dts = pFrameInfo->qwDTS;
-	//avpkt.duration = pFrameInfo->qwDuration;
+	avpkt.duration = pFrameInfo->qwDuration;
 	avpkt.stream_index = m_pAudioStream->index;
 
 	av_packet_rescale_ts(&avpkt, m_pAudioEncoder->GetCodecContext()->time_base, m_pAudioStream->time_base);
@@ -334,13 +351,67 @@ bool ecCodecFFmpegProtocolEncoder::CreateAudioStream(const SDAudioMediaInfo & au
 	m_pAudioStream->time_base.den = audioInfo.dwSamplesPerSec;
 
 	m_pAudioEncoder.reset(new ecCodecFFmpegAudioEncoder());
-	if (!m_pAudioEncoder->InitAudioEncoder(audioInfo)) {
-		return false;
-	}
+	if (!m_pAudioEncoder->InitAudioEncoder(audioInfo)) 
+	{
+		if (audioInfo.enumAudioType != SDAUDIOTYPE_WAVE_PCM)
+		{
+			return false;
+		}
+		else
+		{
+			//对于普通音频格式，走正常流程，对于PCM格式，不需要创建编码器，直接填写stream参数
+			AVCodecID codecId = FFmpegFormatCovert::ConvertCodecId(audioInfo.enumAudioType);
+			AVCodec* pAudioCodec = avcodec_find_encoder(codecId);
+			if (!pAudioCodec) {
+				return false;
+			}
+			AVCodecContext * pCodecCtx = avcodec_alloc_context3(pAudioCodec);
+			if (!pCodecCtx) 
+			{
+				return false;
+			}
 
-	AVCodecContext* pCodecContext = m_pAudioEncoder->GetCodecContext();
-	//avcodec_copy_context(m_pAudioStream->codec, pCodecContext);
-	avcodec_parameters_from_context(m_pAudioStream->codecpar, pCodecContext);
+			pCodecCtx->profile = FFmpegFormatCovert::ConvertAudioProfile(audioInfo.dwAudioSubType);			// AV_SAMPLE_FMT_FLTP;
+			pCodecCtx->sample_fmt = FFmpegFormatCovert::ConvertSamplesFormat(audioInfo.enumChannelSamplesFormat);
+			pCodecCtx->sample_rate = audioInfo.dwSamplesPerSec;												// 48000;
+			pCodecCtx->channels = audioInfo.dwChannels;	       												// av_get_channel_layout_nb_channels(m_pCodecCtx->channel_layout);
+			pCodecCtx->channel_layout = FFmpegFormatCovert::ConvertChannelLayout(audioInfo.enumAudioCFG);	// AV_CH_LAYOUT_STEREO;
+			pCodecCtx->bit_rate = audioInfo.dwAvgBitsPerSec;
+			pCodecCtx->time_base.num = 1;
+			pCodecCtx->time_base.den = pCodecCtx->sample_rate;
+			pCodecCtx->codec_type = AVMEDIA_TYPE_AUDIO;
+			pCodecCtx->thread_count = 1;
+			pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+			if (pCodecCtx->codec_id == AV_CODEC_ID_AAC) {
+				pCodecCtx->profile = FF_PROFILE_AAC_LOW;
+				pCodecCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
+			}
+
+			if (avcodec_open2(pCodecCtx, pAudioCodec, nullptr) < 0) 
+			{
+				if (pCodecCtx)
+				{
+					avcodec_close(pCodecCtx);
+					avcodec_free_context(&pCodecCtx);
+				}
+				return false;
+			}
+
+			avcodec_parameters_from_context(m_pAudioStream->codecpar, pCodecCtx);
+			if (pCodecCtx)
+			{
+				avcodec_close(pCodecCtx);
+				avcodec_free_context(&pCodecCtx);
+			}
+		}
+	}
+	else
+	{
+		AVCodecContext* pCodecContext = m_pAudioEncoder->GetCodecContext();
+		//avcodec_copy_context(m_pAudioStream->codec, pCodecContext);
+		avcodec_parameters_from_context(m_pAudioStream->codecpar, pCodecContext);
+	}
 
 	return true;
 }

@@ -224,7 +224,7 @@ void CEncodecPressTestDlg::DoPlay()
 									streamInfo.sVideoMediaInfo.dwStandardScale = 1;
 									streamInfo.sVideoMediaInfo.enumScanMode = SDVIDEOSCANMODE_FirstFieldTop;
 									streamInfo.sVideoMediaInfo.enumColorFormat = SDCOLORFORMAT_YUVP_420;
-									streamInfo.sVideoMediaInfo.enumVideoType = SDVIDEOTYPE_H264;
+									streamInfo.sVideoMediaInfo.enumVideoType = SDVIDEOTYPE_MPEG2_IFRAME;
 									streamInfo.sVideoMediaInfo.dwVideoSubType = PROFILE_AVC_MAIN;/////////////////////////////////////
 									streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 400000;// 25000000;
 									streamInfo.sVideoMediaInfo.enumDataRateType = SDDATARATE_CONSTANT;
@@ -238,7 +238,7 @@ void CEncodecPressTestDlg::DoPlay()
 									streamInfo.sVideoMediaInfo.dwMinDataRateInBitsPerSec = 0;
 									streamInfo.sVideoMediaInfo.dwStruSize = sizeof(SDVideoMediaInfo);
 									streamInfo.dwAudioStreamCount = 1;
-									streamInfo.sAudioMediaInfo.enumAudioType = SDAUDIOTYPE_AAC;		// 音频编解码类型。
+									streamInfo.sAudioMediaInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM;		// 音频编解码类型。
 									streamInfo.sAudioMediaInfo.dwAudioSubType = 0;		// 音频编解码的子类型,子类型定义随enumAudioType不同而不同
 									streamInfo.sAudioMediaInfo.dwChannels = audioSamplesBufInfo.dwChannels;			// 声道数目
 									streamInfo.sAudioMediaInfo.dwSamplesPerSec = audioSamplesBufInfo.dwSamplesPerSec;	// 每秒采样数量 
