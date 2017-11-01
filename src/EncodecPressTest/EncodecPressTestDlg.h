@@ -6,8 +6,15 @@
 #include "SDLVideoPlayer.h"
 #include <string>
 #include "afxcmn.h"
+#include "IecCodecFactory.h"
 
 const int MSG_PUSHINFO = WM_USER + 0x00001;
+
+enum EmVideoStandard
+{
+	EmVideoStandard_PAL,
+	EmVideoStandard_HD,
+};
 
 // CEncodecPressTestDlg 对话框
 class CEncodecPressTestDlg : public CDialogEx
@@ -54,6 +61,23 @@ protected:
 	afx_msg LRESULT PushInfoMsg(WPARAM wParam, LPARAM lParam);
 	void PushInfo(CString strInfo);
 // 实现
+private:
+	CButton	*	GetCodecCheckBtn(int nCodecIndex);
+	CComboBox * GetCodecVideoStandardCombo(int nCodecIndex);
+	CComboBox * GetCodecVideoTypeCombo(int nCodecIndex);
+	CComboBox * GetCodecColorFmtCombo(int nCodecIndex);
+	CComboBox * GetCodecAudioTypeCombo(int nCodecIndex);
+	CEdit *		GetCodecFileNameEdit(int nCodecIndex);
+	CEdit *		GetCodecFileSurfixEdit(int nCodecIndex);
+	void OnCheckEncodec(int nIndex);
+
+	bool GetCodecCheck(int nIndex);
+	EmVideoStandard GetCodecVideoStandard(int nIndex);
+	SD_VIDEO_TYPE GetCodecVideoType(int nIndex);
+	SD_COLOR_FORMAT GetCodecColorFmt(int nIndex);
+	SD_AUDIO_TYPE GetCodecAudioType(int nIndex);
+
+	void DealCtrlFileName();
 protected:
 	HICON m_hIcon;
 
@@ -73,4 +97,12 @@ public:
 	CSliderCtrl m_ctrSlider;
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnNMReleasedcaptureSliderSeek(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnBnClickedCheckEncodec1();
+	afx_msg void OnBnClickedCheckEncodec2();
+	afx_msg void OnBnClickedCheckEncodec3();
+	afx_msg void OnBnClickedCheckEncodec4();
+	afx_msg void OnBnClickedCheckEncodec5();
+	afx_msg void OnBnClickedCheckEncodec6();
+	afx_msg void OnBnClickedCheckEncodec7();
+	afx_msg void OnBnClickedCheckEncodec8();
 };

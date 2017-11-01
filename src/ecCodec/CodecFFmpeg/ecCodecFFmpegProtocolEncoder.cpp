@@ -277,20 +277,6 @@ bool ecCodecFFmpegProtocolEncoder::Release()
 {
 	if (m_pFormatCtx)
 	{
-		//循环获取尚未写入的帧
-		//while (true)
-		//{
-		//	SDRFrameInfo frameInfo;
-		//	SD_UINT8* pCompressFrame = nullptr;
-		//	if (m_pVideoEncoder && !m_pVideoEncoder->GetCompressFrame(pCompressFrame, &frameInfo)) {
-		//		break;
-		//	}
-		//	PutVideoFrame(pCompressFrame, &frameInfo);
-		//}
-		//int ret = av_interleaved_write_frame(m_pFormatCtx, nullptr);
-		//if (ret < 0) {
-		//	return false;
-		//}
 		int nRet = av_write_trailer(m_pFormatCtx);
 		if (nRet != 0)
 		{
