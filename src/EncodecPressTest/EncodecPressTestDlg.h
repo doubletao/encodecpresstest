@@ -21,11 +21,12 @@ class CEncodecPressTestDlg : public CDialogEx
 {
 private:
 	SDLVideoPlayer m_player;
-	unsigned int m_nEncoderCount;
 	unsigned long long m_nFrame;
 	unsigned long long m_nDispFrame;
 	int m_nTimebaseDen;
 	int m_nTimebaseNum;
+	IecCodecProtocolEncoder * m_pEncoder[8];
+	IecCodecFactory * m_ecfactory;
 	CRITICAL_SECTION m_lock;
 private:
 	CWinThread * m_pThread;

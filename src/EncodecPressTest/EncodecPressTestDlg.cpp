@@ -199,13 +199,6 @@ void CEncodecPressTestDlg::DoPlay()
 	{
 		pEdit->SetWindowText(_T(""));
 	}
-	CWnd * pEncodecNumWnd = GetDlgItem(IDC_EDIT_ENCODER_COUNT);
-	if (pEncodecNumWnd && ::IsWindow(pEncodecNumWnd->GetSafeHwnd()))
-	{
-		CString strEncodecNum;
-		pEncodecNumWnd->GetWindowText(strEncodecNum);
-		m_nEncoderCount = _ttoi(strEncodecNum);
-	}
 
 	std::string cstrOutPath = "E:\\clip\\";
 	CWnd * pWnd = GetDlgItem(IDC_EDIT_OUT_FILE_PATH);
@@ -229,10 +222,10 @@ void CEncodecPressTestDlg::DoPlay()
 		CString strPath;
 		pWnd->GetWindowText(strPath);
 		std::string cstrPath = ConverCStringToStdString(strPath);
-		IecCodecFactory * ecfactory = ecCodec_CreateCodecFactory();
-		if (ecfactory)
+		IecCodecFactory * m_ecfactory = ecCodec_CreateCodecFactory();
+		if (m_ecfactory)
 		{
-			IecCodecProtocolDecoder * pDecoder = ecfactory->GetProtocolDecoder();
+			IecCodecProtocolDecoder * pDecoder = m_ecfactory->GetProtocolDecoder();
 			if (pDecoder)
 			{
 				if (pDecoder->SetSourcePath(cstrPath.c_str()))
@@ -280,52 +273,64 @@ void CEncodecPressTestDlg::DoPlay()
 						m_ctrSlider.SetTicFreq(streamMediaInfoEx.dwVideoFrameNum / 100.0);
 						uint32_t nAudioPos = 0;
 #ifdef ENABLE_ENCODE
-						IecCodecProtocolEncoder * pEncoder = nullptr;
-						if (ecfactory)
+						for (size_t i = 0; i < 8; i++)
 						{
-							if (m_nEncoderCount > 0)
+							IecCodecProtocolEncoder *& pEncoder = m_pEncoder[i];
+							if (m_ecfactory)
 							{
-								pEncoder = ecfactory->GetProtocolEncoder();
-								if (pEncoder)
+								if (GetCodecCheck(i))
 								{
-									SDStreamMediaInfo streamInfo;
-									GetPresetMediaInfo(EmVideoStandard_PAL, SDVIDEOTYPE_H264, SDCOLORFORMAT_YUVP_420, SDAUDIOTYPE_AAC, 48000, streamInfo);
-									if (pEncoder->SetSinkFile(&streamInfo, cstrOutPath.c_str()))
+									pEncoder = m_ecfactory->GetProtocolEncoder();
+									if (pEncoder)
 									{
-										//设置视频编码格式
-										SDVideoFrameImageBufInfo imageBufInfo;
-										imageBufInfo.dwXSize = nWidth;
-										imageBufInfo.dwYSize = nHeight;
-										imageBufInfo.dwScanXByteSize = nWidth * 2;
-										imageBufInfo.enumColorFormat = videoFrameImageBufInfo.enumColorFormat;
-										imageBufInfo.enumScanMode = SDVIDEOSCANMODE_FirstFieldTop;
-										//SResamplerPara resamplePara;
-										if (pEncoder->SetVideoFrameBufInfo(&imageBufInfo, NULL))
+										SDStreamMediaInfo streamInfo;
+										EmVideoStandard emVideoStandard = GetCodecVideoStandard(i);
+										SD_VIDEO_TYPE emVideoType = GetCodecVideoType(i);
+										SD_COLOR_FORMAT emColorFmt = GetCodecColorFmt(i);
+										SD_AUDIO_TYPE emAudioType = GetCodecAudioType(i);
+										CString strFileName;
+										CString strTmp;
+										GetCodecFileNameEdit(i)->GetWindowText(strTmp);
+										strFileName.Append(strTmp);
+										GetCodecFileSurfixEdit(i)->GetWindowText(strTmp);
+										strFileName.Append(strTmp);
+
+										GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, streamInfo);
+										if (pEncoder->SetSinkFile(&streamInfo, (cstrOutPath + ConverCStringToStdString(strFileName).c_str()).c_str()))
 										{
-											PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Video encoder created"));
+											//设置视频编码输入格式
+											SDVideoFrameImageBufInfo imageBufInfo;
+											imageBufInfo.dwXSize = nWidth;
+											imageBufInfo.dwYSize = nHeight;
+											imageBufInfo.dwScanXByteSize = nWidth * 2;
+											imageBufInfo.enumColorFormat = videoFrameImageBufInfo.enumColorFormat;
+											imageBufInfo.enumScanMode = SDVIDEOSCANMODE_FirstFieldTop;
+											//SResamplerPara resamplePara;
+											if (pEncoder->SetVideoFrameBufInfo(&imageBufInfo, NULL))
+											{
+											}
+											else
+											{
+												PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Creating Video encoder SetVideoFrameBufInfo error"));
+											}
+											//设置音频编码输入格式
+											if (pEncoder->SetAudioSamplesBufInfo(&audioSamplesBufInfo))
+											{
+											}
+											else
+											{
+												PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Creating Audio encoder SetAudioSamplesBufInfo error"));
+											}
 										}
 										else
 										{
-											PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Creating Video encoder SetVideoFrameBufInfo error"));
-										}
-										//设置音频编码格式
-										if (pEncoder->SetAudioSamplesBufInfo(&audioSamplesBufInfo))
-										{
-											PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Audio encoder created"));
-										}
-										else
-										{
-											PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Creating Audio encoder SetAudioSamplesBufInfo error"));
+											PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Creating encoder SetSinkFile error"));
 										}
 									}
 									else
 									{
-										PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Creating encoder SetSinkFile error"));
+										PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Creating encoder error"));
 									}
-								}
-								else
-								{
-									PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Creating encoder error"));
 								}
 							}
 						}
@@ -334,6 +339,7 @@ void CEncodecPressTestDlg::DoPlay()
 						{
 							if (WaitForSingleObject(m_evtPlayPause, 0) != WAIT_OBJECT_0)
 							{
+								int nClock = clock();
 								SDRFrameInfo frameInfo;
 								if (streamMediaInfoEx.dwVideoStreamCount > 0)
 								{
@@ -347,36 +353,40 @@ void CEncodecPressTestDlg::DoPlay()
 								//音频先写到文件里
 								//fwrite(pAudioData, 1, numAudioSample * 4, pAudioFile);
 #ifdef ENABLE_ENCODE
-								if (pEncoder)
+								for (size_t i = 0; i < 8; i++)
 								{
-									SDRFrameInfo frameInfoTmp;
-									frameInfoTmp.emDataType = STREAM_DATATYPE_VIDEO;
-									frameInfoTmp.iVersion = 0;		// 结构版本号。		4---4[序列化占用字节－序列化位置]
-									frameInfoTmp.iSize = frameInfo.iSize;// nWidth * nHeight * 2;			// 帧数据大小		4---16
-									frameInfoTmp.dwFrameIndex = m_nDispFrame;	// 帧数据流顺序		4---28
-									frameInfoTmp.dwFrameNum = 1;		// 视频/音频帧数量	4---32
-									frameInfoTmp.iSamplesOffset = 0;	// 标识RawAudio音频、视频帧中有效采样的偏移数，大于0表示从开始偏移，小于0表示从尾部开始向前偏移		4---36
-									frameInfoTmp.qwDTS = m_nDispFrame * 40;			// 解码时间(90Khz单位)	8---44
-									frameInfoTmp.qwPTS = m_nDispFrame * 40;			// 展现时间(90Khz单位)	8---52
-									frameInfoTmp.qwDuration = 40;		// 持续时间(90Khz单位)	8---6
-									frameInfoTmp.dwShowIndex = m_nDispFrame;	// 帧数据显示顺序			4---104
-									frameInfoTmp.emFrameType = FRAMETYPE_I;   	// 帧类型 				4---108
-									frameInfoTmp.extradata_size = 0;
-									if (!pEncoder->PutVideoBuffer(pVideoData, false, &frameInfoTmp))
+									IecCodecProtocolEncoder *& pEncoder = m_pEncoder[i];
+									if (pEncoder)
 									{
-										PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("one video failed"));
-									}
-									else
-									{
-										//PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("one video succed"));
-									}
-									if (!pEncoder->PutAudioSamples(pAudioData, numAudioSample))
-									{
-										PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("one audio failed"));
-									}
-									else
-									{
-										//PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("one audio succed"));
+										SDRFrameInfo frameInfoTmp;
+										frameInfoTmp.emDataType = STREAM_DATATYPE_VIDEO;
+										frameInfoTmp.iVersion = 0;		// 结构版本号。		4---4[序列化占用字节－序列化位置]
+										frameInfoTmp.iSize = frameInfo.iSize;// nWidth * nHeight * 2;			// 帧数据大小		4---16
+										frameInfoTmp.dwFrameIndex = m_nDispFrame;	// 帧数据流顺序		4---28
+										frameInfoTmp.dwFrameNum = 1;		// 视频/音频帧数量	4---32
+										frameInfoTmp.iSamplesOffset = 0;	// 标识RawAudio音频、视频帧中有效采样的偏移数，大于0表示从开始偏移，小于0表示从尾部开始向前偏移		4---36
+										frameInfoTmp.qwDTS = m_nDispFrame * 40;			// 解码时间(90Khz单位)	8---44
+										frameInfoTmp.qwPTS = m_nDispFrame * 40;			// 展现时间(90Khz单位)	8---52
+										frameInfoTmp.qwDuration = 40;		// 持续时间(90Khz单位)	8---6
+										frameInfoTmp.dwShowIndex = m_nDispFrame;	// 帧数据显示顺序			4---104
+										frameInfoTmp.emFrameType = FRAMETYPE_I;   	// 帧类型 				4---108
+										frameInfoTmp.extradata_size = 0;
+										if (!pEncoder->PutVideoBuffer(pVideoData, false, &frameInfoTmp))
+										{
+											PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("one video failed"));
+										}
+										else
+										{
+											//PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("one video succed"));
+										}
+										if (!pEncoder->PutAudioSamples(pAudioData, numAudioSample))
+										{
+											PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("one audio failed"));
+										}
+										else
+										{
+											//PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("one audio succed"));
+										}
 									}
 								}
 #endif
@@ -397,7 +407,13 @@ void CEncodecPressTestDlg::DoPlay()
 								}
 
 								m_player.PushFrame(pVideoData, nWidth);
-								if (WaitForSingleObject(m_evtPlayStop, 40) == WAIT_OBJECT_0)
+								int nStay = 40 - (clock() - nClock);
+								if (nStay < 0)
+								{
+									nStay = 0;
+									PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("lost frame"));
+								}
+								if (WaitForSingleObject(m_evtPlayStop, nStay) == WAIT_OBJECT_0)
 								{
 									break;
 								}
@@ -436,18 +452,21 @@ void CEncodecPressTestDlg::DoPlay()
 							}
 						}
 						deleteC(pVideoData);
-#ifdef ENABLE_ENCODE
-						if (ecfactory && pEncoder)
-						{
-							ecfactory->DeleteProtocolEncoder(pEncoder);
-						}
-#endif
 					}
 				}
 				fclose(pAudioFile); 
-				ecfactory->DeleteProtocolDecoder(pDecoder);
+
+				//干掉解码器
+				m_ecfactory->DeleteProtocolDecoder(pDecoder);
+				//干掉编码器
+				for (size_t i = 0; i < 8; i++)
+				{
+					if (m_ecfactory && m_pEncoder[i])
+					{
+						m_ecfactory->DeleteProtocolEncoder(m_pEncoder[i]);
+					}
+				}
 			}
-			ecCodec_ReleaseCodecFactory(ecfactory);
 		}
 	}
 	PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Stoped"));
@@ -458,12 +477,16 @@ CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
 	, m_pThread(nullptr)
 	, m_evtPlayStop(FALSE, TRUE, NULL, NULL)
 	, m_evtPlayPause(FALSE, TRUE, NULL, NULL)
-	, m_nEncoderCount(0)
 	, m_nFrame(0)
 	, m_nDispFrame(0)
+	, m_ecfactory(nullptr)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	InitializeCriticalSection(&m_lock);
+	for (size_t i = 0; i < 8; i++)
+	{
+		m_pEncoder[i] = nullptr;
+	}
 }
 
 CEncodecPressTestDlg::~CEncodecPressTestDlg()
@@ -471,6 +494,14 @@ CEncodecPressTestDlg::~CEncodecPressTestDlg()
 	m_nFrame = 0;
 	m_nDispFrame = 0;
 	DeleteCriticalSection(&m_lock);
+	for (size_t i = 0; i < 8; i++)
+	{
+		if (m_ecfactory && m_pEncoder[i])
+		{
+			m_ecfactory->DeleteProtocolEncoder(m_pEncoder[i]);
+		}
+	}
+	ecCodec_ReleaseCodecFactory(m_ecfactory);
 }
 
 void CEncodecPressTestDlg::DoDataExchange(CDataExchange* pDX)
@@ -633,10 +664,59 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 			&& pFileNameEdit
 			)
 		{
-			pVideoStandardComb->SetCurSel(0);
-			pVideoTypeComb->SetCurSel(0);
-			pColorFmtComb->SetCurSel(0);
-			pAudioTypeComb->SetCurSel(0);
+			switch (i)
+			{
+			case 0:
+				pVideoStandardComb->SetCurSel(0);
+				pVideoTypeComb->SetCurSel(0);
+				pColorFmtComb->SetCurSel(0);
+				pAudioTypeComb->SetCurSel(0);
+				break;
+			case 1:
+				pVideoStandardComb->SetCurSel(0);
+				pVideoTypeComb->SetCurSel(0);
+				pColorFmtComb->SetCurSel(1);
+				pAudioTypeComb->SetCurSel(0);
+				break;
+			case 2:
+				pVideoStandardComb->SetCurSel(0);
+				pVideoTypeComb->SetCurSel(1);
+				pColorFmtComb->SetCurSel(0);
+				pAudioTypeComb->SetCurSel(1);
+				break;
+			case 3:
+				pVideoStandardComb->SetCurSel(0);
+				pVideoTypeComb->SetCurSel(2);
+				pColorFmtComb->SetCurSel(0);
+				pAudioTypeComb->SetCurSel(2);
+				break;
+			case 4:
+				pVideoStandardComb->SetCurSel(1);
+				pVideoTypeComb->SetCurSel(0);
+				pColorFmtComb->SetCurSel(0);
+				pAudioTypeComb->SetCurSel(0);
+				break;
+			case 5:
+				pVideoStandardComb->SetCurSel(1);
+				pVideoTypeComb->SetCurSel(0);
+				pColorFmtComb->SetCurSel(1);
+				pAudioTypeComb->SetCurSel(0);
+				break;
+			case 6:
+				pVideoStandardComb->SetCurSel(1);
+				pVideoTypeComb->SetCurSel(1);
+				pColorFmtComb->SetCurSel(0);
+				pAudioTypeComb->SetCurSel(1);
+				break;
+			case 7:
+				pVideoStandardComb->SetCurSel(1);
+				pVideoTypeComb->SetCurSel(2);
+				pColorFmtComb->SetCurSel(0);
+				pAudioTypeComb->SetCurSel(2);
+				break;
+			default:
+				break;
+			}
 			CString strName = _T("encodec");
 			pFileNameEdit->SetWindowText(strName);
 		}
