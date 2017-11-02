@@ -63,20 +63,26 @@ bool ecCodecFFmpegAudioEncoder::SetAudioSamplesBufInfo(const SDAudioSamplesBufIn
 		return false;
 	}
 
-	int channels = pAudioBufInfo->dwChannels;
-	int sample_rate = pAudioBufInfo->dwSamplesPerSec;
-	AVSampleFormat format = FFmpegFormatCovert::ConvertSamplesFormat(pAudioBufInfo->enumChannelSamplesFormat);
+	int srcChannels = pAudioBufInfo->dwChannels;
+	int srcSample_rate = pAudioBufInfo->dwSamplesPerSec;
+	AVSampleFormat srcFormat = FFmpegFormatCovert::ConvertSamplesFormat(pAudioBufInfo->enumChannelSamplesFormat);
+	SD_UINT64 srcChannelLayout = FFmpegFormatCovert::ConvertChannelLayout(pAudioBufInfo->enumAudioCFG);
+
+	int desChannels = m_pCodecCtx->channels;
+	int desSample_rate = m_pCodecCtx->sample_rate;
+	AVSampleFormat desFormat = m_pCodecCtx->sample_fmt;
+	SD_UINT64 desChannelLayout = m_pCodecCtx->channel_layout;
 
 	m_pAudioFifo = av_audio_fifo_alloc(m_pCodecCtx->sample_fmt, m_pCodecCtx->channels, m_pCodecCtx->frame_size * 10);
 	if (!m_pAudioFifo) {
 		return false;
 	}
 
-	m_nBytesPerSrcSample = pAudioBufInfo->dwChannels * av_get_bytes_per_sample(format);
+	m_nBytesPerSrcSample = pAudioBufInfo->dwChannels * av_get_bytes_per_sample(srcFormat);
 	m_pDestBuffer.reset(new SD_UINT8[AVCODEC_MAX_AUDIO_FRAME_SIZE]);
 
-	bool bSwr = (channels != m_pCodecCtx->channels || format != m_pCodecCtx->sample_fmt ||
-		sample_rate != m_pCodecCtx->sample_rate);
+	bool bSwr = (srcChannels != m_pCodecCtx->channels || srcFormat != m_pCodecCtx->sample_fmt ||
+		srcSample_rate != m_pCodecCtx->sample_rate);
 	if (!bSwr) { // 无需重采样直接返回
 		return true;
 	}
@@ -92,9 +98,8 @@ bool ecCodecFFmpegAudioEncoder::SetAudioSamplesBufInfo(const SDAudioSamplesBufIn
 		return false;
 	}
 
-	SD_UINT64 nChannelLayout = FFmpegFormatCovert::ConvertChannelLayout(pAudioBufInfo->enumAudioCFG);
-	m_pSwrCtx = swr_alloc_set_opts(nullptr, m_pCodecCtx->channel_layout, m_pCodecCtx->sample_fmt,
-		m_pCodecCtx->sample_rate, nChannelLayout, format, pAudioBufInfo->dwSamplesPerSec, 0, 0);
+	m_pSwrCtx = swr_alloc_set_opts(nullptr, desChannelLayout, desFormat, desSample_rate,
+		srcChannelLayout, srcFormat, srcSample_rate, 0, 0);
 
 	if (swr_is_initialized(m_pSwrCtx) == 0) {
 		swr_init(m_pSwrCtx);

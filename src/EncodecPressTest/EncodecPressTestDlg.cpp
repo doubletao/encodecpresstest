@@ -411,7 +411,7 @@ void CEncodecPressTestDlg::DoPlay()
 								if (nStay < 0)
 								{
 									nStay = 0;
-									PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("lost frame"));
+									//PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("lost frame"));
 								}
 								if (WaitForSingleObject(m_evtPlayStop, nStay) == WAIT_OBJECT_0)
 								{
@@ -1177,7 +1177,7 @@ SD_VIDEO_TYPE CEncodecPressTestDlg::GetCodecVideoType(int nIndex)
 		{
 			emRet = SDVIDEOTYPE_H264;
 		}
-		else if (nSel = 1)
+		else if (nSel == 1)
 		{
 			emRet = SDVIDEOTYPE_MPEG4;
 		}
@@ -1219,7 +1219,7 @@ SD_AUDIO_TYPE CEncodecPressTestDlg::GetCodecAudioType(int nIndex)
 		{
 			emRet = SDAUDIOTYPE_AAC;
 		}
-		else if (nSel = 1)
+		else if (nSel == 1)
 		{
 			emRet = SDAUDIOTYPE_MP3;
 		}
