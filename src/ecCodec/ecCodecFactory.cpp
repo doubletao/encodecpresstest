@@ -36,6 +36,7 @@ IecCodecProtocolDecoder * ecCodecFactory::GetProtocolDecoder(EmCodecProvider emC
 	{
 	case EMCodec_FFmpeg:
 	{
+		av_register_all();
 		pProtocolDecoder = new ecCodecFFmpegProtocolDecoder;
 	}
 		break;
@@ -54,6 +55,7 @@ IecCodecProtocolEncoder * ecCodecFactory::GetProtocolEncoder(EmCodecProvider emC
 	{
 	case EMCodec_FFmpeg:
 	{
+		av_register_all();
 		pProtocolEncoder = new ecCodecFFmpegProtocolEncoder;
 	}
 	break;
@@ -72,6 +74,7 @@ IecCodecVideoDecoder * ecCodecFactory::GetVideoDecoder(EmCodecProvider emCodecPr
 	{
 	case EMCodec_FFmpeg:
 	{
+		av_register_all();
 		pVideoDecoder = new ecCodecFFmpegVideoDecoder;
 	}
 	break;
@@ -90,6 +93,7 @@ IecCodecVideoEncoder * ecCodecFactory::GetVideoEncoder(EmCodecProvider emCodecPr
 	{
 	case EMCodec_FFmpeg:
 	{
+		av_register_all();
 		pVideoEncoder = new ecCodecFFmpegVideoEncoder;
 	}
 	break;
@@ -108,6 +112,7 @@ IecCodecAudioDecoder * ecCodecFactory::GetAudioDecoder(EmCodecProvider emCodecPr
 	{
 	case EMCodec_FFmpeg:
 	{
+		av_register_all();
 		pAudioDecoder = new ecCodecFFmpegAudioDecoder;
 	}
 	break;
@@ -126,6 +131,7 @@ IecCodecAudioEncoder * ecCodecFactory::GetAudioEncoder(EmCodecProvider emCodecPr
 	{
 	case EMCodec_FFmpeg:
 	{
+		av_register_all();
 		pAudioEncoder = new ecCodecFFmpegAudioEncoder;
 	}
 	break;

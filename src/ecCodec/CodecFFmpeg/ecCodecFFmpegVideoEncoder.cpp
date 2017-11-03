@@ -157,7 +157,7 @@ bool ecCodecFFmpegVideoEncoder::PutFrame(const SD_UINT8 * pFrameBuffer, const SD
 	av_image_fill_arrays(m_pSourceFrame->data, m_pSourceFrame->linesize, pFrameBuffer,
 		(AVPixelFormat)m_pSourceFrame->format, m_pSourceFrame->width, m_pSourceFrame->height, 4);
 
-	if (1)
+	if (0)
 	{
 		FILE * file;
 		fopen_s(&file, "b.yuv", "wb+");

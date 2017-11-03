@@ -351,7 +351,7 @@ void CEncodecPressTestDlg::DoPlay()
 								}
 
 								//音频先写到文件里
-								//fwrite(pAudioData, 1, numAudioSample * 4, pAudioFile);
+								fwrite(pAudioData, 1, numAudioSample * 4, pAudioFile);
 #ifdef ENABLE_ENCODE
 								for (size_t i = 0; i < 8; i++)
 								{
