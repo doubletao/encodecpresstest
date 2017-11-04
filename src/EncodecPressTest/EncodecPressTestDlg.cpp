@@ -424,8 +424,8 @@ void CEncodecPressTestDlg::DoPlay()
 								if (m_nFrame != m_nDispFrame)
 								{
 									SDRFrameInfo frameInfo;
-									pDecoder->GetAudioSamples(m_nFrame * SamplePerFrame, SamplePerFrame, pAudioData, &numAudioSample);
-									pDecoder->GetVideoBuffer(-1, pVideoData, &frameInfo);
+									pDecoder->GetVideoBuffer(m_nFrame, pVideoData, &frameInfo);
+									pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
 
 									strMsg.Format(_T("m_nFrame=%d, m_nFrame * SamplePerFrame=%d"), m_nFrame, m_nFrame * SamplePerFrame);
 									PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
