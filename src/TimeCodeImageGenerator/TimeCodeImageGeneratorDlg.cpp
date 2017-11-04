@@ -409,9 +409,9 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 	memset(pVideoBuf, 0, nVideoBufSize);
 	//配置输出文件信息
 	SDStreamMediaInfo streamInfo;
-	CString strSufix = GetPresetMediaInfo(EmVideoStandard_PAL, SDVIDEOTYPE_H264, SDCOLORFORMAT_YUVP_420, SDAUDIOTYPE_AAC, 48000, streamInfo);
+	CString strSufix = GetPresetMediaInfo(EmVideoStandard_HD, SDVIDEOTYPE_MPEG2_IFRAME, SDCOLORFORMAT_YUVP_422, SDAUDIOTYPE_WAVE_PCM, 48000, streamInfo);
 	streamInfo.sVideoMediaInfo.dwGOPSize = 1;
-	pEncodec->SetSinkFile(&streamInfo, ConverCStringToStdString(strFilePreName + _T("video") + strSufix).c_str());
+	bool bRet =	pEncodec->SetSinkFile(&streamInfo, ConverCStringToStdString(strFilePreName + _T("video") + strSufix).c_str());
 	//设置视频画面输入格式
 	SDVideoFrameImageBufInfo imageBufInfo;
 	imageBufInfo.dwXSize = nWidth;
@@ -452,9 +452,12 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 			memset(pPixBuf, 0, nVideoBufSize);
 			int nRead = fileImage.Read(pPixBuf, 8294454 - 1920 * 1080 * 4);
 			nRead = fileImage.Read(pPixBuf, 1920 * 1080 * 4);
-			for (size_t i = 0; i < nVideoBufSize / 4; i++)
+			for (size_t x = 0; x < nWidth; x++)
 			{
-
+				for (size_t y = 0; y < nHeight; y++)
+				{
+					memcpy(pVideoBuf + ((nHeight - y - 1) * nWidth + x) * 4, pPixBuf + y * nWidth + x, 4);
+				}
 			}
 			fileImage.Close();
 			delete[] pPixBuf;
