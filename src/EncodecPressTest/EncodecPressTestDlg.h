@@ -7,14 +7,9 @@
 #include <string>
 #include "afxcmn.h"
 #include "IecCodecFactory.h"
+#include "EncodecThreader.h"
 
 const int MSG_PUSHINFO = WM_USER + 0x00001;
-
-enum EmVideoStandard
-{
-	EmVideoStandard_PAL,
-	EmVideoStandard_HD,
-};
 
 // CEncodecPressTestDlg ¶Ô»°¿ò
 class CEncodecPressTestDlg : public CDialogEx
@@ -25,7 +20,7 @@ private:
 	unsigned long long m_nDispFrame;
 	int m_nTimebaseDen;
 	int m_nTimebaseNum;
-	IecCodecProtocolEncoder * m_pEncoder[8];
+	EncodecThreader * m_pEncoder[8];
 	IecCodecFactory * m_ecfactory;
 	CRITICAL_SECTION m_lock;
 private:

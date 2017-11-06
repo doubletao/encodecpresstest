@@ -13,89 +13,6 @@
 #define new DEBUG_NEW
 #endif
 
-enum EmVideoStandard
-{
-	EmVideoStandard_PAL,
-	EmVideoStandard_HD,
-};
-
-CString GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, DWORD dwSamplePerSec, OUT SDStreamMediaInfo & streamInfo)
-{
-	switch (emVideoStandard)
-	{
-	case EmVideoStandard_PAL:
-		streamInfo.sVideoMediaInfo.dwWidth = 720;////////////////////////////////////////////////////////////////////////////
-		streamInfo.sVideoMediaInfo.dwHeight = 576;////////////////////////////////////////////////////////////////////////////
-		streamInfo.sVideoMediaInfo.dwStandardRate = 25;////////////////////////////////////////////////////////////////////////////
-		streamInfo.sVideoMediaInfo.dwStandardScale = 1;////////////////////////////////////////////////////////////////////////////
-		streamInfo.sVideoMediaInfo.dwDisplayWidth = 4;////////////////////////////////////////////////////////////////////////////
-		streamInfo.sVideoMediaInfo.dwDisplayHeight = 3;////////////////////////////////////////////////////////////////////////////
-		break;
-	case EmVideoStandard_HD:
-		streamInfo.sVideoMediaInfo.dwWidth = 1920;////////////////////////////////////////////////////////////////////////////
-		streamInfo.sVideoMediaInfo.dwHeight = 1080;////////////////////////////////////////////////////////////////////////////
-		streamInfo.sVideoMediaInfo.dwStandardRate = 25;////////////////////////////////////////////////////////////////////////////
-		streamInfo.sVideoMediaInfo.dwStandardScale = 1;////////////////////////////////////////////////////////////////////////////
-		streamInfo.sVideoMediaInfo.dwDisplayWidth = 16;////////////////////////////////////////////////////////////////////////////
-		streamInfo.sVideoMediaInfo.dwDisplayHeight = 9;////////////////////////////////////////////////////////////////////////////
-		break;
-	default:
-		break;
-	}
-
-	streamInfo.enumStreamMediaType = SDSTREAMTYPE_OPENDML_AVI;
-	streamInfo.dwStreamMediaSubType = 0;
-	streamInfo.dwVideoStreamCount = 1;
-	streamInfo.dwTotalAverDataRateInBitsPerSec = 0;
-	streamInfo.dwTotalMaxDataRateInBitsPerSec = 0;
-	streamInfo.dwTotalMinDataRateInBitsPerSec = 0;
-	streamInfo.sVideoMediaInfo.enumScanMode = SDVIDEOSCANMODE_FirstFieldTop;
-	streamInfo.sVideoMediaInfo.enumColorFormat = emColorFormat;//(SDCOLORFORMAT_YUVP_420)////////////////////////////////////////////////////////////////////////////
-	streamInfo.sVideoMediaInfo.enumVideoType = emVideoType; //(SDVIDEOTYPE_H264)////////////////////////////////////////////////////////////////////////////
-	streamInfo.sVideoMediaInfo.dwVideoSubType = PROFILE_AVC_MAIN;
-	streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 25000000;// 400000;////////////////////////////////////////////////////////////////////////////
-	streamInfo.sVideoMediaInfo.enumDataRateType = SDDATARATE_CONSTANT;
-	streamInfo.sVideoMediaInfo.dwGOPSize = 100;////////////////////////////////////////////////////////////////////////////
-	streamInfo.sVideoMediaInfo.dwReferencePeriod = 1;
-	streamInfo.sVideoMediaInfo.bIsClipped = 1;
-	streamInfo.sVideoMediaInfo.dwMaxDataRateInBitsPerSec = 0;
-	streamInfo.sVideoMediaInfo.dwMinDataRateInBitsPerSec = 0;
-	streamInfo.sVideoMediaInfo.dwStruSize = sizeof(SDVideoMediaInfo);
-	streamInfo.dwAudioStreamCount = 1;
-	streamInfo.sAudioMediaInfo.enumAudioType = emAudioType;		// 音频编解码类型。////////////////////////////////////////////////////////////////////////////
-	streamInfo.sAudioMediaInfo.dwAudioSubType = 0;		// 音频编解码的子类型,子类型定义随enumAudioType不同而不同
-	streamInfo.sAudioMediaInfo.dwChannels = 2;			// 声道数目
-	streamInfo.sAudioMediaInfo.dwSamplesPerSec = dwSamplePerSec;	// 每秒采样数量 ////////////////////////////////////////////////////////////////////////////
-	streamInfo.sAudioMediaInfo.dwBitsPerSample = 32;	// 采样位数 
-	streamInfo.sAudioMediaInfo.dwAvgBitsPerSec = 32 * dwSamplePerSec;	// 音频码率 bits
-	streamInfo.sAudioMediaInfo.dwBlockAlign = 1;		// 数据块对齐单位(每个采样样本需要的字节数), 声道数*量化数/8, 量化数(16,20?,24,32...)
-	streamInfo.sAudioMediaInfo.enumAudioCFG = SDAUDIOCFG_STEREO;		//声道属性
-	streamInfo.sAudioMediaInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;	//音频声道采样数据格式(AV_SAMPLE_FMT_S16)
-	streamInfo.sAudioMediaInfo.extradata = nullptr;
-	streamInfo.sAudioMediaInfo.extradata_size = 0;
-	streamInfo.sAudioMediaInfo.dwStruSize = sizeof(SDAudioMediaInfo);			// 结构大小
-	streamInfo.dwStruSize = sizeof(SDStreamMediaInfo);
-
-	CString strRet;
-	if (emVideoType == SDVIDEOTYPE_H264 && emAudioType == SDAUDIOTYPE_AAC)
-	{
-		strRet = _T(".mp4");
-	}
-	else if (emVideoType == SDVIDEOTYPE_MPEG4 && emAudioType == SDAUDIOTYPE_MP3)
-	{
-		strRet = _T(".mp4");
-	}
-	else if (emVideoType == SDVIDEOTYPE_MPEG2_IFRAME && emAudioType == SDAUDIOTYPE_WAVE_PCM)
-	{
-		strRet = _T(".avi");
-	}
-	else
-	{
-		strRet = _T(".avi");
-	}
-	return strRet;
-}
-
 std::string ConverCStringToStdString(CString & cstrValue)
 {
 	std::string strRet;
@@ -405,8 +322,8 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 	}
 	//开辟视频buf
 	int nVideoBufSize = nWidth * nHeight * 4;
-	SD_UINT8 * pVideoBuf = new SD_UINT8[nVideoBufSize];
-	memset(pVideoBuf, 0, nVideoBufSize);
+	SD_UINT8 * m_pVideoBuf = new SD_UINT8[nVideoBufSize];
+	memset(m_pVideoBuf, 0, nVideoBufSize);
 	//配置输出文件信息
 	SDStreamMediaInfo streamInfo;
 	CString strSufix = GetPresetMediaInfo(EmVideoStandard_HD, SDVIDEOTYPE_MPEG2_IFRAME, SDCOLORFORMAT_YUVP_422, SDAUDIOTYPE_WAVE_PCM, 48000, streamInfo);
@@ -456,7 +373,7 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 			{
 				for (size_t y = 0; y < nHeight; y++)
 				{
-					memcpy(pVideoBuf + ((nHeight - y - 1) * nWidth + x) * 4, pPixBuf + y * nWidth + x, 4);
+					memcpy(m_pVideoBuf + ((nHeight - y - 1) * nWidth + x) * 4, pPixBuf + y * nWidth + x, 4);
 				}
 			}
 			fileImage.Close();
@@ -468,7 +385,7 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 		frameInfoTmp.qwDTS = i * 40;			// 解码时间(90Khz单位)	8---44
 		frameInfoTmp.qwPTS = i * 40;			// 展现时间(90Khz单位)	8---52
 		frameInfoTmp.dwShowIndex = i;	// 帧数据显示顺序			4---104
-		pEncodec->PutVideoBuffer(pVideoBuf, false, &frameInfoTmp);
+		pEncodec->PutVideoBuffer(m_pVideoBuf, false, &frameInfoTmp);
 		if (nAudioReadCursor + 1920 < nAudioSampleWhole)
 		{
 			pEncodec->PutAudioSamples((SD_UINT8 *)(pAudioBufer + nAudioReadCursor), 1920);
@@ -488,8 +405,8 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 		}
 	}
 	fileDebug.Close();
-	delete[] pVideoBuf;
-	pVideoBuf = nullptr;
+	delete[] m_pVideoBuf;
+	m_pVideoBuf = nullptr;
 	delete[] pAudioBufer;
 	pAudioBufer = nullptr;
 	ecFacetory->DeleteProtocolEncoder(pEncodec);

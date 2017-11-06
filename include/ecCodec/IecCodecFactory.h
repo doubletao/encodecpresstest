@@ -6,6 +6,13 @@
 #include "IecCodecVideoEncoder.h"
 #include "IecCodecAudioDecoder.h"
 #include "IecCodecAudioEncoder.h"
+
+enum EmVideoStandard
+{
+	EmVideoStandard_PAL,
+	EmVideoStandard_HD,
+};
+
 enum EmCodecProvider
 {
 	EMCodec_Unknown = -1,
@@ -32,3 +39,5 @@ public:
 
 EASY_CODEC_API_EXPORT	IecCodecFactory * ecCodec_CreateCodecFactory();
 EASY_CODEC_API_EXPORT	bool	ecCodec_ReleaseCodecFactory(IecCodecFactory *& pCodecFactory);
+
+EASY_CODEC_API_EXPORT LPCTSTR GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, DWORD dwSamplePerSec, OUT SDStreamMediaInfo & streamInfo);
