@@ -547,6 +547,12 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 		pEdit->SetLimitText(-1);
 	}
 
+	pEdit = (CEdit *)GetDlgItem(IDC_EDIT_FILE_PATH);
+	if (pEdit && ::IsWindow(pEdit->GetSafeHwnd()))
+	{
+		pEdit->SetWindowText(_T("rtmp://live.hkstv.hk.lxdns.com/live/hks"));
+	}
+
 	m_ctrSlider.SetRange(0, 100);
 	m_ctrSlider.SetTicFreq(10);
 
