@@ -31,7 +31,7 @@ LPCTSTR GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVide
 		streamInfo.sVideoMediaInfo.dwStandardScale = 1;////////////////////////////////////////////////////////////////////////////
 		streamInfo.sVideoMediaInfo.dwDisplayWidth = 4;////////////////////////////////////////////////////////////////////////////
 		streamInfo.sVideoMediaInfo.dwDisplayHeight = 3;////////////////////////////////////////////////////////////////////////////
-		streamInfo.sVideoMediaInfo.enumColorPrimaries = SDCOLORPRIMARIES_ITU_R470_2BG;;			// 源基色的色度坐标(ISO13818-2)
+		streamInfo.sVideoMediaInfo.enumColorPrimaries = SDCOLORPRIMARIES_ITU_R470_2BG;			// 源基色的色度坐标(ISO13818-2)
 		streamInfo.sVideoMediaInfo.enumColorTransfer = SDCOLORTRANSFER_ITU_R470_2BG;			// 光电转换特性(ISO13818-2)
 		streamInfo.sVideoMediaInfo.enumColorMatrix = SDCOLORMATRIX_ITU_R470_2BG;			// 颜色空间变换系数(ISO13818-2)
 		break;
@@ -42,7 +42,7 @@ LPCTSTR GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVide
 		streamInfo.sVideoMediaInfo.dwStandardScale = 1;////////////////////////////////////////////////////////////////////////////
 		streamInfo.sVideoMediaInfo.dwDisplayWidth = 16;////////////////////////////////////////////////////////////////////////////
 		streamInfo.sVideoMediaInfo.dwDisplayHeight = 9;////////////////////////////////////////////////////////////////////////////
-		streamInfo.sVideoMediaInfo.enumColorPrimaries = SDCOLORPRIMARIES_ITU_R709;;			// 源基色的色度坐标(ISO13818-2)
+		streamInfo.sVideoMediaInfo.enumColorPrimaries = SDCOLORPRIMARIES_ITU_R709;			// 源基色的色度坐标(ISO13818-2)
 		streamInfo.sVideoMediaInfo.enumColorTransfer = SDCOLORTRANSFER_ITU_R709;			// 光电转换特性(ISO13818-2)
 		streamInfo.sVideoMediaInfo.enumColorMatrix = SDCOLORMATRIX_ITU_R709;			// 颜色空间变换系数(ISO13818-2)
 		break;

@@ -18,7 +18,6 @@ private:
 	AVPixelFormat m_emSrcPixFmt;
 	SD_UINT32 m_nDesWidth;
 	SD_UINT32 m_nDesHeight;
-	int m_arrSrcLinesize[AV_NUM_DATA_POINTERS];
 	AVPixelFormat m_emDesPixFmt;
 	SwsContext* m_pScaleCtx;
 	AVFrame	* m_pScaleFrame;
@@ -28,7 +27,7 @@ public:
 public:
 	virtual bool InitScaler(SD_UINT32 nSrcWidth, SD_UINT32 nSrcHeight, SD_COLOR_FORMAT emSrcColorFormat, SD_UINT32 nDesWidth, SD_UINT32 nDesHeight, SD_COLOR_FORMAT emDesColorFormat);
 	virtual bool Scale(SD_UINT8 * pInBuf, SD_UINT8 * pOutBuf);
-	bool Scale(uint8_t ** pInData, uint8_t **& pOutData);
+	bool Scale(uint8_t ** pInData, const int srcStride[], uint8_t **& pOutData);
 	int * GetDesLineSize();
 	virtual bool IsInitialized();
 	virtual SD_UINT32 GetBufferSize();

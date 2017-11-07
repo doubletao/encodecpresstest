@@ -513,7 +513,63 @@ SD_UINT32 FFmpegFormatCovert::ConvertVideoCodecSubType(SD_UINT32 codecTag)
 
 SD_VIDEOSCAN_MODE FFmpegFormatCovert::ConvertVideoFieldOrder(AVFieldOrder fieldOrder)
 {
-	return SD_VIDEOSCAN_MODE();
+	SD_VIDEOSCAN_MODE emRet = SDVIDEOSCANMODE_Invalid;
+	switch (fieldOrder)
+	{
+	case AV_FIELD_UNKNOWN:
+		emRet = SDVIDEOSCANMODE_Invalid;
+		break;
+	case AV_FIELD_PROGRESSIVE:
+		emRet = SDVIDEOSCANMODE_Progressive;
+		break;
+	case AV_FIELD_TT:
+		emRet = SDVIDEOSCANMODE_FirstFieldTop;
+		break;
+	case AV_FIELD_BB:
+		emRet = SDVIDEOSCANMODE_SecondFieldTop;
+		break;
+	case AV_FIELD_TB:
+		emRet = SDVIDEOSCANMODE_FirstFieldTopBackToBack;
+		break;
+	case AV_FIELD_BT:
+		emRet = SDVIDEOSCANMODE_SecondFieldTopBackToBack;
+		break;
+	default:
+		break;
+	}
+	return emRet;
+}
+
+AVFieldOrder FFmpegFormatCovert::ConvertVideoFieldOrder(SD_VIDEOSCAN_MODE emScanMode)
+{
+	AVFieldOrder emRet = AV_FIELD_UNKNOWN;
+	switch (emScanMode)
+	{
+	case SDVIDEOSCANMODE_Invalid:
+		emRet = AV_FIELD_UNKNOWN;
+		break;
+	case SDVIDEOSCANMODE_FirstFieldTop:
+		emRet = AV_FIELD_TT;
+		break;
+	case SDVIDEOSCANMODE_SecondFieldTop:
+		emRet = AV_FIELD_BB;
+		break;
+	case SDVIDEOSCANMODE_Progressive:
+		emRet = AV_FIELD_PROGRESSIVE;
+		break;
+	case SDVIDEOSCANMODE_ProgressiveSegmented:
+		emRet = AV_FIELD_PROGRESSIVE;
+		break;
+	case SDVIDEOSCANMODE_FirstFieldTopBackToBack:
+		emRet = AV_FIELD_TB;
+		break;
+	case SDVIDEOSCANMODE_SecondFieldTopBackToBack:
+		emRet = AV_FIELD_BT;
+		break;
+	default:
+		break;
+	}
+	return emRet;
 }
 
 SD_COLOR_FORMAT FFmpegFormatCovert::ConvertColorFormat(AVPixelFormat pixelFormat)

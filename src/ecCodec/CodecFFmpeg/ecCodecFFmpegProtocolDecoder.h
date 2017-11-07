@@ -34,6 +34,7 @@ private:
 	int32_t m_nSrcSamplePerSec;
 	bool m_bAudioSeek;
 
+	int m_nDesChannelCount;
 	SD_INT32 m_nLastSampleNum;
 	AVAudioFifo*	m_pAudioFifo;
 

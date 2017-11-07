@@ -21,6 +21,7 @@ ecCodecFFmpegProtocolDecoder::ecCodecFFmpegProtocolDecoder()
 	, m_nSrcSamplePerSec(0)
 	, m_pAudioFifo(nullptr)
 	, m_nLastSampleNum(0)
+	, m_nDesChannelCount(0)
 {
 	InitializeCriticalSection(&m_lock);
 }
@@ -60,32 +61,54 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 					//找到视频流后处理视频
 					//根据编码格式查找解码器
 					//先拿到解码参数
-					AVCodecParameters * pVideoCodecParm = m_pFormatCtx->streams[m_nVideoIndex]->codecpar;
-					if (pVideoCodecParm)
+					AVStream * pStreams = m_pFormatCtx->streams[m_nVideoIndex];
+					if (pStreams)
 					{
-						SDVideoMediaInfo videoInfo;
-						videoInfo.enumColorFormat = FFmpegFormatCovert::ConvertColorFormat((AVPixelFormat)m_pFormatCtx->streams[m_nVideoIndex]->codecpar->format);
-						videoInfo.dwWidth = m_pFormatCtx->streams[m_nVideoIndex]->codecpar->width;
-						videoInfo.dwHeight = m_pFormatCtx->streams[m_nVideoIndex]->codecpar->height;
-						videoInfo.dwDataRateInBitsPerSec = (SD_UINT32)m_pFormatCtx->streams[m_nVideoIndex]->codecpar->bit_rate;
-						videoInfo.enumVideoType = FFmpegFormatCovert::ConvertVideoCodecType(m_pFormatCtx->streams[m_nVideoIndex]->codecpar->codec_id);
-						videoInfo.dwDisplayWidth = (SD_UINT32)(m_pFormatCtx->streams[m_nVideoIndex]->codecpar->extradata);
-						videoInfo.dwDisplayHeight = m_pFormatCtx->streams[m_nVideoIndex]->codecpar->extradata_size;
-						//创建解码器
-						if (m_VideoDecoder.InitVideoDecoder(videoInfo))
+						AVCodecParameters * pVideoCodecParm = pStreams->codecpar;
+						if (pVideoCodecParm)
 						{
-							m_pVideoPacket = (AVPacket *)av_malloc(sizeof(AVPacket));
-							av_init_packet(m_pVideoPacket);
-							m_bIsInitialized = true;
+							SDVideoMediaInfo videoInfo;
+							videoInfo.enumColorFormat = FFmpegFormatCovert::ConvertColorFormat((AVPixelFormat)pVideoCodecParm->format);
+							videoInfo.dwWidth = pVideoCodecParm->width;
+							videoInfo.dwHeight = pVideoCodecParm->height;
+							videoInfo.dwDataRateInBitsPerSec = (SD_UINT32)pVideoCodecParm->bit_rate;
+							videoInfo.enumVideoType = FFmpegFormatCovert::ConvertVideoCodecType(pVideoCodecParm->codec_id);
+							videoInfo.dwDisplayWidth = (SD_UINT32)(pVideoCodecParm->extradata);
+							videoInfo.dwDisplayHeight = pVideoCodecParm->extradata_size;
+							videoInfo.enumScanMode = FFmpegFormatCovert::ConvertVideoFieldOrder(pVideoCodecParm->field_order);
+							videoInfo.dwStandardScale = pVideoCodecParm->profile;
+							videoInfo.dwStandardRate = pVideoCodecParm->level;
+							videoInfo.dwMaxDataRateInBitsPerSec = pVideoCodecParm->sample_aspect_ratio.den;
+							videoInfo.dwMinDataRateInBitsPerSec = pVideoCodecParm->sample_aspect_ratio.num;
+#if 0
+							AVCodecContext * pCodecCtx = nullptr;
+							AVCodecID codecID = pVideoCodecParm->codec_id;
+							AVCodec * pVideoCodec = avcodec_find_decoder(codecID);
+							if (pVideoCodec)
+							{
+								//解码参数转成解码上下文
+								pCodecCtx = avcodec_alloc_context3(pVideoCodec);
+								avcodec_parameters_to_context(pCodecCtx, pVideoCodecParm);
+							}
+							if (m_VideoDecoder.InitVideoDecoder(pCodecCtx, pVideoCodec))
+#else if
+							//创建解码器
+							if (m_VideoDecoder.InitVideoDecoder(videoInfo))
+#endif
+							{
+								m_pVideoPacket = (AVPacket *)av_malloc(sizeof(AVPacket));
+								av_init_packet(m_pVideoPacket);
+								m_bIsInitialized = true;
+							}
+							else
+							{
+								printf("failed to initial video decoder\n");
+							}
 						}
 						else
 						{
-							printf("failed to initial video decoder\n");
+							printf("failed to get video codecparam\n");
 						}
-					}
-					else
-					{
-						printf("failed to get video codecparam\n");
 					}
 				}
 				else
@@ -110,6 +133,7 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 							m_pAudioPacket = (AVPacket *)av_malloc(sizeof(AVPacket));
 							av_init_packet(m_pAudioPacket);
 							m_nSrcSamplePerSec = pAudioCodecParm->sample_rate;
+							m_nDesChannelCount = pAudioCodecParm->channels;
 						}
 						else
 						{
@@ -421,6 +445,7 @@ bool ecCodecFFmpegProtocolDecoder::SetAudioSamplesBufInfo(const SDAudioSamplesBu
 		if (m_AudioDecoder.SetAudioMediaInfo(&mediaInfo))
 		{
 			m_nDesSamplePerSec = pAudioBufInfo->dwSamplesPerSec;
+			m_nDesChannelCount = pAudioBufInfo->dwChannels;
 			return true;
 		}
 	}
@@ -664,7 +689,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 				if (m_pFormatCtx && m_nAudioIndex > -1
 					&& AV_CODEC_ID_FIRST_AUDIO == m_pFormatCtx->streams[m_nAudioIndex]->codecpar->codec_id)
 				{
-					int nChannelCount = 2;
+					int nChannelCount = m_nDesChannelCount;
 					if (dwSampleNum != m_nLastSampleNum)
 					{
 						if (m_pAudioFifo)
@@ -930,6 +955,7 @@ bool ecCodecFFmpegProtocolDecoder::Release()
 		av_audio_fifo_free(m_pAudioFifo);
 		m_pAudioFifo = nullptr;
 	}
+	m_nDesChannelCount = 0;
 	m_nLastSampleNum = 0;
 	m_nCurrentFrame = 0;
 	m_nCurrentSample = 0;

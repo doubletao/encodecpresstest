@@ -28,6 +28,7 @@ public:
 	static SD_VIDEO_TYPE ConvertVideoCodecType(AVCodecID codecID);
 	static SD_UINT32 ConvertVideoCodecSubType(SD_UINT32 codecTag);
 	static SD_VIDEOSCAN_MODE ConvertVideoFieldOrder(AVFieldOrder fieldOrder);
+	static AVFieldOrder ConvertVideoFieldOrder(SD_VIDEOSCAN_MODE emScanMode);
 	static SD_COLOR_FORMAT ConvertColorFormat(AVPixelFormat pixFmt);
 	static AVPixelFormat ConvertPixelFormat(SD_COLOR_FORMAT emColorFormat);
 	static SD_COLOR_PRIMARIES ConvertColorPrimaries(AVColorPrimaries colorPrimaries);

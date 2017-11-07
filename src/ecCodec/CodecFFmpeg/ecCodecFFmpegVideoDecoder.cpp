@@ -39,10 +39,15 @@ bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(const SDVideoMediaInfo & pSrcVi
 			m_pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
 			m_pCodecCtx->extradata = (uint8_t *)pSrcVideoInfo.dwDisplayWidth;
 			m_pCodecCtx->extradata_size = pSrcVideoInfo.dwDisplayHeight;
-			//if (m_pCodecCtx->codec_id == AV_CODEC_ID_H264) 
-			//{
-			//	m_pCodecCtx->flags2 |= CODEC_FLAG2_FAST;
-			//}
+			m_pCodecCtx->field_order = FFmpegFormatCovert::ConvertVideoFieldOrder(pSrcVideoInfo.enumScanMode);
+			m_pCodecCtx->profile = pSrcVideoInfo.dwStandardScale;
+			m_pCodecCtx->level = pSrcVideoInfo.dwStandardRate;
+			m_pCodecCtx->sample_aspect_ratio.den = pSrcVideoInfo.dwMaxDataRateInBitsPerSec;
+			m_pCodecCtx->sample_aspect_ratio.num = pSrcVideoInfo.dwMinDataRateInBitsPerSec;
+			if (m_pCodecCtx->codec_id == AV_CODEC_ID_H264) 
+			{
+				m_pCodecCtx->flags2 |= CODEC_FLAG2_FAST;
+			}
 				//根据解码上下文打开解码器
 			if (avcodec_open2(m_pCodecCtx, pVideoCodec, nullptr) == 0)
 			{
@@ -72,6 +77,33 @@ bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(const SDVideoMediaInfo & pSrcVi
 	else
 	{
 		printf("failed to get codexcontext\n");
+	}
+	return m_bIsInitialized;
+}
+
+bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(AVCodecContext * pCodecCtx, AVCodec * pVideoCodec)
+{
+	Release();
+	m_pCodecCtx = pCodecCtx;
+	//根据解码上下文打开解码器
+	if (avcodec_open2(m_pCodecCtx, pVideoCodec, nullptr) == 0)
+	{
+		m_pFrame = av_frame_alloc();
+		if (m_pFrame)
+		{
+			m_nDesWidth = m_pCodecCtx->width;
+			m_nDesHeight = m_pCodecCtx->height;
+			m_emDesColorFormat = FFmpegFormatCovert::ConvertColorFormat(m_pCodecCtx->pix_fmt);
+			m_bIsInitialized = true;
+		}
+		else
+		{
+			printf("failed to create srcframe\n");
+		}
+	}
+	else
+	{
+		printf("failed to open codec\n");
 	}
 	return m_bIsInitialized;
 }
@@ -142,20 +174,53 @@ bool ecCodecFFmpegVideoDecoder::GetUnCompressFrame(SD_UINT8 *& lpFrameBuffer, SD
 		if (m_VideoScaler.IsInitialized())
 		{
 			uint8_t ** pScaledData = nullptr;
-			m_VideoScaler.Scale(m_pFrame->data, pScaledData);
 			if (0)
 			{
 				FILE * file;
 				fopen_s(&file, "scaled.yuv", "wb+");
 				if (file)
 				{
-					int y_size = m_nDesWidth * m_nDesHeight;
-					fwrite(pScaledData[0], 1, y_size, file);    //Y 
-					fwrite(pScaledData[1], 1, y_size / 4, file);  //U
-					fwrite(pScaledData[2], 1, y_size / 4, file);  //V
+					int y_size = m_pFrame->width * m_pFrame->height;
+					fwrite(m_pFrame->data[0], 1, y_size, file);    //Y 
+					fwrite(m_pFrame->data[1], 1, y_size / 4, file);  //U
+					fwrite(m_pFrame->data[2], 1, y_size / 4, file);  //V
 					fclose(file);
 				}
 			}
+			if (0)
+			{
+				FILE * file;
+				fopen_s(&file, "scaled.yuv", "wb+");
+				if (file)
+				{
+					int nSize = m_pFrame->width * m_pFrame->height * 2;
+					char * video_decode_buf = new char[nSize];
+					int i = 0;
+					int j = 0;
+					int k = 0;
+					for (i = 0; i < m_pFrame->height; i++)
+					{
+						memcpy(video_decode_buf + m_pFrame->width*i,
+							m_pFrame->data[0] + m_pFrame->linesize[0] * i,
+							m_pFrame->width);
+					}
+					for (j = 0; j < m_pFrame->height; j++)
+					{
+						memcpy(video_decode_buf + m_pFrame->width*i + m_pFrame->width / 2 * j,
+							m_pFrame->data[1] + m_pFrame->linesize[1] * j,
+							m_pFrame->width / 2);
+					}
+					for (k = 0; k < m_pFrame->height; k++)
+					{
+						memcpy(video_decode_buf + m_pFrame->width*i + m_pFrame->width / 2 * j + m_pFrame->width / 2 * k,
+							m_pFrame->data[2] + m_pFrame->linesize[2] * k,
+							m_pFrame->width / 2);
+					}
+					fwrite(video_decode_buf, nSize, 1, file);
+					fclose(file);
+				}
+			}
+			m_VideoScaler.Scale(m_pFrame->data, m_pFrame->linesize, pScaledData);
 			FFmpegFormatCovert::ConvertPDataToBuffer(pScaledData, m_VideoScaler.GetDesLineSize(), lpFrameBuffer, m_VideoScaler.GetBufferSize(),
 				FFmpegFormatCovert::ConvertPixelFormat(m_emDesColorFormat), m_nDesWidth, m_nDesHeight, sizeof(SD_UINT8));
 			pFrameInfo->iSize = m_VideoScaler.GetBufferSize();

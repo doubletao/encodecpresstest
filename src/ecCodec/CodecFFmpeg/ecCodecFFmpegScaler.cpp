@@ -14,7 +14,6 @@ ecCodecFFmpegScaler::ecCodecFFmpegScaler()
 	, m_nDesHeight(0)
 	, m_emDesPixFmt(AV_PIX_FMT_NONE)
 {
-	memset(m_arrSrcLinesize, 0, sizeof(int) * AV_NUM_DATA_POINTERS);
 }
 
 
@@ -75,10 +74,6 @@ bool ecCodecFFmpegScaler::InitScaler(SD_UINT32 nSrcWidth, SD_UINT32 nSrcHeight, 
 			printf("av_image_alloc failed\n");
 			return false;
 		}
-		for (size_t i = 0; i < AV_NUM_DATA_POINTERS; i++)
-		{
-			m_arrSrcLinesize[i] = pFrame->linesize[i];
-		}
 		if (pFrame)
 		{
 			av_frame_free(&pFrame);
@@ -130,11 +125,11 @@ bool ecCodecFFmpegScaler::Scale(SD_UINT8 * pInBuf, SD_UINT8 * pOutBuf)
 	return false;
 }
 
-bool ecCodecFFmpegScaler::Scale(uint8_t ** pInData, uint8_t **& pOutData)
+bool ecCodecFFmpegScaler::Scale(uint8_t ** pInData, const int srcStride[], uint8_t **& pOutData)
 {
 	if (m_bInitialized)
 	{
-		sws_scale(m_pScaleCtx, pInData, m_arrSrcLinesize, 0, m_nSrcHeight,
+		sws_scale(m_pScaleCtx, pInData, srcStride, 0, m_nSrcHeight,
 			m_pScaleFrame->data, m_pScaleFrame->linesize);
 		pOutData = m_pScaleFrame->data;
 		if (0)
@@ -147,6 +142,39 @@ bool ecCodecFFmpegScaler::Scale(uint8_t ** pInData, uint8_t **& pOutData)
 				fwrite(m_pScaleFrame->data[0], 1, y_size, file);    //Y 
 				fwrite(m_pScaleFrame->data[1], 1, y_size / 4, file);  //U
 				fwrite(m_pScaleFrame->data[2], 1, y_size / 4, file);  //V
+				fclose(file);
+			}
+		}
+		if (0)
+		{
+			FILE * file;
+			fopen_s(&file, "src.yuv", "wb+");
+			if (file)
+			{
+				int nSize = m_pScaleFrame->width * m_pScaleFrame->height * 2;
+				char * video_decode_buf = new char[nSize];
+				int i = 0;
+				int j = 0;
+				int k = 0;
+				for (i = 0; i < m_pScaleFrame->height; i++)
+				{
+					memcpy(video_decode_buf + m_pScaleFrame->width*i,
+						m_pScaleFrame->data[0] + m_pScaleFrame->linesize[0] * i,
+						m_pScaleFrame->width);
+				}
+				for (j = 0; j < m_pScaleFrame->height; j++)
+				{
+					memcpy(video_decode_buf + m_pScaleFrame->width*i + m_pScaleFrame->width / 2 * j,
+						m_pScaleFrame->data[1] + m_pScaleFrame->linesize[1] * j,
+						m_pScaleFrame->width / 2);
+				}
+				for (k = 0; k < m_pScaleFrame->height; k++)
+				{
+					memcpy(video_decode_buf + m_pScaleFrame->width*i + m_pScaleFrame->width / 2 * j + m_pScaleFrame->width / 2 * k,
+						m_pScaleFrame->data[2] + m_pScaleFrame->linesize[2] * k,
+						m_pScaleFrame->width / 2);
+				}
+				fwrite(video_decode_buf, nSize, 1, file);
 				fclose(file);
 			}
 		}
@@ -187,6 +215,5 @@ bool ecCodecFFmpegScaler::Release()
 	m_nDesHeight = 0;
 	m_emDesPixFmt = AV_PIX_FMT_NONE;
 	m_bInitialized = false;
-	memset(m_arrSrcLinesize, 0, sizeof(int) * AV_NUM_DATA_POINTERS);
 	return true;
 }
