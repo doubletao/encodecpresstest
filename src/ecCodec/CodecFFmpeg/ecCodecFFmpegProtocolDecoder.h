@@ -34,6 +34,9 @@ private:
 	int32_t m_nSrcSamplePerSec;
 	bool m_bAudioSeek;
 
+	SD_INT32 m_nLastSampleNum;
+	AVAudioFifo*	m_pAudioFifo;
+
 	std::queue<AVPacket *> m_queVideoPack;
 	std::queue<AVPacket *> m_queAudioPack;
 
