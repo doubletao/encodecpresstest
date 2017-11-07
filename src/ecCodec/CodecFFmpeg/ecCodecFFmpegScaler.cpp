@@ -31,6 +31,10 @@ bool ecCodecFFmpegScaler::InitScaler(SD_UINT32 nSrcWidth, SD_UINT32 nSrcHeight, 
 	m_nDesWidth = nDesWidth;
 	m_nDesHeight = nDesHeight;
 	m_emDesPixFmt = FFmpegFormatCovert::ConvertPixelFormat(emDesColorFormat);
+	if (m_emSrcPixFmt == AV_PIX_FMT_NONE || m_emDesPixFmt == AV_PIX_FMT_NONE)
+	{
+		return false;
+	}
 	if (nSrcWidth != nDesWidth
 		|| nSrcHeight != nDesHeight
 		|| m_emSrcPixFmt != m_emDesPixFmt)
