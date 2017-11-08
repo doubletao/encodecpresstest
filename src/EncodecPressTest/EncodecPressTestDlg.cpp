@@ -142,8 +142,10 @@ void CEncodecPressTestDlg::DoPlay()
 	pWnd = GetDlgItem(IDC_EDIT_FILE_PATH);
 	if (pWnd && ::IsWindow(pWnd->GetSafeHwnd()))
 	{
+#ifdef DEBUG_AUDIO_OUTFILE
 		FILE * pAudioFile = nullptr;
 		fopen_s(&pAudioFile, "output.pcm", "wb");
+#endif
 
 		CString strPath;
 		pWnd->GetWindowText(strPath);
@@ -285,8 +287,10 @@ void CEncodecPressTestDlg::DoPlay()
 									i++;
 								}
 
+#ifdef DEBUG_AUDIO_OUTFILE
 								//音频先写到文件里
 								fwrite(pAudioData, 1, numAudioSample * 4, pAudioFile);
+#endif
 #ifdef ENABLE_ENCODE
 								for (size_t i = 0; i < 8; i++)
 								{
@@ -401,7 +405,9 @@ void CEncodecPressTestDlg::DoPlay()
 						deleteC(pVideoData);
 					}
 				}
+#ifdef DEBUG_AUDIO_OUTFILE
 				fclose(pAudioFile); 
+#endif
 
 				//干掉解码器
 				m_ecfactory->DeleteProtocolDecoder(pDecoder);
