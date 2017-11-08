@@ -9,6 +9,7 @@
 #include <tlhelp32.h>
 #include <dxgi.h>
 #include <Psapi.h>
+#include <assert.h>
 #pragma comment(lib, "Psapi.lib ")
 
 //#define USE_DEPRECATED_FUNCS
