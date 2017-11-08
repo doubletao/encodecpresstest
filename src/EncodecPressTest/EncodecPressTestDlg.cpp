@@ -260,9 +260,19 @@ void CEncodecPressTestDlg::DoPlay()
 								{
 									bContinue = pDecoder->GetVideoBuffer(m_nDispFrame, pVideoData, &frameInfo);
 								}
+								if (!bContinue)
+								{
+									int i = 0;
+									i++;
+								}
 								if (streamMediaInfoEx.dwAudioStreamCount > 0)
 								{
 									bContinue = pDecoder->GetAudioSamples(nAudioPos, SamplePerFrame, pAudioData, &numAudioSample);
+								}
+								if (!bContinue)
+								{
+									int i = 0;
+									i++;
 								}
 
 								//音频先写到文件里

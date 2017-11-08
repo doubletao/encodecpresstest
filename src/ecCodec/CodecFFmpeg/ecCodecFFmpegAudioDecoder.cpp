@@ -37,6 +37,7 @@ bool ecCodecFFmpegAudioDecoder::InitAudioDecoder(const SDAudioMediaInfo & sAudio
 		m_pCodecCtx = avcodec_alloc_context3(pAudioCodec);
 		if (m_pCodecCtx)
 		{
+			m_pCodecCtx->codec_tag = sAudioInfo.dwAudioSubType;
 			m_pCodecCtx->profile = FFmpegFormatCovert::ConvertAudioProfile(sAudioInfo.dwAudioSubType);			// AV_SAMPLE_FMT_FLTP;
 			m_pCodecCtx->sample_fmt = FFmpegFormatCovert::ConvertSamplesFormat(sAudioInfo.enumChannelSamplesFormat);
 			m_pCodecCtx->sample_rate = sAudioInfo.dwSamplesPerSec;												// 48000;
@@ -46,6 +47,8 @@ bool ecCodecFFmpegAudioDecoder::InitAudioDecoder(const SDAudioMediaInfo & sAudio
 			m_pCodecCtx->block_align = sAudioInfo.dwBlockAlign;
 			m_pCodecCtx->extradata = sAudioInfo.extradata;
 			m_pCodecCtx->extradata_size = sAudioInfo.extradata_size;
+			m_pCodecCtx->bit_rate = sAudioInfo.dwAvgBitsPerSec;
+			m_pCodecCtx->bits_per_coded_sample = sAudioInfo.dwBitsPerSample;
 			int nRet = avcodec_open2(m_pCodecCtx, pAudioCodec, nullptr);
 			if (nRet == 0)
 			{
@@ -165,6 +168,14 @@ bool ecCodecFFmpegAudioDecoder::PutFrame(const SD_UINT8 * pData, const SDRFrameI
 	avpkt.pts = pFrameInfo->qwPTS;
 	avpkt.pos = pFrameInfo->dwShowIndex;
 	avpkt.duration = pFrameInfo->qwDuration;
+	avpkt.flags = pFrameInfo->extradata_size;
+	//if (1 == pFrameInfo->iVersion)
+	//{
+	//	avpkt.buf = (AVBufferRef *)pFrameInfo->dwFrameIndex;
+	//}
+	
+	//AVPacket * pPkt = (AVPacket *)pFrameInfo->dwFrameNum;
+	//int ret = avcodec_send_packet(m_pCodecCtx, pPkt);
 
 	int ret = avcodec_send_packet(m_pCodecCtx, &avpkt);
 	if (ret < 0) 
@@ -203,7 +214,12 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 	int ret = avcodec_receive_frame(m_pCodecCtx, m_pSrcFrame);
 	if (ret < 0) 
 	{
-		return 0;
+		//解码器里没东西了检查下fifo缓冲里还有没
+		if (av_audio_fifo_size(m_pAudioFifo) >= nSampleNum)
+		{
+			av_audio_fifo_read(m_pAudioFifo, (void **)&lpBuffer, nSampleNum);
+			return nSampleNum;
+		}
 	}
 
 	if (nSampleNum != m_nLastSampleNum)

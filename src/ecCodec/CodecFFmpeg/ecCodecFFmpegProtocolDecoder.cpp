@@ -139,7 +139,7 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 						{
 							SDAudioMediaInfo audioInfo;
 							audioInfo.enumAudioType = FFmpegFormatCovert::ConvertAudioType(pAudioCodecParm->codec_id);		// 音频编解码类型。
-							audioInfo.dwAudioSubType = 0;		// 音频编解码的子类型,子类型定义随enumAudioType不同而不同
+							audioInfo.dwAudioSubType = pAudioCodecParm->codec_tag;		// 音频编解码的子类型,子类型定义随enumAudioType不同而不同
 							audioInfo.dwChannels = pAudioCodecParm->channels;			// 声道数目
 							audioInfo.dwBitsPerSample = pAudioCodecParm->bits_per_raw_sample;	// 采样位数 
 							audioInfo.dwSamplesPerSec = pAudioCodecParm->sample_rate;	// 每秒采样数量 
@@ -147,6 +147,7 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 							audioInfo.dwBlockAlign = pAudioCodecParm->block_align;		// 数据块对齐单位(每个采样样本需要的字节数), 声道数*量化数/8, 量化数(16,20?,24,32...										//Below is Version 2 Add.
 							audioInfo.enumAudioCFG = FFmpegFormatCovert::ConvertChannelLayout(pAudioCodecParm->channel_layout);		//声道属性
 							audioInfo.enumChannelSamplesFormat = FFmpegFormatCovert::ConvertSamplesFormat((AVSampleFormat)pAudioCodecParm->format);	//音频声道采样数据格式
+							audioInfo.dwBitsPerSample = pAudioCodecParm->bits_per_coded_sample;
 							audioInfo.extradata = pAudioCodecParm->extradata;
 							audioInfo.extradata_size = pAudioCodecParm->extradata_size;
 							audioInfo.dwStruSize = sizeof(SDAudioMediaInfo);			// 结构大小
@@ -760,6 +761,24 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 					}
 				}
 			}
+			//有一种情况是视音频存储相对比较集中，音频frame已经读完了（在缓冲队列里了）视频还有很多，此时应该检查一下解码器里还有没有东西
+			//产生这种情况的原因是音频做了双重缓冲，除了读文件时的frame队列，还存在一个fifo的输出缓冲，可能有一批已经解码完成的音频还没被取走，而视频不存在输出缓冲，所以不存在这种问题
+			if (m_AudioDecoder.IsInitialized())
+			{
+				int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf, dwSampleNum);
+				if (nBufferSize > 0)
+				{
+					m_nCurrentSample = dwCurSamplePos;
+					if (pdwRetSampleNum)
+					{
+						*pdwRetSampleNum = nBufferSize;
+					}
+					if (!m_bVideoSeek)
+					{
+						return true;
+					}
+				}
+			}
 		}
 	}
 	return false;
@@ -855,7 +874,8 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 							av_init_packet(m_pAudioPacket);
 						}
 						av_packet_unref(m_pAudioPacket);
-						if (av_read_frame(m_pFormatCtx, m_pAudioPacket) < 0)
+						int nRet = av_read_frame(m_pFormatCtx, m_pAudioPacket);
+						if (nRet < 0)
 						{
 							//没读到，直接返回（可能是文件尾）
 							return false;
@@ -887,6 +907,17 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 						pFrameInfo->qwDuration = m_pAudioPacket->duration;
 						pFrameInfo->dwShowIndex = m_pAudioPacket->pos;
 						pFrameInfo->emStreamFlag = m_pAudioPacket->pts == 0 ? STREAMSTATE_BEGIN : STREAMSTATE_CONTINUE;
+						pFrameInfo->extradata_size = m_pAudioPacket->flags;
+						//if (m_pAudioPacket->buf)
+						//{
+						//	pFrameInfo->iVersion = 1;
+						//	pFrameInfo->dwFrameIndex = (uint64_t)m_pAudioPacket->buf;
+						//	pFrameInfo->dwFrameNum = (uint32_t)m_pAudioPacket;
+						//}
+						//else
+						//{
+						//	pFrameInfo->iVersion = 0;
+						//}
 					}
 					bRet = true;
 					break;
