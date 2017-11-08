@@ -7,6 +7,7 @@
 #include "EncodecPressTestDlg.h"
 #include "afxdialogex.h"
 #include "FFmpegVADecoder.h"
+#include "CpuUsage.h"
 
 #ifdef _DEBUG
 #	pragma comment(lib, "LibCodecD.lib")
@@ -117,6 +118,8 @@ CString strMsg;
 
 void CEncodecPressTestDlg::DoPlay()
 {
+	int nMaxCpu = 0;
+	int nMaxMem = 0;
 	CEdit * pEdit = (CEdit *)GetDlgItem(IDC_EDIT_INFOMATION);
 	if (pEdit && ::IsWindow(pEdit->GetSafeHwnd()))
 	{
@@ -216,6 +219,13 @@ void CEncodecPressTestDlg::DoPlay()
 										strFileName.Append(strTmp);
 										GetCodecFileSurfixEdit(i)->GetWindowText(strTmp);
 										strFileName.Append(strTmp);
+
+										if (m_bLogOpened)
+										{
+											strMsg.Format(_T("encoder%i:%s"), i, GenerateFileInfoName(emVideoStandard, emVideoType, emColorFmt, emAudioType));
+											m_fileLog.WriteString(strMsg);
+											m_fileLog.WriteString(_T("\r\n"));
+										}
 
 										GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, streamInfo);
 										if (pEncoder->SetOutputVAParam(streamInfo, (cstrOutPath + ConverCStringToStdString(strFileName).c_str()).c_str()))
@@ -331,6 +341,29 @@ void CEncodecPressTestDlg::DoPlay()
 								{
 									break;
 								}
+								if (m_nFrame % 25 == 0)
+								{
+									if (m_bLogOpened)
+									{
+										int nValue = 0;
+										strMsg = GetCpuInfoText(&nValue);
+										m_fileLog.WriteString(strMsg);
+										m_fileLog.WriteString(_T("\t"));
+										if (nValue > nMaxCpu)
+										{
+											nMaxCpu = nValue;
+										}
+
+										nValue = 0;
+										strMsg = GetMemInfoText(&nValue);
+										m_fileLog.WriteString(strMsg);
+										m_fileLog.WriteString(_T("\r\n"));
+										if (nValue > nMaxMem)
+										{
+											nMaxMem = nValue;
+										}
+									}
+								}
 							}
 							else
 							{
@@ -382,6 +415,17 @@ void CEncodecPressTestDlg::DoPlay()
 		}
 	}
 	PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Stoped"));
+	if (m_bLogOpened)
+	{
+		strMsg.Format(_T("maxcpu = %d"), nMaxCpu);
+		m_fileLog.WriteString(strMsg);
+		m_fileLog.WriteString(_T("\t"));
+
+		strMsg.Format(_T("maxmem = %d"), nMaxMem);
+		m_fileLog.WriteString(strMsg);
+		m_fileLog.WriteString(_T("\r\n"));
+		m_fileLog.Close();
+	}
 }
 
 CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
@@ -392,6 +436,7 @@ CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
 	, m_nFrame(0)
 	, m_nDispFrame(0)
 	, m_ecfactory(nullptr)
+	, m_bLogOpened(false)
 {
 	m_ecfactory = ecCodec_CreateCodecFactory();
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -693,6 +738,13 @@ HCURSOR CEncodecPressTestDlg::OnQueryDragIcon()
 
 void CEncodecPressTestDlg::OnBnClickedBtnStart()
 {
+	CString strFileName;
+	CTime tm = CTime::GetCurrentTime();
+	strFileName.Format(_T("%04d%02d%02d%02d%02d%02d_%d.txt"), tm.GetYear(), tm.GetMonth(), tm.GetDay(), tm.GetHour(), tm.GetMinute(), tm.GetSecond(), clock());
+	if (m_fileLog.Open(strFileName, CFile::modeCreate | CFile::modeWrite))
+	{
+		m_bLogOpened = true;
+	}
 	StartPlay();
 }
 
@@ -1159,57 +1211,7 @@ void CEncodecPressTestDlg::DealCtrlFileName()
 			SD_COLOR_FORMAT emColorFmt = GetCodecColorFmt(i);
 			SD_AUDIO_TYPE emAudioType = GetCodecAudioType(i);
 
-			CString strFileName = _T("en");
-			switch (emVideoStandard)
-			{
-			case EmVideoStandard_PAL:
-				strFileName.AppendFormat(_T("_PAL"));
-				break;
-			case EmVideoStandard_HD:
-				strFileName.AppendFormat(_T("_HD"));
-				break;
-			default:
-				break;
-			}
-			switch (emVideoType)
-			{
-			case SDVIDEOTYPE_MPEG2_IFRAME:
-				strFileName.AppendFormat(_T("_MPEG2_I"));
-				break;
-			case SDVIDEOTYPE_MPEG4:
-				strFileName.AppendFormat(_T("_MPEG4"));
-				break;
-			case SDVIDEOTYPE_H264:
-				strFileName.AppendFormat(_T("_H264"));
-				break;
-			default:
-				break;
-			}
-			switch (emColorFmt)
-			{
-			case SDCOLORFORMAT_YUVP_422:
-				strFileName.AppendFormat(_T("_YUV422p"));
-				break;
-			case SDCOLORFORMAT_YUVP_420:
-				strFileName.AppendFormat(_T("_YUV420p"));
-				break;
-			default:
-				break;
-			}
-			switch (emAudioType)
-			{
-			case SDAUDIOTYPE_WAVE_PCM:
-				strFileName.AppendFormat(_T("_pcm"));
-				break;
-			case SDAUDIOTYPE_MP3:
-				strFileName.AppendFormat(_T("_mp3"));
-				break;
-			case SDAUDIOTYPE_AAC:
-				strFileName.AppendFormat(_T("_aac"));
-				break;
-			default:
-				break;
-			}
+			CString strFileName = GenerateFileInfoName(emVideoStandard, emVideoType, emColorFmt, emAudioType);
 			strFileName.AppendFormat(_T("_%d"), i);
 			GetCodecFileNameEdit(i)->SetWindowText(strFileName);
 
@@ -1234,6 +1236,62 @@ void CEncodecPressTestDlg::DealCtrlFileName()
 			GetCodecFileNameEdit(i)->SetReadOnly(false);
 		}
 	}
+}
+
+CString CEncodecPressTestDlg::GenerateFileInfoName(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType)
+{
+	CString strFileName;
+	switch (emVideoStandard)
+	{
+	case EmVideoStandard_PAL:
+		strFileName.AppendFormat(_T("PAL"));
+		break;
+	case EmVideoStandard_HD:
+		strFileName.AppendFormat(_T("HD"));
+		break;
+	default:
+		break;
+	}
+	switch (emVideoType)
+	{
+	case SDVIDEOTYPE_MPEG2_IFRAME:
+		strFileName.AppendFormat(_T("_MPEG2_I"));
+		break;
+	case SDVIDEOTYPE_MPEG4:
+		strFileName.AppendFormat(_T("_MPEG4"));
+		break;
+	case SDVIDEOTYPE_H264:
+		strFileName.AppendFormat(_T("_H264"));
+		break;
+	default:
+		break;
+	}
+	switch (emColorFormat)
+	{
+	case SDCOLORFORMAT_YUVP_422:
+		strFileName.AppendFormat(_T("_YUV422p"));
+		break;
+	case SDCOLORFORMAT_YUVP_420:
+		strFileName.AppendFormat(_T("_YUV420p"));
+		break;
+	default:
+		break;
+	}
+	switch (emAudioType)
+	{
+	case SDAUDIOTYPE_WAVE_PCM:
+		strFileName.AppendFormat(_T("_pcm"));
+		break;
+	case SDAUDIOTYPE_MP3:
+		strFileName.AppendFormat(_T("_mp3"));
+		break;
+	case SDAUDIOTYPE_AAC:
+		strFileName.AppendFormat(_T("_aac"));
+		break;
+	default:
+		break;
+	}
+	return strFileName;
 }
 
 void CEncodecPressTestDlg::OnBnClickedCheckEncodec1()

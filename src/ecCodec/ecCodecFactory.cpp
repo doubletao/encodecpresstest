@@ -34,6 +34,7 @@ LPCTSTR GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVide
 		streamInfo.sVideoMediaInfo.enumColorPrimaries = SDCOLORPRIMARIES_ITU_R470_2BG;			// 源基色的色度坐标(ISO13818-2)
 		streamInfo.sVideoMediaInfo.enumColorTransfer = SDCOLORTRANSFER_ITU_R470_2BG;			// 光电转换特性(ISO13818-2)
 		streamInfo.sVideoMediaInfo.enumColorMatrix = SDCOLORMATRIX_ITU_R470_2BG;			// 颜色空间变换系数(ISO13818-2)
+		streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 50000000;
 		break;
 	case EmVideoStandard_HD:
 		streamInfo.sVideoMediaInfo.dwWidth = 1920;////////////////////////////////////////////////////////////////////////////
@@ -45,6 +46,7 @@ LPCTSTR GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVide
 		streamInfo.sVideoMediaInfo.enumColorPrimaries = SDCOLORPRIMARIES_ITU_R709;			// 源基色的色度坐标(ISO13818-2)
 		streamInfo.sVideoMediaInfo.enumColorTransfer = SDCOLORTRANSFER_ITU_R709;			// 光电转换特性(ISO13818-2)
 		streamInfo.sVideoMediaInfo.enumColorMatrix = SDCOLORMATRIX_ITU_R709;			// 颜色空间变换系数(ISO13818-2)
+		streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 100000000;
 		break;
 	default:
 		break;
@@ -60,7 +62,6 @@ LPCTSTR GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVide
 	streamInfo.sVideoMediaInfo.enumColorFormat = emColorFormat;//(SDCOLORFORMAT_YUVP_420)////////////////////////////////////////////////////////////////////////////
 	streamInfo.sVideoMediaInfo.enumVideoType = emVideoType; //(SDVIDEOTYPE_H264)////////////////////////////////////////////////////////////////////////////
 	streamInfo.sVideoMediaInfo.dwVideoSubType = PROFILE_AVC_MAIN;
-	streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 25000000;// 400000;////////////////////////////////////////////////////////////////////////////
 	streamInfo.sVideoMediaInfo.enumDataRateType = SDDATARATE_CONSTANT;
 	streamInfo.sVideoMediaInfo.dwGOPSize = 100;////////////////////////////////////////////////////////////////////////////
 	streamInfo.sVideoMediaInfo.dwReferencePeriod = 1;

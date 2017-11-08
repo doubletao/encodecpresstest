@@ -23,6 +23,9 @@ private:
 	EncodecThreader * m_pEncoder[8];
 	IecCodecFactory * m_ecfactory;
 	CRITICAL_SECTION m_lock;
+
+	CStdioFile m_fileLog;
+	bool m_bLogOpened;
 private:
 	CWinThread * m_pThread;
 	CEvent m_evtPlayStop;
@@ -74,6 +77,7 @@ private:
 	SD_AUDIO_TYPE GetCodecAudioType(int nIndex);
 
 	void DealCtrlFileName();
+	CString GenerateFileInfoName(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType);
 protected:
 	HICON m_hIcon;
 

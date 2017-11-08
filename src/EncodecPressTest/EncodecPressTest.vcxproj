@@ -112,6 +112,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CpuUsage.h" />
     <ClInclude Include="EncodecPressTest.h" />
     <ClInclude Include="EncodecPressTestDlg.h" />
     <ClInclude Include="EncodecThreader.h" />
@@ -120,6 +121,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CpuUsage.cpp" />
     <ClCompile Include="EncodecPressTest.cpp" />
     <ClCompile Include="EncodecPressTestDlg.cpp" />
     <ClCompile Include="EncodecThreader.cpp" />
