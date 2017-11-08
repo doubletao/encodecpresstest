@@ -215,10 +215,14 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 	if (ret < 0) 
 	{
 		//解码器里没东西了检查下fifo缓冲里还有没
-		if (av_audio_fifo_size(m_pAudioFifo) >= nSampleNum)
+		if (m_pAudioFifo && av_audio_fifo_size(m_pAudioFifo) >= nSampleNum)
 		{
 			av_audio_fifo_read(m_pAudioFifo, (void **)&lpBuffer, nSampleNum);
 			return nSampleNum;
+		}
+		else
+		{
+			return 0;
 		}
 	}
 

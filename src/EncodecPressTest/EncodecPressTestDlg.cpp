@@ -548,6 +548,7 @@ BEGIN_MESSAGE_MAP(CEncodecPressTestDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_CHECK_ENCODEC6, &CEncodecPressTestDlg::OnBnClickedCheckEncodec6)
 	ON_BN_CLICKED(IDC_CHECK_ENCODEC7, &CEncodecPressTestDlg::OnBnClickedCheckEncodec7)
 	ON_BN_CLICKED(IDC_CHECK_ENCODEC8, &CEncodecPressTestDlg::OnBnClickedCheckEncodec8)
+	ON_BN_CLICKED(IDC_BTN_COPY_FIRST_PARAM, &CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam)
 END_MESSAGE_MAP()
 
 // CEncodecPressTestDlg 消息处理程序
@@ -1333,3 +1334,45 @@ void CEncodecPressTestDlg::OnBnClickedCheckEncodec8()
 	OnCheckEncodec(7);
 }
 
+
+
+void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
+{
+	int nSel1 = 0;
+	int nSel2 = 0;
+	int nSel3 = 0;
+	int nSel4 = 0;
+	for (size_t i = 0; i < 8; i++)
+	{
+		//combox选第一项，文件名选inddex
+		CComboBox * pVideoStandardComb = GetCodecVideoStandardCombo(i);
+		CComboBox * pVideoTypeComb = GetCodecVideoTypeCombo(i);
+		CComboBox * pColorFmtComb = GetCodecColorFmtCombo(i);
+		CComboBox * pAudioTypeComb = GetCodecAudioTypeCombo(i);
+		CEdit *		pFileNameEdit = GetCodecFileNameEdit(i);
+		if (pVideoStandardComb
+			&& pVideoTypeComb
+			&& pColorFmtComb
+			&& pAudioTypeComb
+			&& pFileNameEdit
+			)
+		{
+			if (0 == i)
+			{
+				nSel1 = pVideoStandardComb->GetCurSel();
+				nSel2 = pVideoTypeComb->GetCurSel();
+				nSel3 = pColorFmtComb->GetCurSel();
+				nSel4 = pAudioTypeComb->GetCurSel();
+			}
+			else
+			{
+				pVideoStandardComb->SetCurSel(nSel1);
+				pVideoTypeComb->SetCurSel(nSel2);
+				pColorFmtComb->SetCurSel(nSel2);
+				pAudioTypeComb->SetCurSel(nSel4);
+			}
+			CString strName = _T("encodec");
+			pFileNameEdit->SetWindowText(strName);
+		}
+	}
+}

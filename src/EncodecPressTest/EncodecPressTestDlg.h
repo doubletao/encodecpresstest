@@ -105,4 +105,5 @@ public:
 	afx_msg void OnBnClickedCheckEncodec6();
 	afx_msg void OnBnClickedCheckEncodec7();
 	afx_msg void OnBnClickedCheckEncodec8();
+	afx_msg void OnBnClickedBtnCopyFirstParam();
 };
