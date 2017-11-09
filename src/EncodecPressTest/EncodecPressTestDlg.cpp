@@ -134,6 +134,14 @@ void CEncodecPressTestDlg::DoPlay()
 		pWnd->GetWindowText(strPath);
 		cstrOutPath = ConverCStringToStdString(strPath);
 	}
+
+	bool bLoopPlay = false;
+	CButton * pBtn = (CButton *)GetDlgItem(IDC_CHK_LOOPPLAY);
+	if (pBtn && ::IsWindow(pBtn->GetSafeHwnd()))
+	{
+		bLoopPlay = pBtn->GetCheck();
+	}
+
 	m_nDispFrame = 0;
 	Lock();
 	m_nFrame = 0;
@@ -280,6 +288,7 @@ void CEncodecPressTestDlg::DoPlay()
 								if (streamMediaInfoEx.dwAudioStreamCount > 0)
 								{
 									bContinue = pDecoder->GetAudioSamples(nAudioPos, SamplePerFrame, pAudioData, &numAudioSample);
+									//bContinue = pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
 								}
 								if (!bContinue)
 								{
@@ -320,6 +329,15 @@ void CEncodecPressTestDlg::DoPlay()
 #endif
 								m_nDispFrame++;
 								nAudioPos += numAudioSample;
+								if (bLoopPlay)
+								{
+									if (m_nDispFrame > streamMediaInfoEx.dwVideoFrameNum - 1)
+									{
+										m_nDispFrame = 0;
+										nAudioPos = 0;
+										bContinue = true;
+									}
+								}
 								Lock();
 								m_nFrame++;
 								Unlock();

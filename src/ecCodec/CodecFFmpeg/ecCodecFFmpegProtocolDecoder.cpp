@@ -567,7 +567,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 						double dTm = pVideoStream->duration * av_q2d(pVideoStream->time_base);
 						pVideoStream->nb_frames = dTm * av_q2d(pVideoStream->r_frame_rate);
 					}
-					if (m_nCurrentVideoSeekPos <= pVideoStream->r_frame_rate.num * 1.0 / pVideoStream->r_frame_rate.den)
+					if (m_nCurrentVideoSeekPos > 0 && m_nCurrentVideoSeekPos <= pVideoStream->r_frame_rate.num * 1.0 / pVideoStream->r_frame_rate.den)
 					{
 						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos, AVSEEK_FLAG_FRAME);
 						if (nRet >= 0)
@@ -592,11 +592,13 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 					//seek动作要清空缓存的pkt
 					ReleaseAudioPackQue();
 					ReleaseVideoPackQue();
+					m_nCurrentFrame = dwCurFrameShowIndex;
 					m_bVideoSeek = true;
 				}
 			}
 			else
 			{
+				m_nCurrentFrame = dwCurFrameShowIndex;
 				bContinue = true;
 			}
 			if (bContinue)
@@ -816,7 +818,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 						AVRational time_base = m_pFormatCtx->streams[m_nAudioIndex]->time_base;
 						time_stamp = m_pFormatCtx->streams[m_nAudioIndex]->start_time + av_rescale(dTm, time_base.den, time_base.num);
 					}
-					if (m_nCurrentAudioSeekPos <= m_nSrcSamplePerSec)
+					if (m_nCurrentAudioSeekPos > 0 && m_nCurrentAudioSeekPos <= m_nSrcSamplePerSec)
 					{
 						int nRet = av_seek_frame(m_pFormatCtx, m_nAudioIndex, time_stamp, AVSEEK_FLAG_FRAME);
 						if (nRet >= 0)
@@ -837,6 +839,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 						//seek pos已经到头了，直接退出
 						return false;
 					}
+					m_nCurrentSample = dwCurFrameStreamIndex;
 					//seek动作要清空缓存的pkt
 					ReleaseAudioPackQue();
 					ReleaseVideoPackQue();
@@ -845,6 +848,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 			}
 			else
 			{
+				m_nCurrentSample = dwCurFrameStreamIndex;
 				bContinue = true;
 			}
 			if (bContinue)
