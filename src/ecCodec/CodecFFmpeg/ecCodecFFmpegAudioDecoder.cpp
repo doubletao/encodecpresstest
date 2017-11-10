@@ -117,6 +117,11 @@ bool ecCodecFFmpegAudioDecoder::SetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo)
 	m_nDesSampleRate = pAudioInfo->dwSamplesPerSec;
 	m_nDesChannelCount = pAudioInfo->dwChannels;
 
+	if (av_sample_fmt_is_planar(m_emDesSampleFormat))
+	{
+		return false;
+	}
+
 	AVSampleFormat format = FFmpegFormatCovert::ConvertSamplesFormat(pAudioInfo->enumChannelSamplesFormat);
 
 	int channels = pAudioInfo->dwChannels;

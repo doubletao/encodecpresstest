@@ -114,6 +114,7 @@ void CEncodecPressTestDlg::PausePlay()
 	}
 }
 
+//#define DEBUG_AUDIO_OUTFILE
 CString strMsg;
 
 void CEncodecPressTestDlg::DoPlay()
@@ -170,7 +171,7 @@ void CEncodecPressTestDlg::DoPlay()
 					SDStreamMediaInfoEx streamMediaInfoEx;
 					SDAudioSamplesBufInfo audioSamplesBufInfo;
 					audioSamplesBufInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
-					audioSamplesBufInfo.enumChannelSamplesFormat = (SD_CHANNELSAMPLE_FORMAT)1;
+					audioSamplesBufInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
 					audioSamplesBufInfo.dwSamplesPerSec = 48000;
 					audioSamplesBufInfo.dwChannels = 2;
 					pDecoder->SetAudioSamplesBufInfo(&audioSamplesBufInfo);
@@ -298,7 +299,7 @@ void CEncodecPressTestDlg::DoPlay()
 
 #ifdef DEBUG_AUDIO_OUTFILE
 								//音频先写到文件里
-								fwrite(pAudioData, 1, numAudioSample * 4, pAudioFile);
+								fwrite(pAudioData, 1, numAudioSample * 8, pAudioFile);
 #endif
 #ifdef ENABLE_ENCODE
 								for (size_t i = 0; i < 8; i++)
@@ -449,6 +450,7 @@ void CEncodecPressTestDlg::DoPlay()
 		m_fileLog.WriteString(strMsg);
 		m_fileLog.WriteString(_T("\r\n"));
 		m_fileLog.Close();
+		m_bLogOpened = false;
 	}
 }
 
@@ -766,7 +768,7 @@ void CEncodecPressTestDlg::OnBnClickedBtnStart()
 	CString strFileName;
 	CTime tm = CTime::GetCurrentTime();
 	strFileName.Format(_T("%04d%02d%02d%02d%02d%02d_%d.txt"), tm.GetYear(), tm.GetMonth(), tm.GetDay(), tm.GetHour(), tm.GetMinute(), tm.GetSecond(), clock());
-	if (m_fileLog.Open(strFileName, CFile::modeCreate | CFile::modeWrite))
+	if (!m_bLogOpened && m_fileLog.Open(strFileName, CFile::modeCreate | CFile::modeWrite))
 	{
 		m_bLogOpened = true;
 	}

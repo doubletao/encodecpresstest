@@ -106,7 +106,7 @@ AVCodecID FFmpegFormatCovert::ConvertCodecId(SD_AUDIO_TYPE emAudioType)
 	switch (emAudioType)
 	{
 	case SDAUDIOTYPE_WAVE_PCM:
-		codecId = AV_CODEC_ID_PCM_S16LE;
+		codecId = AV_CODEC_ID_PCM_S32LE;
 		break;
 	case SDAUDIOTYPE_MP1:
 		codecId = AV_CODEC_ID_MP1;
@@ -307,46 +307,14 @@ AVSampleFormat FFmpegFormatCovert::ConvertSamplesFormat(SD_CHANNELSAMPLE_FORMAT 
 	AVSampleFormat avSampleFmt = AV_SAMPLE_FMT_NONE;
 	switch (emSampleFormat)
 	{
-#if 0
-	case SAMPLE_FMT_U8:
-		avSampleFmt = AV_SAMPLE_FMT_U8;
-		break;
-	case SAMPLE_FMT_S16:
-		avSampleFmt = AV_SAMPLE_FMT_S16;
-		break;
-	case SAMPLE_FMT_S32:
+	case SDCHANNELSAMPLESFORMAT_Progressive:
 		avSampleFmt = AV_SAMPLE_FMT_S32;
 		break;
-	case SAMPLE_FMT_FLT:
-		avSampleFmt = AV_SAMPLE_FMT_FLT;
-		break;
-	case SAMPLE_FMT_DBL:
-		avSampleFmt = AV_SAMPLE_FMT_DBL;
-		break;
-	case SAMPLE_FMT_U8P:
-		avSampleFmt = AV_SAMPLE_FMT_U8P;
-		break;
-	case SAMPLE_FMT_S16P:
-		avSampleFmt = AV_SAMPLE_FMT_S16P;
-		break;
-	case SAMPLE_FMT_S32P:
+	case SDCHANNELSAMPLESFORMAT_Segmented:
 		avSampleFmt = AV_SAMPLE_FMT_S32P;
 		break;
-	case SAMPLE_FMT_FLTP:
-		avSampleFmt = AV_SAMPLE_FMT_FLTP;
-		break;
-	case SAMPLE_FMT_DBLP:
-		avSampleFmt = AV_SAMPLE_FMT_DBLP;
-		break;
-	case SAMPLE_FMT_S64:
-		avSampleFmt = AV_SAMPLE_FMT_S64;
-		break;
-	case SAMPLE_FMT_S64P:
-		avSampleFmt = AV_SAMPLE_FMT_S64P;
-		break;
-#endif
-	case 0:
 	default:
+		//留个后门，可以直接指定ffmpeg类型
 		avSampleFmt = (AVSampleFormat)emSampleFormat;
 		break;
 	}
@@ -356,7 +324,19 @@ AVSampleFormat FFmpegFormatCovert::ConvertSamplesFormat(SD_CHANNELSAMPLE_FORMAT 
 SD_CHANNELSAMPLE_FORMAT FFmpegFormatCovert::ConvertSamplesFormat(AVSampleFormat emSampleFormat)
 {
 	SD_CHANNELSAMPLE_FORMAT emSampleRet = SDCHANNELSAMPLESFORMAT_Unknow;
-	return SD_CHANNELSAMPLE_FORMAT(emSampleFormat);
+	switch (emSampleFormat)
+	{
+	case AV_SAMPLE_FMT_S32:
+		emSampleRet = SDCHANNELSAMPLESFORMAT_Progressive;
+		break;
+	case AV_SAMPLE_FMT_S32P:
+		emSampleRet = SDCHANNELSAMPLESFORMAT_Segmented;
+		break;
+	default:
+		emSampleRet = SD_CHANNELSAMPLE_FORMAT(emSampleFormat);
+		break;
+	}
+	return emSampleRet;
 }
 
 SD_UINT64 FFmpegFormatCovert::ConvertChannelLayout(SD_AUDIO_CHANNELCONFIGURATION channelCfg)

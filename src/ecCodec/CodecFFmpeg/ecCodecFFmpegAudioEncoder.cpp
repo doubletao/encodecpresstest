@@ -22,6 +22,7 @@ ecCodecFFmpegAudioEncoder::~ecCodecFFmpegAudioEncoder()
 
 bool ecCodecFFmpegAudioEncoder::InitAudioEncoder(const SDAudioMediaInfo & sAudioInfo)
 {
+	//av_log_set_level
 	AVCodecID codecId = FFmpegFormatCovert::ConvertCodecId(sAudioInfo.enumAudioType);
 	AVCodec* pAudioCodec = avcodec_find_encoder(codecId);
 	if (!pAudioCodec) {
@@ -33,8 +34,39 @@ bool ecCodecFFmpegAudioEncoder::InitAudioEncoder(const SDAudioMediaInfo & sAudio
 		return false;
 	}
 
-	m_pCodecCtx->profile = FFmpegFormatCovert::ConvertAudioProfile(sAudioInfo.dwAudioSubType);			// AV_SAMPLE_FMT_FLTP;
-	m_pCodecCtx->sample_fmt = AV_SAMPLE_FMT_FLTP;// FFmpegFormatCovert::ConvertSamplesFormat(sAudioInfo.enumChannelSamplesFormat);
+	m_pCodecCtx->profile = FFmpegFormatCovert::ConvertAudioProfile(sAudioInfo.dwAudioSubType);			// FF_PROFILE_AAC_MAIN;
+	m_pCodecCtx->sample_fmt = FFmpegFormatCovert::ConvertSamplesFormat(sAudioInfo.enumChannelSamplesFormat);//AV_SAMPLE_FMT_FLTP;
+	//音频格式要做一个妥协，假如指定格式不被支持，则取支持的格式
+	bool bFind = false;
+	AVSampleFormat sample_fmt_bak = AV_SAMPLE_FMT_NONE;
+	for (int i = 0; m_pCodecCtx->codec->sample_fmts[i] != AV_SAMPLE_FMT_NONE; i++) 
+	{
+		//策略上倾向一下AV_SAMPLE_FMT_FLTP
+		if (sample_fmt_bak != AV_SAMPLE_FMT_FLTP)
+		{
+			sample_fmt_bak = m_pCodecCtx->codec->sample_fmts[i];
+		}
+		//如果支持，则保留用户设置
+		if (m_pCodecCtx->sample_fmt == m_pCodecCtx->codec->sample_fmts[i])
+		{
+			bFind = true;
+			break;
+		}
+		//如果是单声道，则是否平面存储都无所谓，可以直接转换
+		if (m_pCodecCtx->channels == 1 &&
+			av_get_planar_sample_fmt(m_pCodecCtx->sample_fmt) ==
+			av_get_planar_sample_fmt(m_pCodecCtx->codec->sample_fmts[i])) 
+		{
+			bFind = true;
+			m_pCodecCtx->sample_fmt = m_pCodecCtx->codec->sample_fmts[i];
+			break;
+		}
+	}
+	//用户设置格式不支持，则用一个支持的格式
+	if (!bFind)
+	{
+		m_pCodecCtx->sample_fmt = sample_fmt_bak;
+	}
 	m_pCodecCtx->sample_rate = sAudioInfo.dwSamplesPerSec;												// 48000;
 	m_pCodecCtx->channels = sAudioInfo.dwChannels;	       												// av_get_channel_layout_nb_channels(m_pCodecCtx->channel_layout);
 	m_pCodecCtx->channel_layout = FFmpegFormatCovert::ConvertChannelLayout(sAudioInfo.enumAudioCFG);	// AV_CH_LAYOUT_STEREO;
@@ -67,6 +99,11 @@ bool ecCodecFFmpegAudioEncoder::SetAudioSamplesBufInfo(const SDAudioSamplesBufIn
 	int srcSample_rate = pAudioBufInfo->dwSamplesPerSec;
 	AVSampleFormat srcFormat = FFmpegFormatCovert::ConvertSamplesFormat(pAudioBufInfo->enumChannelSamplesFormat);
 	SD_UINT64 srcChannelLayout = FFmpegFormatCovert::ConvertChannelLayout(pAudioBufInfo->enumAudioCFG);
+
+	if (av_sample_fmt_is_planar(srcFormat))
+	{
+		return false;
+	}
 
 	int desChannels = m_pCodecCtx->channels;
 	int desSample_rate = m_pCodecCtx->sample_rate;

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "EncodecThreader.h"
 
+static const int SAMPLE_SIZE = 8;
 
 EncodecThreader::EncodecThreader()
 	: m_pEncoder(nullptr)
@@ -118,7 +119,7 @@ void VABuffer::Reset(size_t nVideoSize, size_t nAudioSampleCount)
 	Clear();
 	m_pVideoBuf = new SD_UINT8[nVideoSize];
 	m_nVideoSize = nVideoSize;
-	m_pAudioBuf = new SD_UINT8[nAudioSampleCount * 4];
+	m_pAudioBuf = new SD_UINT8[nAudioSampleCount * SAMPLE_SIZE];
 	m_nAudioSampleCount = nAudioSampleCount;
 }
 
@@ -136,7 +137,7 @@ void VABuffer::Copy(const VABuffer & va)
 {
 	Reset(va.m_nVideoSize, va.m_nAudioSampleCount);
 	memcpy(m_pVideoBuf, va.m_pVideoBuf, m_nVideoSize);
-	memcpy(m_pAudioBuf, va.m_pAudioBuf, m_nAudioSampleCount * 4);
+	memcpy(m_pAudioBuf, va.m_pAudioBuf, m_nAudioSampleCount * SAMPLE_SIZE);
 }
 
 void VABuffer::CopyVideo(const SD_UINT8 * pVideoBuf)
@@ -148,7 +149,7 @@ void VABuffer::CopyVideo(const SD_UINT8 * pVideoBuf)
 void VABuffer::CopyAudio(const SD_UINT8 * pAudioBuf)
 {
 	assert(m_pAudioBuf);
-	memcpy(m_pAudioBuf, pAudioBuf, m_nAudioSampleCount * 4);
+	memcpy(m_pAudioBuf, pAudioBuf, m_nAudioSampleCount * SAMPLE_SIZE);
 }
 
 VALoop::VALoop()
