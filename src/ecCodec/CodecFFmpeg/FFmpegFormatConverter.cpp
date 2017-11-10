@@ -106,7 +106,7 @@ AVCodecID FFmpegFormatCovert::ConvertCodecId(SD_AUDIO_TYPE emAudioType)
 	switch (emAudioType)
 	{
 	case SDAUDIOTYPE_WAVE_PCM:
-		codecId = AV_CODEC_ID_PCM_S32LE;
+		codecId = AV_CODEC_ID_PCM_S16LE;
 		break;
 	case SDAUDIOTYPE_MP1:
 		codecId = AV_CODEC_ID_MP1;
@@ -169,7 +169,7 @@ SD_AUDIO_TYPE FFmpegFormatCovert::ConvertAudioType(AVCodecID emCodecID)
 	SD_AUDIO_TYPE emAudioType = SDAUDIOTYPE_UNKNOW;
 	switch (emCodecID)
 	{
-	case AV_CODEC_ID_PCM_DVD:
+	case AV_CODEC_ID_PCM_S16LE:
 		emAudioType = SDAUDIOTYPE_WAVE_PCM;
 		break;
 	case AV_CODEC_ID_MP1:
@@ -308,10 +308,10 @@ AVSampleFormat FFmpegFormatCovert::ConvertSamplesFormat(SD_CHANNELSAMPLE_FORMAT 
 	switch (emSampleFormat)
 	{
 	case SDCHANNELSAMPLESFORMAT_Progressive:
-		avSampleFmt = AV_SAMPLE_FMT_S32;
+		avSampleFmt = AV_SAMPLE_FMT_S16;
 		break;
 	case SDCHANNELSAMPLESFORMAT_Segmented:
-		avSampleFmt = AV_SAMPLE_FMT_S32P;
+		avSampleFmt = AV_SAMPLE_FMT_S16P;
 		break;
 	default:
 		//留个后门，可以直接指定ffmpeg类型
@@ -326,10 +326,10 @@ SD_CHANNELSAMPLE_FORMAT FFmpegFormatCovert::ConvertSamplesFormat(AVSampleFormat 
 	SD_CHANNELSAMPLE_FORMAT emSampleRet = SDCHANNELSAMPLESFORMAT_Unknow;
 	switch (emSampleFormat)
 	{
-	case AV_SAMPLE_FMT_S32:
+	case AV_SAMPLE_FMT_S16:
 		emSampleRet = SDCHANNELSAMPLESFORMAT_Progressive;
 		break;
-	case AV_SAMPLE_FMT_S32P:
+	case AV_SAMPLE_FMT_S16P:
 		emSampleRet = SDCHANNELSAMPLESFORMAT_Segmented;
 		break;
 	default:
