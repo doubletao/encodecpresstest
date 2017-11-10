@@ -34,4 +34,5 @@ protected:
 public:
 	afx_msg void OnBnClickedBtnStartGenerate();
 	afx_msg void OnBnClickedBtnOutputCodec();
+	afx_msg void OnBnClickedBtnSelectInputFile();
 };

@@ -133,6 +133,7 @@ BEGIN_MESSAGE_MAP(CTimeCodeImageGeneratorDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BTN_START_GENERATE, &CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate)
 	ON_BN_CLICKED(IDC_BTN_OUTPUT_CODEC, &CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec)
+	ON_BN_CLICKED(IDC_BTN_SELECT_INPUT_FILE, &CTimeCodeImageGeneratorDlg::OnBnClickedBtnSelectInputFile)
 END_MESSAGE_MAP()
 
 
@@ -173,6 +174,7 @@ BOOL CTimeCodeImageGeneratorDlg::OnInitDialog()
 	GetDlgItem(IDC_EDIT_OUTPUT_HEIGHT)->SetWindowText(_T("1080"));
 	GetDlgItem(IDC_EDIT_OUTPUT_PATH)->SetWindowText(_T("E:\\TimeImg\\"));
 	GetDlgItem(IDC_EDIT_OUT_FILENAME)->SetWindowText(_T("img_"));
+	GetDlgItem(IDC_EDIT_INPUT_VIDEO_OFFSET)->SetWindowText(_T("0"));
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -253,13 +255,108 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate()
 	HGDIOBJ hOldBrush = dcMem.SelectStockObject(NULL_BRUSH);
 	HGDIOBJ hOldPen = dcMem.SelectStockObject(WHITE_PEN);
 	HGDIOBJ hFont = dcMem.SelectObject(font.GetSafeHandle());
+	int nOldMode = dcMem.SetBkMode(TRANSPARENT);
 	const int nFramePerSec = 25;
 
+	bool bGetFrame = false;
 	CString strFileSufix;
+
+	IecCodecFactory * ecFacetory = nullptr;
+	IecCodecProtocolDecoder * pDecoder = nullptr;
+	SDStreamMediaInfoEx streamMediaInfoEx;
+	bool bVideoInied = true;
+	CWnd * pWnd = GetDlgItem(IDC_EDIT_INPUT_PATH);
+	if (pWnd && ::IsWindow(pWnd->GetSafeHwnd()))
+	{
+		ecFacetory = ecCodec_CreateCodecFactory();
+		CString strPath;
+		pWnd->GetWindowText(strPath);
+		//CFile file;
+		//if (file.Open(strPath, CFile::modeRead))
+		{
+		//	file.Close();
+			std::string cstrPath = ConverCStringToStdString(strPath);
+			if (ecFacetory)
+			{
+				pDecoder = ecFacetory->GetProtocolDecoder();
+				if (pDecoder)
+				{
+					if (pDecoder->SetSourcePath(cstrPath.c_str()))
+					{
+						SDAudioSamplesBufInfo audioSamplesBufInfo;
+						audioSamplesBufInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
+						audioSamplesBufInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
+						audioSamplesBufInfo.dwSamplesPerSec = 48000;
+						audioSamplesBufInfo.dwChannels = 2;
+						pDecoder->SetAudioSamplesBufInfo(&audioSamplesBufInfo);
+						if (pDecoder->GetFileGlobalMediaInfo(&streamMediaInfoEx))
+						{
+							SDVideoFrameImageBufInfo videoFrameImageBufInfo;
+							videoFrameImageBufInfo.dwXSize = nWidth;
+							videoFrameImageBufInfo.dwYSize = nHeight;
+							videoFrameImageBufInfo.enumColorFormat = SDCOLORFORMAT_BGRA;// streamMediaInfoEx.sVideoMediaInfo.enumColorFormat;
+							bVideoInied = pDecoder->SetVideoFrameBufInfo(&videoFrameImageBufInfo, nullptr);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	size_t nOffset = 0;
+	pWnd = GetDlgItem(IDC_EDIT_INPUT_VIDEO_OFFSET);
+	if (pWnd && ::IsWindow(pWnd->GetSafeHwnd()))
+	{
+		CString strNum;
+		pWnd->GetWindowText(strNum);
+		nOffset = _ttoi(strNum);
+	}
+
+	SD_UINT32 nVideoBufferSize = 0;
+	SD_UINT32 nAudioBufferSize = 0;
+	uint8_t * pVideoData = nullptr;
+	uint8_t * pAudioData = nullptr;
+	if (bVideoInied && pDecoder)
+	{
+		nVideoBufferSize = pDecoder->GetVideoBufferSize();
+		nAudioBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+		pVideoData = new uint8_t[nVideoBufferSize];
+		memset(pVideoData, 0, nVideoBufferSize * sizeof(uint8_t));
+		pAudioData = new uint8_t[nAudioBufferSize];
+		memset(pAudioData, 0, nAudioBufferSize * sizeof(uint8_t));
+	}
+	
 	for (int i = 0; i < nLength; i++)
 	{
 		strFileSufix.Format(_T("%d.bmp"), i);
-		dcMem.FillRect(CRect(0, 0, nWidth, nHeight), &CBrush(0xFFFFFF / nLength * (i / nFramePerSec)));
+
+		if (bVideoInied && pDecoder)
+		{
+			SDRFrameInfo frameInfo;
+			if (streamMediaInfoEx.dwVideoStreamCount > 0)
+			{
+				bool bContinue = pDecoder->GetVideoBuffer(nOffset + i, pVideoData, &frameInfo);
+				if (bContinue)
+				{
+					CBitmap bmp;
+					bmp.CreateBitmap(nWidth, nHeight, 1, 32, pVideoData);
+					CDC dcBmp;
+					dcBmp.CreateCompatibleDC(NULL);
+					CBitmap *pOldBmp = dcBmp.SelectObject(&bmp);
+					dcMem.BitBlt(0, 0, nWidth, nHeight, &dcBmp, 0, 0, SRCCOPY);
+					if (streamMediaInfoEx.dwVideoStreamCount > 0)
+					{
+						pDecoder->GetAudioSamples(0, 1920, pAudioData, nullptr);
+					}
+					bGetFrame = true;
+				}
+			}
+		}
+								
+		if (!bGetFrame)
+		{
+			dcMem.FillRect(CRect(0, 0, nWidth, nHeight), &CBrush(0xFFFFFF / nLength * (i / nFramePerSec)));
+		}
 
 		int nHour = i / nFramePerSec / 3600;
 		int nMin = (i / nFramePerSec % 3600) / 60;
@@ -267,6 +364,15 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate()
 		int nFrame = i % nFramePerSec;
 		CString strFrame;
 		strFrame.Format(_T("%02d:%02d:%02d:%02d"), nHour, nMin, nSecond, nFrame);
+		dcMem.SetTextColor(RGB(255, 255, 255));
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j= 0; j < 3; j++)
+			{
+				dcMem.DrawText(strFrame, CRect(0, 0, nWidth + (i - 1) * 5, nHeight + (j - i) * 5), DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+			}
+		}
+		dcMem.SetTextColor(RGB(0, 0, 0));
 		dcMem.DrawText(strFrame, CRect(0, 0, nWidth, nHeight), DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 
 		if (bmpMem.m_hObject)
@@ -278,7 +384,15 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate()
 			imgTemp.Detach();
 		}
 	}
+	delete[] pVideoData;
+	pVideoData = nullptr;
+	delete[] pAudioData;
+	pAudioData = nullptr;
 
+	ecFacetory->DeleteProtocolDecoder(pDecoder);
+	ecCodec_ReleaseCodecFactory(ecFacetory);
+
+	dcMem.SetBkMode(nOldMode);
 	dcMem.SelectObject(hOldPen);
 	dcMem.SelectObject(hOldBrush);
 	dcMem.SelectObject(hFont);
@@ -326,7 +440,7 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 	memset(m_pVideoBuf, 0, nVideoBufSize);
 	//配置输出文件信息
 	SDStreamMediaInfo streamInfo;
-	CString strSufix = GetPresetMediaInfo(EmVideoStandard_HD, SDVIDEOTYPE_MPEG2_IFRAME, SDCOLORFORMAT_YUVP_422, SDAUDIOTYPE_WAVE_PCM, 48000, streamInfo);
+	CString strSufix = GetPresetMediaInfo(EmVideoStandard_HD, SDVIDEOTYPE_H264, SDCOLORFORMAT_YUVP_422, SDAUDIOTYPE_AAC, 48000, streamInfo);
 	streamInfo.sVideoMediaInfo.dwGOPSize = 1;
 	bool bRet =	pEncodec->SetSinkFile(&streamInfo, ConverCStringToStdString(strFilePreName + _T("video") + strSufix).c_str());
 	//设置视频画面输入格式
@@ -340,7 +454,7 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 	//设置音频输入格式
 	SDAudioSamplesBufInfo audioBufInfo;
 	audioBufInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
-	audioBufInfo.enumChannelSamplesFormat = (SD_CHANNELSAMPLE_FORMAT)1;
+	audioBufInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
 	audioBufInfo.dwSamplesPerSec = 48000;
 	audioBufInfo.dwChannels = 2;
 	pEncodec->SetAudioSamplesBufInfo(&audioBufInfo);
@@ -389,7 +503,7 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 		if (nAudioReadCursor + 1920 < nAudioSampleWhole)
 		{
 			pEncodec->PutAudioSamples((SD_UINT8 *)(pAudioBufer + nAudioReadCursor), 1920);
-			fileDebug.Write((SD_UINT8 *)(pAudioBufer + nAudioReadCursor), 1920 * 4);
+			//fileDebug.Write((SD_UINT8 *)(pAudioBufer + nAudioReadCursor), 1920 * 4);
 			nAudioReadCursor += 1920;
 		}
 		else
@@ -401,7 +515,7 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 			memcpy(pBufTmp + nReaded * 4, pAudioBufer, (1920 - nReaded) * 4);
 			nAudioReadCursor = 1920 - nReaded;
 			pEncodec->PutAudioSamples(pBufTmp, 1920);
-			fileDebug.Write(pBufTmp, 1920 * 4);
+			//fileDebug.Write(pBufTmp, 1920 * 4);
 		}
 	}
 	fileDebug.Close();
@@ -411,4 +525,19 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 	pAudioBufer = nullptr;
 	ecFacetory->DeleteProtocolEncoder(pEncodec);
 	ecCodec_ReleaseCodecFactory(ecFacetory);
+}
+
+
+void CTimeCodeImageGeneratorDlg::OnBnClickedBtnSelectInputFile()
+{
+	CWnd * pWnd = GetDlgItem(IDC_EDIT_INPUT_PATH);
+	if (pWnd && ::IsWindow(pWnd->GetSafeHwnd()))
+	{
+		CFileDialog dialog(TRUE);
+		if (dialog.DoModal() == IDOK)
+		{
+			CString strPath = dialog.GetPathName();
+			pWnd->SetWindowText(strPath);
+		}
+	}
 }
