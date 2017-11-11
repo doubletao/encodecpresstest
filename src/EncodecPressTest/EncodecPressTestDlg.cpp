@@ -330,9 +330,9 @@ void CEncodecPressTestDlg::DoPlay()
 #endif
 								m_nDispFrame++;
 								nAudioPos += numAudioSample;
-								if (bLoopPlay)
+								if (bLoopPlay && !bContinue)
 								{
-									if (m_nDispFrame > streamMediaInfoEx.dwVideoFrameNum - 1)
+									if (m_nDispFrame > 3)
 									{
 										m_nDispFrame = 0;
 										nAudioPos = 0;
