@@ -44,6 +44,7 @@ private:
 	IecCodecFactory * m_ecfactory;
 
 	VALoop m_vaLoop;
+	bool m_bForbitLostFrame;
 public:
 	EncodecThreader();
 	~EncodecThreader();
@@ -55,7 +56,7 @@ protected:
 	bool DoEncodec();
 public:
 	bool SetOutputVAParam(const SDStreamMediaInfo & streamInfo, const std::string & cstrFilePath);
-	bool SetInputParam(const SDVideoFrameImageBufInfo & imageBufInfo, const SDAudioSamplesBufInfo & audioSamplesBufInfo);
+	bool SetInputParam(const SDVideoFrameImageBufInfo & imageBufInfo, const SDAudioSamplesBufInfo & audioSamplesBufInfo, bool bForbidLostFrame);
 	bool PutFrameBuffer(const SD_UINT8* pFrameBuf, SD_UINT32 dwVideoBufSize, const SD_UINT8* pSamplesBuf, SD_UINT32 dwSampleNum);
 
 	bool Start();

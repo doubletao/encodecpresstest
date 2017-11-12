@@ -143,6 +143,13 @@ void CEncodecPressTestDlg::DoPlay()
 		bLoopPlay = pBtn->GetCheck();
 	}
 
+	bool bForbidLoseFrame = false;
+	pBtn = (CButton *)GetDlgItem(IDC_CHK_FORBID_LOSTFRAME);
+	if (pBtn && ::IsWindow(pBtn->GetSafeHwnd()))
+	{
+		bForbidLoseFrame = pBtn->GetCheck();
+	}
+
 	m_nDispFrame = 0;
 	Lock();
 	m_nFrame = 0;
@@ -249,7 +256,7 @@ void CEncodecPressTestDlg::DoPlay()
 											imageBufInfo.enumColorFormat = videoFrameImageBufInfo.enumColorFormat;
 											imageBufInfo.enumScanMode = SDVIDEOSCANMODE_FirstFieldTop;
 											//SResamplerPara resamplePara;
-											if (pEncoder->SetInputParam(imageBufInfo, audioSamplesBufInfo))
+											if (pEncoder->SetInputParam(imageBufInfo, audioSamplesBufInfo, bForbidLoseFrame))
 											{
 												pEncoder->Start();
 											}

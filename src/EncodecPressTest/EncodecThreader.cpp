@@ -8,6 +8,7 @@ EncodecThreader::EncodecThreader()
 	, m_ecfactory(nullptr)
 	, m_pThread(nullptr)
 	, m_evtStop(FALSE, TRUE, nullptr, nullptr)
+	, m_bForbitLostFrame(false)
 {
 	m_ecfactory = ecCodec_CreateCodecFactory();
 	m_pEncoder = m_ecfactory->GetProtocolEncoder();
@@ -65,9 +66,10 @@ bool EncodecThreader::SetOutputVAParam(const SDStreamMediaInfo & streamInfo, con
 	return m_pEncoder->SetSinkFile(&streamInfo, cstrFilePath.c_str());
 }
 
-bool EncodecThreader::SetInputParam(const SDVideoFrameImageBufInfo & imageBufInfo, const SDAudioSamplesBufInfo & audioSamplesBufInfo)
+bool EncodecThreader::SetInputParam(const SDVideoFrameImageBufInfo & imageBufInfo, const SDAudioSamplesBufInfo & audioSamplesBufInfo, bool bForbidLostFrame)
 {
 	Stop();
+	m_bForbitLostFrame = bForbidLostFrame;
 	bool bRet = m_pEncoder->SetAudioSamplesBufInfo(&audioSamplesBufInfo);
 	bRet &= m_pEncoder->SetVideoFrameBufInfo(&imageBufInfo, nullptr);
 	return true;
@@ -79,7 +81,21 @@ bool EncodecThreader::PutFrameBuffer(const SD_UINT8* pFrameBuf, SD_UINT32 dwVide
 	{
 		m_vaLoop.Reset(10, dwVideoBufSize, dwSampleNum);
 	}
-	return m_vaLoop.Push(pFrameBuf, dwVideoBufSize, pSamplesBuf, dwSampleNum);
+	do
+	{
+		if (m_vaLoop.Push(pFrameBuf, dwVideoBufSize, pSamplesBuf, dwSampleNum))
+		{
+			return true;
+		}
+		else
+		{
+			if (WaitForSingleObject(m_evtStop, 5) == WAIT_OBJECT_0)
+			{
+				break;
+			}
+		}
+	} while (m_bForbitLostFrame);
+	return false;
 }
 
 bool EncodecThreader::Start()
@@ -93,6 +109,7 @@ bool EncodecThreader::Start()
 bool EncodecThreader::Stop()
 {
 	m_evtStop.SetEvent();
+	m_bForbitLostFrame = false;
 	if (m_pThread)
 	{
 		WaitForSingleObject(m_pThread->m_hThread, INFINITE);
