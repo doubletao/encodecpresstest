@@ -109,7 +109,6 @@ bool EncodecThreader::Start()
 bool EncodecThreader::Stop()
 {
 	m_evtStop.SetEvent();
-	m_bForbitLostFrame = false;
 	if (m_pThread)
 	{
 		WaitForSingleObject(m_pThread->m_hThread, INFINITE);
