@@ -18,9 +18,10 @@ public:
 	SDLVideoPlayer();
 	~SDLVideoPlayer();
 public:
-	int IntialWnd(unsigned int nFormat, int x, int y, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight);
-	int IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight);
+	int IntialWnd(unsigned int nFormat, int x, int y, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall);
+	int IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall);
 	int SetBufferFWH(unsigned int nFormat, int nBufWidth, int nBufHeight);
 	int PushFrame(unsigned char * data, int linesize);
 	int PushYUVFrame(unsigned char **& data, int *& linesize);
+	int PushAudioSample(unsigned char * data, int nBufSize);
 };

@@ -295,8 +295,8 @@ void CEncodecPressTestDlg::DoPlay()
 								}
 								if (streamMediaInfoEx.dwAudioStreamCount > 0)
 								{
-									bContinue = pDecoder->GetAudioSamples(nAudioPos, SamplePerFrame, pAudioData, &numAudioSample);
-									//bContinue = pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
+									//bContinue = pDecoder->GetAudioSamples(nAudioPos, SamplePerFrame, pAudioData, &numAudioSample);
+									bContinue = pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
 								}
 								if (!bContinue)
 								{
@@ -361,6 +361,7 @@ void CEncodecPressTestDlg::DoPlay()
 								}
 
 								m_player.PushFrame(pVideoData, nWidth);
+								m_player.PushAudioSample(pAudioData, numAudioSample * 4);
 								int nStay = 40 - (clock() - nClock);
 								if (nStay < 0)
 								{
@@ -419,6 +420,7 @@ void CEncodecPressTestDlg::DoPlay()
 									}
 
 									m_player.PushFrame(pVideoData, nWidth);
+									m_player.PushAudioSample(pAudioData, numAudioSample * 4);
 									m_nDispFrame = m_nFrame;
 								}
 								Unlock();
@@ -621,7 +623,7 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 	{
 		CRect rtPlayer;
 		pPlayerWnd->GetWindowRect(rtPlayer);
-		m_player.IntialWnd(SDL_PIXELFORMAT_IYUV, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height());
+		m_player.IntialWnd(SDL_PIXELFORMAT_IYUV, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920);
 	}
 
 	CWnd * pWnd = GetDlgItem(IDC_EDIT_OUT_FILE_PATH);
