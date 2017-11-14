@@ -295,8 +295,8 @@ void CEncodecPressTestDlg::DoPlay()
 								}
 								if (streamMediaInfoEx.dwAudioStreamCount > 0)
 								{
-									//bContinue = pDecoder->GetAudioSamples(nAudioPos, SamplePerFrame, pAudioData, &numAudioSample);
-									bContinue = pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
+									bContinue = pDecoder->GetAudioSamples(nAudioPos, SamplePerFrame, pAudioData, &numAudioSample);
+									//bContinue = pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
 								}
 								if (!bContinue)
 								{
@@ -403,7 +403,7 @@ void CEncodecPressTestDlg::DoPlay()
 								{
 									SDRFrameInfo frameInfo;
 									pDecoder->GetVideoBuffer(m_nFrame, pVideoData, &frameInfo);
-									pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
+									pDecoder->GetAudioSamples(m_nFrame * SamplePerFrame, SamplePerFrame, pAudioData, &numAudioSample);
 
 									strMsg.Format(_T("m_nFrame=%d, m_nFrame * SamplePerFrame=%d"), m_nFrame, m_nFrame * SamplePerFrame);
 									PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
@@ -422,6 +422,7 @@ void CEncodecPressTestDlg::DoPlay()
 									m_player.PushFrame(pVideoData, nWidth);
 									m_player.PushAudioSample(pAudioData, numAudioSample * 4);
 									m_nDispFrame = m_nFrame;
+									nAudioPos = m_nFrame * SamplePerFrame;
 								}
 								Unlock();
 								if (WaitForSingleObject(m_evtPlayStop, 1) == WAIT_OBJECT_0)

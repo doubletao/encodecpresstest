@@ -550,6 +550,8 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 		AVStream * pVideoStream = m_pFormatCtx->streams[m_nVideoIndex];
 		if (pVideoStream)
 		{
+			//每个时间单位对应的帧数，timebase是sec和unit的比值，r_frame_rate是frame和sec的比值，二者相乘得出frame/unit，av_seek_frame以unit为参考值
+			double dFramePerUnit = av_q2d(m_pFormatCtx->streams[m_nVideoIndex]->time_base) * av_q2d(m_pFormatCtx->streams[m_nVideoIndex]->r_frame_rate);
 			bool bContinue = false;
 			//对于视频来说，gap单位为帧，3帧以内都视为顺播
 			int64_t nSeekGap = dwCurFrameShowIndex - m_nCurrentFrame;
@@ -569,7 +571,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 					}
 					if (m_nCurrentVideoSeekPos > 0 && m_nCurrentVideoSeekPos <= pVideoStream->r_frame_rate.num * 1.0 / pVideoStream->r_frame_rate.den)
 					{
-						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos, AVSEEK_FLAG_FRAME);
+						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos / dFramePerUnit, AVSEEK_FLAG_FRAME);
 						if (nRet >= 0)
 						{
 							bContinue = true;
@@ -577,8 +579,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 					}
 					else if (m_nCurrentVideoSeekPos <= pVideoStream->nb_frames)
 					{
-						double dTm = av_q2d(m_pFormatCtx->streams[m_nVideoIndex]->time_base) * av_q2d(m_pFormatCtx->streams[m_nVideoIndex]->r_frame_rate);
-						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos / dTm, AVSEEK_FLAG_BACKWARD);
+						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos / dFramePerUnit, AVSEEK_FLAG_BACKWARD);
 						if (nRet >= 0)
 						{
 							bContinue = true;
@@ -646,7 +647,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 					}
 					if (m_bVideoSeek)
 					{
-						if (m_pVideoPacket->dts >= m_nCurrentVideoSeekPos)
+						if (m_pVideoPacket->dts >= m_nCurrentVideoSeekPos / dFramePerUnit)
 						{
 							m_bVideoSeek = false;
 						}
@@ -794,6 +795,20 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 		AVStream * pAudioStream = m_pFormatCtx->streams[m_nAudioIndex];
 		if (pAudioStream)
 		{
+			//转换sample数到时间进而转为时码
+			int64_t time_stamp = 0;
+			if (m_nSrcSamplePerSec > 0)
+			{
+				double dTm = m_nCurrentAudioSeekPos * 1.0 / m_nSrcSamplePerSec;
+				AVRational time_base = m_pFormatCtx->streams[m_nAudioIndex]->time_base;
+				time_stamp = m_pFormatCtx->streams[m_nAudioIndex]->start_time + av_rescale(dTm, time_base.den, time_base.num);
+			}
+			int64_t llLength = pAudioStream->duration;
+			if (llLength < 0)
+			{
+				if (m_pFormatCtx->duration > 0)//长度折算到Stream的time_base
+					llLength = m_pFormatCtx->duration * pAudioStream->time_base.den / (AV_TIME_BASE * pAudioStream->time_base.num);
+			}
 			bool bContinue = false;
 			//对于音频来说，gap单位为毫秒，100毫秒以内都视为顺播
 			int64_t nSeekGap = 0;
@@ -810,14 +825,6 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 				}
 				else
 				{
-					//转换sample数到时间进而转为时码
-					int64_t time_stamp = 0;
-					if (m_nSrcSamplePerSec > 0)
-					{
-						double dTm = m_nCurrentAudioSeekPos * 1.0 / m_nSrcSamplePerSec;
-						AVRational time_base = m_pFormatCtx->streams[m_nAudioIndex]->time_base;
-						time_stamp = m_pFormatCtx->streams[m_nAudioIndex]->start_time + av_rescale(dTm, time_base.den, time_base.num);
-					}
 					if (m_nCurrentAudioSeekPos > 0 && m_nCurrentAudioSeekPos <= m_nSrcSamplePerSec)
 					{
 						int nRet = av_seek_frame(m_pFormatCtx, m_nAudioIndex, time_stamp, AVSEEK_FLAG_FRAME);
@@ -826,7 +833,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 							bContinue = true;
 						}
 					}
-					else if (m_nCurrentAudioSeekPos <= pAudioStream->nb_frames)
+					else if (time_stamp <= llLength)
 					{
 						int nRet = av_seek_frame(m_pFormatCtx, m_nAudioIndex, time_stamp, AVSEEK_FLAG_BACKWARD);
 						if (nRet >= 0)
@@ -896,7 +903,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 					}
 					if (m_bAudioSeek)
 					{
-						if (m_pAudioPacket->dts >= m_nCurrentAudioSeekPos)
+						if (m_pAudioPacket->dts >= time_stamp)
 						{
 							m_bAudioSeek = false;
 						}
