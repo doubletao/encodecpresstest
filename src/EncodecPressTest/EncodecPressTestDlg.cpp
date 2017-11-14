@@ -290,6 +290,9 @@ void CEncodecPressTestDlg::DoPlay()
 								}
 								if (!bContinue)
 								{
+									strMsg.Format(_T("video get failed:frame:%d audio:%d"), m_nDispFrame, nAudioPos);
+									PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
+									//AfxMessageBox(strMsg);
 									int i = 0;
 									i++;
 								}
@@ -300,6 +303,9 @@ void CEncodecPressTestDlg::DoPlay()
 								}
 								if (!bContinue)
 								{
+									strMsg.Format(_T("audio get failed:frame:%d audio:%d"), m_nDispFrame, nAudioPos);
+									PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
+									//AfxMessageBox(strMsg);
 									int i = 0;
 									i++;
 								}
@@ -344,6 +350,9 @@ void CEncodecPressTestDlg::DoPlay()
 										m_nDispFrame = 0;
 										nAudioPos = 0;
 										bContinue = true;
+										strMsg.Format(_T("loop mark repair continue:frame:%d audio:%d"), m_nDispFrame, nAudioPos);
+										PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
+										//AfxMessageBox(strMsg);
 									}
 								}
 								Lock();
