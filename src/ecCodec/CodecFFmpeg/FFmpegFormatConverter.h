@@ -43,6 +43,7 @@ public:
 		enum AVSampleFormat sample_fmt, int nchannels, int nb_samples);
 	static bool ConvertBufferToPData(SD_UINT8 * pFrameBuf, uint32_t * pSize, unsigned char ** pOutData, int * pOutLinesize,
 		enum AVSampleFormat sample_fmt, int nchannels, int nb_samples);
+	static std::string GetH264EncodePreset(SD_UINT8 nPresetLevel);
 };
 
 #endif // __FFMPEG_FORMATCONVERTER_H_INCLUDED__

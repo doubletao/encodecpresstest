@@ -49,20 +49,24 @@ bool ecCodecFFmpegVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDestV
 	m_pCodecCtx->framerate.num = pDestVideoInfo->dwStandardRate;
 	m_pCodecCtx->thread_count = 6; // more than one threads seem to increase delay
 	m_pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
+	//该参数应当根据AVOutputFormat::flags & AVFMT_GLOBALHEADER来判定是否应该设置
+	if (pDestVideoInfo->dwFlags & AVFMT_GLOBALHEADER)
+	{
+		m_pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+	}
 
 	if (codecId == AV_CODEC_ID_H264)
 	{
 		m_pCodecCtx->gop_size = pDestVideoInfo->dwGOPSize;
 		m_pCodecCtx->max_b_frames = 3;
-		//该参数应当根据AVOutputFormat::flags & AVFMT_GLOBALHEADER来判定是否应该设置
-		m_pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
 		//限制输出文件的profile。这个参数将覆盖其它所有值，此选项能保证输出profile兼容的视频流。如果使用了这个选项，将不能进行无损压缩（qp 0 or crf 0）。
 		//m_pCodecCtx->profile = FFmpegFormatCovert::ConvertVideoProfile(pDestVideoInfo->enumVideoSubType);
 
 		//m_pCodecCtx->refs = 3;
 		//m_pCodecCtx->qmin = 10;
 		//m_pCodecCtx->qmax = 51;
-		//av_opt_set(m_pCodecCtx->priv_data, "preset", "superfast", 0);
+		std::string cstrH264Level = FFmpegFormatCovert::GetH264EncodePreset(pDestVideoInfo->dwH264EncoderLevel);
+		av_opt_set(m_pCodecCtx->priv_data, "preset", cstrH264Level.c_str(), 0);
 		//av_opt_set(m_pCodecCtx->priv_data, "tune", "zerolatency", 0);
 		//av_opt_set(m_pCodecCtx->priv_data, "profile", "baseline", 0);
 	}

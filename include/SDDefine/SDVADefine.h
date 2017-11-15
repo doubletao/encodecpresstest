@@ -3678,6 +3678,8 @@ struct SDVideoMediaInfo	// 视频基本属性
 	SD_ACTIVE_FORMAT_DESCRIPTION	enumAFD;			// 图像有效区域信息描述，按SMPTE 2016-1定义
 	SD_UINT32				dwMaxDataRateInBitsPerSec;	// 最大码率, based on *****bits/S******
 	SD_UINT32				dwMinDataRateInBitsPerSec;	// 最小码率, based on *****bits/S******
+	SD_UINT8				dwH264EncoderLevel;	//H264编码级别，范围1-9，默认5，1最慢质量最高，9最快质量最低（仅对H264编码有效）
+	mutable SD_INT32		dwFlags;
 	
 	SDVideoMediaInfo()
 	{
@@ -3703,6 +3705,8 @@ struct SDVideoMediaInfo	// 视频基本属性
 		enumAFD = SDAFD_1000;
 		dwMaxDataRateInBitsPerSec = 0;
 		dwMinDataRateInBitsPerSec = 0;
+		dwFlags = 0;
+		dwH264EncoderLevel = 5;
 	};
 
 	SDVideoMediaInfo(const SDVideoMediaInfo &other)
@@ -3734,6 +3738,8 @@ struct SDVideoMediaInfo	// 视频基本属性
 		enumAFD = other.enumAFD;
 		dwMaxDataRateInBitsPerSec = other.dwMaxDataRateInBitsPerSec;
 		dwMinDataRateInBitsPerSec = other.dwMinDataRateInBitsPerSec;
+		dwFlags = other.dwFlags;
+		dwH264EncoderLevel = other.dwH264EncoderLevel;
 		return *this;
 	};
 
@@ -3777,6 +3783,10 @@ struct SDVideoMediaInfo	// 视频基本属性
 		if (enumAFD != other.enumAFD)
 			return SD_FALSE;
 		if (dwMaxDataRateInBitsPerSec != other.dwMaxDataRateInBitsPerSec || dwMinDataRateInBitsPerSec != other.dwMinDataRateInBitsPerSec)
+			return SD_FALSE;
+		if (dwFlags != other.dwFlags || dwFlags != other.dwFlags)
+			return SD_FALSE;
+		if (dwH264EncoderLevel != other.dwH264EncoderLevel || dwH264EncoderLevel != other.dwH264EncoderLevel)
 			return SD_FALSE;
 
 		return SD_TRUE;
@@ -3822,6 +3832,10 @@ struct SDVideoMediaInfo	// 视频基本属性
 		if (enumAFD != other.enumAFD)
 			return SD_TRUE;
 		if (dwMaxDataRateInBitsPerSec != other.dwMaxDataRateInBitsPerSec || dwMinDataRateInBitsPerSec != other.dwMinDataRateInBitsPerSec)
+			return SD_TRUE;
+		if (dwFlags != other.dwFlags || dwFlags != other.dwFlags)
+			return SD_TRUE;
+		if (dwH264EncoderLevel != other.dwH264EncoderLevel || dwH264EncoderLevel != other.dwH264EncoderLevel)
 			return SD_TRUE;
 
 		return SD_FALSE;
@@ -3933,6 +3947,12 @@ struct SDVideoMediaInfo	// 视频基本属性
 
 					dwMinDataRateInBitsPerSec = (SD_UINT32)((*((SD_PINT32)pbStruBuf)));
 					pbStruBuf += sizeof(SD_INT32);
+
+					dwFlags = (SD_INT32)((*((SD_PINT32)pbStruBuf)));
+					pbStruBuf += sizeof(SD_INT32);
+
+					dwH264EncoderLevel = (SD_UINT8)((*((SD_UINT8 *)pbStruBuf)));
+					pbStruBuf += sizeof(SD_UINT8);
 				}
 				
 				return SD_TRUE;
@@ -4053,6 +4073,10 @@ struct SDVideoMediaInfo	// 视频基本属性
 		iPtrSize += sizeof(dwMaxDataRateInBitsPerSec);
 		if (SD_NULL != pBuffer) memcpy(pBuffer + iPtrSize, &dwMinDataRateInBitsPerSec, sizeof(dwMinDataRateInBitsPerSec));
 		iPtrSize += sizeof(dwMinDataRateInBitsPerSec);
+		if (SD_NULL != pBuffer) memcpy(pBuffer + iPtrSize, &dwFlags, sizeof(dwFlags));
+		iPtrSize += sizeof(dwFlags);
+		if (SD_NULL != pBuffer) memcpy(pBuffer + iPtrSize, &dwH264EncoderLevel, sizeof(dwH264EncoderLevel));
+		iPtrSize += sizeof(dwH264EncoderLevel);
 		return iPtrSize;
 	};
 	SD_INT32 SerializationFromPtr(SD_UINT8* pBuffer, SD_INT32 iBufferSize)
@@ -4080,6 +4104,8 @@ struct SDVideoMediaInfo	// 视频基本属性
 		memcpy(&enumAFD, pBuffer + iPtrSize, sizeof(enumAFD));										iPtrSize += sizeof(enumAFD);
 		memcpy(&dwMaxDataRateInBitsPerSec, pBuffer + iPtrSize, sizeof(dwMaxDataRateInBitsPerSec));	iPtrSize += sizeof(dwMaxDataRateInBitsPerSec);
 		memcpy(&dwMinDataRateInBitsPerSec, pBuffer + iPtrSize, sizeof(dwMinDataRateInBitsPerSec));	iPtrSize += sizeof(dwMinDataRateInBitsPerSec);
+		memcpy(&dwFlags, pBuffer + iPtrSize, sizeof(dwFlags));	iPtrSize += sizeof(dwFlags);
+		memcpy(&dwH264EncoderLevel, pBuffer + iPtrSize, sizeof(dwH264EncoderLevel));	iPtrSize += sizeof(dwH264EncoderLevel);
 		return iPtrSize;
 	};
 };

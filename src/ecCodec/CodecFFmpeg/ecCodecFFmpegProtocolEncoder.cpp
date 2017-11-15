@@ -29,10 +29,7 @@ bool ecCodecFFmpegProtocolEncoder::SetSinkFile(const SDStreamMediaInfo * pStream
 		return false;
 	}
 	AVOutputFormat* pOutputFormat = m_pFormatCtx->oformat;
-	if (pOutputFormat->flags & AVFMT_GLOBALHEADER)
-	{
-		//assert(false);
-	}
+	pStreamMediaInfo->sVideoMediaInfo.dwFlags = pOutputFormat->flags;
 
 	pOutputFormat->flags &= ~AVFMT_NOTIMESTAMPS;
 	if (pOutputFormat->flags & AVFMT_NOTIMESTAMPS)

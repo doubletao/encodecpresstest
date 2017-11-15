@@ -231,6 +231,7 @@ void CEncodecPressTestDlg::DoPlay()
 										SD_VIDEO_TYPE emVideoType = GetCodecVideoType(i);
 										SD_COLOR_FORMAT emColorFmt = GetCodecColorFmt(i);
 										SD_AUDIO_TYPE emAudioType = GetCodecAudioType(i);
+										int nH264Level = GetCodecH264Level(i);
 										CString strFileName;
 										CString strTmp;
 										GetCodecFileNameEdit(i)->GetWindowText(strTmp);
@@ -240,12 +241,12 @@ void CEncodecPressTestDlg::DoPlay()
 
 										if (m_bLogOpened)
 										{
-											strMsg.Format(_T("encoder%i:%s"), i, GenerateFileInfoName(emVideoStandard, emVideoType, emColorFmt, emAudioType));
+											strMsg.Format(_T("encoder%i:%s"), i, GenerateFileInfoName(emVideoStandard, emVideoType, emColorFmt, emAudioType, nH264Level));
 											m_fileLog.WriteString(strMsg);
 											m_fileLog.WriteString(_T("\r\n"));
 										}
 
-										GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, streamInfo);
+										GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, nH264Level, streamInfo);
 										if (pEncoder->SetOutputVAParam(streamInfo, (cstrOutPath + ConverCStringToStdString(strFileName).c_str()).c_str()))
 										{
 											//设置视频编码输入格式
@@ -665,11 +666,13 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 		CComboBox * pColorFmtComb = GetCodecColorFmtCombo(i);
 		CComboBox * pAudioTypeComb = GetCodecAudioTypeCombo(i);
 		CEdit *		pFileNameEdit = GetCodecFileNameEdit(i);
+		CEdit *		pH264LevelEdit = GetCodecH264LevelEdit(i);
 		if (pVideoStandardComb
 			&& pVideoTypeComb
 			&& pColorFmtComb
 			&& pAudioTypeComb
 			&& pFileNameEdit
+			&& pH264LevelEdit
 			)
 		{
 			switch (i)
@@ -727,6 +730,7 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 			}
 			CString strName = _T("encodec");
 			pFileNameEdit->SetWindowText(strName);
+			pH264LevelEdit->SetWindowText(_T("5"));
 		}
 	}
 
@@ -1048,6 +1052,43 @@ CComboBox * CEncodecPressTestDlg::GetCodecAudioTypeCombo(int nCodecIndex)
 	return nullptr;
 }
 
+CEdit * CEncodecPressTestDlg::GetCodecH264LevelEdit(int nCodecIndex)
+{
+	CWnd * pWnd = nullptr;
+	switch (nCodecIndex)
+	{
+	case 0:
+		pWnd = GetDlgItem(IDC_EDIT_H264LEVEL_CODEC1);
+		break;
+	case 1:
+		pWnd = GetDlgItem(IDC_EDIT_H264LEVEL_CODEC2);
+		break;
+	case 2:
+		pWnd = GetDlgItem(IDC_EDIT_H264LEVEL_CODEC3);
+		break;
+	case 3:
+		pWnd = GetDlgItem(IDC_EDIT_H264LEVEL_CODEC4);
+		break;
+	case 4:
+		pWnd = GetDlgItem(IDC_EDIT_H264LEVEL_CODEC5);
+		break;
+	case 5:
+		pWnd = GetDlgItem(IDC_EDIT_H264LEVEL_CODEC6);
+		break;
+	case 6:
+		pWnd = GetDlgItem(IDC_EDIT_H264LEVEL_CODEC7);
+		break;
+	default:
+		pWnd = GetDlgItem(IDC_EDIT_H264LEVEL_CODEC8);
+		break;
+	}
+	if (pWnd && ::IsWindow(pWnd->GetSafeHwnd()))
+	{
+		return (CEdit *)pWnd;
+	}
+	return nullptr;
+}
+
 CEdit * CEncodecPressTestDlg::GetCodecFileNameEdit(int nCodecIndex)
 {
 	CWnd * pWnd = nullptr;
@@ -1246,6 +1287,19 @@ SD_AUDIO_TYPE CEncodecPressTestDlg::GetCodecAudioType(int nIndex)
 	return emRet;
 }
 
+int CEncodecPressTestDlg::GetCodecH264Level(int nIndex)
+{
+	int nRet = 0;
+	CEdit * pEdit = GetCodecH264LevelEdit(nIndex);
+	if (pEdit)
+	{
+		CString strNum;
+		pEdit->GetWindowText(strNum);
+		nRet = _ttoi(strNum);
+	}
+	return nRet;
+}
+
 void CEncodecPressTestDlg::DealCtrlFileName()
 {
 	for (size_t i = 0; i < 8; i++)
@@ -1256,13 +1310,13 @@ void CEncodecPressTestDlg::DealCtrlFileName()
 			SD_VIDEO_TYPE emVideoType = GetCodecVideoType(i);
 			SD_COLOR_FORMAT emColorFmt = GetCodecColorFmt(i);
 			SD_AUDIO_TYPE emAudioType = GetCodecAudioType(i);
+			int nH264Level = GetCodecH264Level(i);
 
-			CString strFileName = GenerateFileInfoName(emVideoStandard, emVideoType, emColorFmt, emAudioType);
-			strFileName.AppendFormat(_T("_%d"), i);
+			CString strFileName = GenerateFileInfoName(emVideoStandard, emVideoType, emColorFmt, emAudioType, nH264Level);
 			GetCodecFileNameEdit(i)->SetWindowText(strFileName);
 
 			SDStreamMediaInfo streamInfo;
-			CString strSuffix = GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, streamInfo);
+			CString strSuffix = GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, nH264Level, streamInfo);
 			GetCodecFileSurfixEdit(i)->SetWindowText(strSuffix);
 
 			GetCodecVideoStandardCombo(i)->EnableWindow(false);
@@ -1284,7 +1338,7 @@ void CEncodecPressTestDlg::DealCtrlFileName()
 	}
 }
 
-CString CEncodecPressTestDlg::GenerateFileInfoName(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType)
+CString CEncodecPressTestDlg::GenerateFileInfoName(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, int nH264Level)
 {
 	CString strFileName;
 	switch (emVideoStandard)
@@ -1308,6 +1362,7 @@ CString CEncodecPressTestDlg::GenerateFileInfoName(EmVideoStandard emVideoStanda
 		break;
 	case SDVIDEOTYPE_H264:
 		strFileName.AppendFormat(_T("_H264"));
+		strFileName.AppendFormat(_T("_%d"), nH264Level);
 		break;
 	default:
 		break;
@@ -1381,6 +1436,7 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 	int nSel2 = 0;
 	int nSel3 = 0;
 	int nSel4 = 0;
+	int nSel5 = 0;
 	for (size_t i = 0; i < 8; i++)
 	{
 		//combox选第一项，文件名选inddex
@@ -1389,11 +1445,13 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 		CComboBox * pColorFmtComb = GetCodecColorFmtCombo(i);
 		CComboBox * pAudioTypeComb = GetCodecAudioTypeCombo(i);
 		CEdit *		pFileNameEdit = GetCodecFileNameEdit(i);
+		CEdit *		pH264LevelEdit = GetCodecH264LevelEdit(i);
 		if (pVideoStandardComb
 			&& pVideoTypeComb
 			&& pColorFmtComb
 			&& pAudioTypeComb
 			&& pFileNameEdit
+			&& pH264LevelEdit
 			)
 		{
 			if (0 == i)
@@ -1402,6 +1460,7 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 				nSel2 = pVideoTypeComb->GetCurSel();
 				nSel3 = pColorFmtComb->GetCurSel();
 				nSel4 = pAudioTypeComb->GetCurSel();
+				nSel5 = GetCodecH264Level(i);
 			}
 			else
 			{
@@ -1409,6 +1468,9 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 				pVideoTypeComb->SetCurSel(nSel2);
 				pColorFmtComb->SetCurSel(nSel2);
 				pAudioTypeComb->SetCurSel(nSel4);
+				CString strLevel;
+				strLevel.Format(_T("%d"), nSel5);
+				pH264LevelEdit->SetWindowText(strLevel);
 			}
 			CString strName = _T("encodec");
 			pFileNameEdit->SetWindowText(strName);

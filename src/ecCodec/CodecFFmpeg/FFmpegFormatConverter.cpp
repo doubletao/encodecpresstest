@@ -677,3 +677,49 @@ bool FFmpegFormatCovert::ConvertBufferToPData(SD_UINT8 * pFrameBuf, uint32_t * p
 	}
 	return true;
 }
+
+std::string FFmpegFormatCovert::GetH264EncodePreset(SD_UINT8 nPresetLevel)
+{
+	std::string cstrRet;
+	if (nPresetLevel == 1)
+	{
+		cstrRet = "placebo";
+	}
+	else if (nPresetLevel == 2)
+	{
+		cstrRet = "veryslow";
+	}
+	else if (nPresetLevel == 3)
+	{
+		cstrRet = "slower";
+	}
+	else if (nPresetLevel == 4)
+	{
+		cstrRet = "medium slow";
+	}
+	else if (nPresetLevel == 5)
+	{
+		cstrRet = "fast";
+	}
+	else if (nPresetLevel == 6)
+	{
+		cstrRet = "faster";
+	}
+	else if (nPresetLevel == 7)
+	{
+		cstrRet = "veryfast";
+	}
+	else if (nPresetLevel == 8)
+	{
+		cstrRet = "superfast";
+	}
+	else if (nPresetLevel == 9)
+	{
+		cstrRet = "ultrafast";
+	}
+	else
+	{
+		cstrRet = "fast";
+	}
+	return cstrRet;
+}

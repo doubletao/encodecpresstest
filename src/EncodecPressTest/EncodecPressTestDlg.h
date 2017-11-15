@@ -66,6 +66,7 @@ private:
 	CComboBox * GetCodecVideoTypeCombo(int nCodecIndex);
 	CComboBox * GetCodecColorFmtCombo(int nCodecIndex);
 	CComboBox * GetCodecAudioTypeCombo(int nCodecIndex);
+	CEdit *		GetCodecH264LevelEdit(int nCodecIndex);
 	CEdit *		GetCodecFileNameEdit(int nCodecIndex);
 	CEdit *		GetCodecFileSurfixEdit(int nCodecIndex);
 	void OnCheckEncodec(int nIndex);
@@ -75,9 +76,10 @@ private:
 	SD_VIDEO_TYPE GetCodecVideoType(int nIndex);
 	SD_COLOR_FORMAT GetCodecColorFmt(int nIndex);
 	SD_AUDIO_TYPE GetCodecAudioType(int nIndex);
+	int GetCodecH264Level(int nIndex);
 
 	void DealCtrlFileName();
-	CString GenerateFileInfoName(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType);
+	CString GenerateFileInfoName(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, int nH264Level);
 protected:
 	HICON m_hIcon;
 

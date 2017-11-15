@@ -20,7 +20,7 @@ EASY_CODEC_API_EXPORT bool ecCodec_ReleaseCodecFactory(IecCodecFactory *& pCodec
 	return true;
 }
 
-LPCTSTR GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, DWORD dwSamplePerSec, OUT SDStreamMediaInfo & streamInfo)
+LPCTSTR GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, DWORD dwSamplePerSec, int nH264Level, OUT SDStreamMediaInfo & streamInfo)
 {
 	switch (emVideoStandard)
 	{
@@ -68,6 +68,7 @@ LPCTSTR GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVide
 	streamInfo.sVideoMediaInfo.bIsClipped = 1;
 	streamInfo.sVideoMediaInfo.dwMaxDataRateInBitsPerSec = 0;
 	streamInfo.sVideoMediaInfo.dwMinDataRateInBitsPerSec = 0;
+	streamInfo.sVideoMediaInfo.dwH264EncoderLevel = nH264Level;
 	streamInfo.sVideoMediaInfo.dwStruSize = sizeof(SDVideoMediaInfo);
 	streamInfo.dwAudioStreamCount = 1;
 	streamInfo.sAudioMediaInfo.enumAudioType = emAudioType;		// “Ù∆µ±‡Ω‚¬Î¿‡–Õ°£////////////////////////////////////////////////////////////////////////////
