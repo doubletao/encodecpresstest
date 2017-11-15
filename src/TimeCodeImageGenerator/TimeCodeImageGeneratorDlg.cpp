@@ -314,16 +314,16 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate()
 
 	SD_UINT32 nVideoBufferSize = 0;
 	SD_UINT32 nAudioBufferSize = 0;
-	uint8_t * pVideoData = nullptr;
-	uint8_t * pAudioData = nullptr;
+	SD_UINT8 * pVideoData = nullptr;
+	SD_UINT8 * pAudioData = nullptr;
 	if (bVideoInied && pDecoder)
 	{
 		nVideoBufferSize = pDecoder->GetVideoBufferSize();
 		nAudioBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
-		pVideoData = new uint8_t[nVideoBufferSize];
-		memset(pVideoData, 0, nVideoBufferSize * sizeof(uint8_t));
-		pAudioData = new uint8_t[nAudioBufferSize];
-		memset(pAudioData, 0, nAudioBufferSize * sizeof(uint8_t));
+		pVideoData = new SD_UINT8[nVideoBufferSize];
+		memset(pVideoData, 0, nVideoBufferSize * sizeof(SD_UINT8));
+		pAudioData = new SD_UINT8[nAudioBufferSize];
+		memset(pAudioData, 0, nAudioBufferSize * sizeof(SD_UINT8));
 	}
 	
 	for (int i = 0; i < nLength; i++)
