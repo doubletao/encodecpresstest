@@ -7671,24 +7671,24 @@ enum FRAME_COMPRESS_TYPE
 struct SDRFrameInfo
 {
 	//结构版本
-	uint32_t				iVersion;		// 结构版本号。		4---4[序列化占用字节－序列化位置]
+	SD_UINT32				iVersion;		// 结构版本号。		4---4[序列化占用字节－序列化位置]
 
 											//基本描述
 	STREAM_DATATYPE			emDataType;		// 帧数据类型		4---8
 	STREAMSTATE			    emStreamFlag;   // 标识是第一帧，还是中间帧，还是末尾帧
-	uint32_t				iSize;			// 帧数据大小		4---16
-	uint64_t 				dwFrameIndex;	// 帧数据流顺序		4---28
-	uint32_t 				dwFrameNum;		// 视频/音频帧数量	4---32
+	SD_UINT32				iSize;			// 帧数据大小		4---16
+	SD_UINT64 				dwFrameIndex;	// 帧数据流顺序		4---28
+	SD_UINT32 				dwFrameNum;		// 视频/音频帧数量	4---32
 
-	int32_t 				iSamplesOffset;	// 标识RawAudio音频、视频帧中有效采样的偏移数，大于0表示从开始偏移，小于0表示从尾部开始向前偏移		4---36
+	SD_INT32 				iSamplesOffset;	// 标识RawAudio音频、视频帧中有效采样的偏移数，大于0表示从开始偏移，小于0表示从尾部开始向前偏移		4---36
 
 											// 时间信息扩展
-	uint64_t				qwDTS;			// 解码时间(90Khz单位)	8---44
-	uint64_t				qwPTS;			// 展现时间(90Khz单位)	8---52
-	uint64_t				qwDuration;		// 持续时间(90Khz单位)	8---6
+	SD_UINT64				qwDTS;			// 解码时间(90Khz单位)	8---44
+	SD_UINT64				qwPTS;			// 展现时间(90Khz单位)	8---52
+	SD_UINT64				qwDuration;		// 持续时间(90Khz单位)	8---6
 
 											// for Video
-	uint64_t				dwShowIndex;	// 帧数据显示顺序			4---104
+	SD_UINT64				dwShowIndex;	// 帧数据显示顺序			4---104
 	FRAME_COMPRESS_TYPE		emFrameType;   	// 帧类型 				4---108
 
 	int						extradata_size;
