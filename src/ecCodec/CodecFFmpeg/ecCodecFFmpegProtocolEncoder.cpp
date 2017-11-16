@@ -277,7 +277,34 @@ bool ecCodecFFmpegProtocolEncoder::Release()
 {
 	if (m_pFormatCtx)
 	{
-		int nRet = av_write_trailer(m_pFormatCtx);
+		SDRFrameInfo frameInfo;
+		SD_UINT8* pCompressFrame = nullptr;
+		int nRet = 0;
+		//将编码器中缓存的帧flush掉
+		do 
+		{
+			nRet = m_pVideoEncoder->GetCompressFrame(pCompressFrame, &frameInfo);
+			if (nRet == 0)
+			{
+				//flush
+				m_pVideoEncoder->PutFrame(nullptr, &frameInfo, false);
+			}
+			else if (nRet > 0)
+			{
+				//put不进去了，算了
+				if (!PutVideoFrame(pCompressFrame, &frameInfo))
+				{
+					break;
+				}
+			}
+			else
+			{
+				//false了也算了
+				break;
+			}
+		} while (true);
+
+		nRet = av_write_trailer(m_pFormatCtx);
 		if (nRet != 0)
 		{
 			assert(false);

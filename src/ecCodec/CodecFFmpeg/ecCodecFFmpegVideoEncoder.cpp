@@ -137,53 +137,56 @@ bool ecCodecFFmpegVideoEncoder::PutFrame(const SD_UINT8 * pFrameBuffer, const SD
 		return false;
 	}
 
-	int imageBufSize = av_image_get_buffer_size((AVPixelFormat)m_pSourceFrame->format,
-		m_pSourceFrame->width, m_pSourceFrame->height, 4);
-	if (pFrameInfo->iSize < (UINT32)imageBufSize) 
+	AVFrame* pSourceFrame = nullptr;
+	if (pFrameBuffer != nullptr)
 	{
-		return false;
-	}
-
-	if (0)
-	{
-		FILE * file;
-		fopen_s(&file, "a.yuv", "wb+");
-		if (file)
+		int imageBufSize = av_image_get_buffer_size((AVPixelFormat)m_pSourceFrame->format,
+			m_pSourceFrame->width, m_pSourceFrame->height, 4);
+		if (pFrameInfo->iSize < (UINT32)imageBufSize) 
 		{
-			int y_size = m_pSourceFrame->width * m_pSourceFrame->height;
-			fwrite((uint8_t *)pFrameBuffer[0], 1, y_size, file);    //Y 
-			fwrite((uint8_t *)pFrameBuffer[1], 1, y_size / 4, file);  //U
-			fwrite((uint8_t *)pFrameBuffer[2], 1, y_size / 4, file);  //V
-			fclose(file);
+			return false;
 		}
-	}
 
-	av_image_fill_arrays(m_pSourceFrame->data, m_pSourceFrame->linesize, pFrameBuffer,
-		(AVPixelFormat)m_pSourceFrame->format, m_pSourceFrame->width, m_pSourceFrame->height, 4);
-
-	if (0)
-	{
-		FILE * file;
-		fopen_s(&file, "b.yuv", "wb+");
-		if (file)
+		if (0)
 		{
-			int y_size = m_pSourceFrame->width * m_pSourceFrame->height;
-			fwrite(m_pSourceFrame->data[0], 1, y_size, file);    //Y 
-			fwrite(m_pSourceFrame->data[1], 1, y_size / 4, file);  //U
-			fwrite(m_pSourceFrame->data[2], 1, y_size / 4, file);  //V
-			fclose(file);
+			FILE * file;
+			fopen_s(&file, "a.yuv", "wb+");
+			if (file)
+			{
+				int y_size = m_pSourceFrame->width * m_pSourceFrame->height;
+				fwrite((uint8_t *)pFrameBuffer[0], 1, y_size, file);    //Y 
+				fwrite((uint8_t *)pFrameBuffer[1], 1, y_size / 4, file);  //U
+				fwrite((uint8_t *)pFrameBuffer[2], 1, y_size / 4, file);  //V
+				fclose(file);
+			}
 		}
-	}
 
-	AVFrame* pSourceFrame = m_pSourceFrame;
-	if (m_pSwsCtx) {
-		sws_scale(m_pSwsCtx, m_pSourceFrame->data, m_pSourceFrame->linesize, 0, m_pSourceFrame->height,
-			m_pScaleFrame->data, m_pScaleFrame->linesize);
-		pSourceFrame = m_pScaleFrame;
-	}
+		av_image_fill_arrays(m_pSourceFrame->data, m_pSourceFrame->linesize, pFrameBuffer,
+			(AVPixelFormat)m_pSourceFrame->format, m_pSourceFrame->width, m_pSourceFrame->height, 4);
 
-	pSourceFrame->pts = m_pts++;
-	pSourceFrame->pict_type = bForceToKeyFrame ? AV_PICTURE_TYPE_I : AV_PICTURE_TYPE_NONE;
+		if (0)
+		{
+			FILE * file;
+			fopen_s(&file, "b.yuv", "wb+");
+			if (file)
+			{
+				int y_size = m_pSourceFrame->width * m_pSourceFrame->height;
+				fwrite(m_pSourceFrame->data[0], 1, y_size, file);    //Y 
+				fwrite(m_pSourceFrame->data[1], 1, y_size / 4, file);  //U
+				fwrite(m_pSourceFrame->data[2], 1, y_size / 4, file);  //V
+				fclose(file);
+			}
+		}
+		pSourceFrame = m_pSourceFrame;
+		if (m_pSwsCtx) {
+			sws_scale(m_pSwsCtx, m_pSourceFrame->data, m_pSourceFrame->linesize, 0, m_pSourceFrame->height,
+				m_pScaleFrame->data, m_pScaleFrame->linesize);
+			pSourceFrame = m_pScaleFrame;
+		}
+
+		pSourceFrame->pts = m_pts++;
+		pSourceFrame->pict_type = bForceToKeyFrame ? AV_PICTURE_TYPE_I : AV_PICTURE_TYPE_NONE;
+	}
 
 	int ret = avcodec_send_frame(m_pCodecCtx, pSourceFrame);
 	if (ret < 0) {
