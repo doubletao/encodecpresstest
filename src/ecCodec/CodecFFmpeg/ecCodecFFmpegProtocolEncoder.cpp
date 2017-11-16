@@ -145,11 +145,14 @@ bool ecCodecFFmpegProtocolEncoder::PutVideoBuffer(const SD_UINT8 * pFrameBuf, bo
 
 	SDRFrameInfo frameInfo = *pFrameInfo;
 	SD_UINT8* pCompressFrame = nullptr;
-	if (!m_pVideoEncoder->GetCompressFrame(pCompressFrame, &frameInfo)) {
-		return false;
+	while (m_pVideoEncoder->GetCompressFrame(pCompressFrame, &frameInfo) > 0) 
+	{
+		if (!PutVideoFrame(pCompressFrame, &frameInfo))
+		{
+			return false;
+		}
 	}
-
-	return PutVideoFrame(pCompressFrame, &frameInfo);
+	return true;
 }
 
 bool ecCodecFFmpegProtocolEncoder::PutVideoFrame(const SD_UINT8 * pFrameBuf, const SDRFrameInfo * pFrameInfo)
@@ -228,7 +231,7 @@ bool ecCodecFFmpegProtocolEncoder::PutAudioSamples(const SD_UINT8 * pSamplesBuf,
 
 		SDRFrameInfo frameInfo;
 		SD_UINT8* pCompressFrame = nullptr;
-		while (m_pAudioEncoder->GetCompressFrame(pCompressFrame, &frameInfo))
+		while (m_pAudioEncoder->GetCompressFrame(pCompressFrame, &frameInfo) > 0)
 		{
 			if (!PutAudioFrame(pCompressFrame, &frameInfo))
 			{

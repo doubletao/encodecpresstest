@@ -158,14 +158,24 @@ bool ecCodecFFmpegVideoDecoder::SetEndofInput()
 	return false;
 }
 
-bool ecCodecFFmpegVideoDecoder::GetUnCompressFrame(SD_UINT8 *& lpFrameBuffer, SDRFrameInfo * pFrameInfo)
+int ecCodecFFmpegVideoDecoder::GetUnCompressFrame(SD_UINT8 *& lpFrameBuffer, SDRFrameInfo * pFrameInfo)
 {
 	if (!m_pCodecCtx || !m_pFrame) {
-		return false;
+		return -2;
 	}
 
-	if (avcodec_receive_frame(m_pCodecCtx, m_pFrame) < 0) {
-		return false;
+	int ret = avcodec_receive_frame(m_pCodecCtx, m_pFrame);
+	if (ret == AVERROR(EAGAIN))
+	{
+		return 0;
+	}
+	else if (ret == AVERROR_EOF)
+	{
+		return -1;
+	}
+	else if (ret < 0) 
+	{
+		return -2;
 	}
 
 	if (m_pFrame)
@@ -235,7 +245,7 @@ bool ecCodecFFmpegVideoDecoder::GetUnCompressFrame(SD_UINT8 *& lpFrameBuffer, SD
 		}
 	}
 
-	return true;
+	return 1;
 }
 
 bool ecCodecFFmpegVideoDecoder::GetVideoMediaInfo(SDVideoMediaInfo * mediaInfo)

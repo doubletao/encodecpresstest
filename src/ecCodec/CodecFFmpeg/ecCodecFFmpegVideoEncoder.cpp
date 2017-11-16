@@ -202,19 +202,28 @@ bool ecCodecFFmpegVideoEncoder::SetEndofInput()
 	return true;
 }
 
-bool ecCodecFFmpegVideoEncoder::GetCompressFrame(SD_UINT8 *& pFrameBuffer, SDRFrameInfo * pFrameInfo)
+int ecCodecFFmpegVideoEncoder::GetCompressFrame(SD_UINT8 *& pFrameBuffer, SDRFrameInfo * pFrameInfo)
 {
 	AVPacket avpkt = { 0 };
 	av_init_packet(&avpkt);	// Note, this does not touch the data and size members, which have to be initialized separately.
 
 	int ret = avcodec_receive_packet(m_pCodecCtx, &avpkt);
-	if (ret < 0 || avpkt.size < 1) {
+	if (ret == AVERROR(EAGAIN))
+	{
+		return 0;
+	}
+	else if (ret == AVERROR_EOF)
+	{
+		return -1;
+	}
+	else if (ret < 0 || avpkt.size < 1) 
+	{
 		char errbuf[128] = { 0 };
 		const char *errbuf_ptr = errbuf;
 		if (av_strerror(ret, errbuf, sizeof(errbuf)) < 0)
 			strerror_s(errbuf, AVUNERROR(ret));
 		av_packet_unref(&avpkt);
-		return false;
+		return -2;
 	}
 
 	if (0)
@@ -249,7 +258,7 @@ bool ecCodecFFmpegVideoEncoder::GetCompressFrame(SD_UINT8 *& pFrameBuffer, SDRFr
 
 	av_packet_unref(&avpkt);
 
-	return true;
+	return 1;
 }
 
 bool ecCodecFFmpegVideoEncoder::Release()

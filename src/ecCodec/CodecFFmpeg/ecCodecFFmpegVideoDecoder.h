@@ -28,7 +28,7 @@ public:
 	virtual bool InitVideoDecoder(AVCodecContext * pCodecCtx, AVCodec * pVideoCodec);
 	virtual bool PutVideoFrame(const SD_UINT8 *pFrameBuffer, const SDRFrameInfo *pFrameInfo);
 	virtual bool SetEndofInput();
-	virtual bool GetUnCompressFrame(SD_UINT8* &lpFrameBuffer, SDRFrameInfo *pFrameInfo);
+	virtual int GetUnCompressFrame(SD_UINT8* &lpFrameBuffer, SDRFrameInfo *pFrameInfo);
 	virtual bool GetVideoMediaInfo(SDVideoMediaInfo * mediaInfo);
 	virtual bool SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo *pOutBufInfo);
 	virtual bool IsInitialized();

@@ -25,7 +25,8 @@ public:
 	// 返回值为dwCODEC_NEED_MOREDATA时需要继续使用PutFrame输入新的数据
 	// pFrameBuffer:解压缩帧数据
 	// pFrameInfo:输出帧信息
-	virtual bool GetUnCompressFrame(SD_UINT8* &lpFrameBuffer, SDRFrameInfo *pFrameInfo) = 0;
+	// 返回值：>0成功，=0需要继续put，<0失败
+	virtual int GetUnCompressFrame(SD_UINT8* &lpFrameBuffer, SDRFrameInfo *pFrameInfo) = 0;
 
 	// 得到解码的流信息
 	// 返回值：

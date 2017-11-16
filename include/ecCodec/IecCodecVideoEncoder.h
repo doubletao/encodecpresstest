@@ -27,7 +27,8 @@ public:
 	// 编码得到的压缩帧数据指针(指向由编解码模块内部分配的内存,需要调用者自己保存指针内容)
 	// pFrameBuffer :压缩帧缓存
 	// pFrameInfo :输出压缩帧信息
-	virtual bool GetCompressFrame(SD_UINT8* &pFrameBuffer, SDRFrameInfo *pFrameInfo) = 0;
+	// 返回值：>0成功，=0需要继续put，<0失败
+	virtual int  GetCompressFrame(SD_UINT8* &pFrameBuffer, SDRFrameInfo *pFrameInfo) = 0;
 
 	virtual bool Release() = 0;
 };

@@ -213,11 +213,11 @@ bool ecCodecFFmpegAudioDecoder::PutFrame(const SD_UINT8 * pData, const SDRFrameI
 int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSampleNum)
 {
 	if (!m_pCodecCtx || !m_pSrcFrame) {
-		return 0;
+		return -2;
 	}
 
 	int ret = avcodec_receive_frame(m_pCodecCtx, m_pSrcFrame);
-	if (ret < 0) 
+	if (ret == AVERROR(EAGAIN))
 	{
 		//解码器里没东西了检查下fifo缓冲里还有没
 		if (m_pAudioFifo && av_audio_fifo_size(m_pAudioFifo) >= nSampleNum)
@@ -225,10 +225,21 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 			av_audio_fifo_read(m_pAudioFifo, (void **)&lpBuffer, nSampleNum);
 			return nSampleNum;
 		}
-		else
+		return 0;
+	}
+	else if (ret == AVERROR_EOF)
+	{
+		//解码器里没东西了检查下fifo缓冲里还有没
+		if (m_pAudioFifo && av_audio_fifo_size(m_pAudioFifo) >= nSampleNum)
 		{
-			return 0;
+			av_audio_fifo_read(m_pAudioFifo, (void **)&lpBuffer, nSampleNum);
+			return nSampleNum;
 		}
+		return -1;
+	}
+	else if (ret < 0) 
+	{
+		return -2;
 	}
 
 	if (nSampleNum != m_nLastSampleNum)
@@ -248,7 +259,7 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 	{
 		//无法获取sample数
 		printf("failed to get nb_samples");
-		return -1;
+		return -2;
 	}
 	m_nLastSampleNum = nSampleNum;
 
@@ -300,7 +311,7 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 			if (av_frame_get_buffer(m_pSwrFrame, 0) < 0)
 			{
 				av_frame_free(&m_pSwrFrame);
-				return 0;
+				return -2;
 			}
 		}
 		else
@@ -308,7 +319,7 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 			if (av_frame_get_buffer(m_pSwrFrame, 0) < 0)
 			{
 				av_frame_free(&m_pSwrFrame);
-				return 0;
+				return -2;
 			}
 		}
 

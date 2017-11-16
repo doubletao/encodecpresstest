@@ -230,6 +230,7 @@ void CEncodecPressTestDlg::DoPlay()
 										EmVideoStandard emVideoStandard = GetCodecVideoStandard(i);
 										SD_VIDEO_TYPE emVideoType = GetCodecVideoType(i);
 										SD_COLOR_FORMAT emColorFmt = GetCodecColorFmt(i);
+										//SD_COLOR_FORMAT emColorFmt = SDCOLORFORMAT_YUVP_422;
 										SD_AUDIO_TYPE emAudioType = GetCodecAudioType(i);
 										int nH264Level = GetCodecH264Level(i);
 										CString strFileName;

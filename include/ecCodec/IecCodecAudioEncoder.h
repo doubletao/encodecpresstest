@@ -28,7 +28,8 @@ public:
 	// 返回值：1 成功、 0 错误
 	//pData:压缩帧数据(指向由编解码模块内部分配的内存)
 	//pFrameInfo:压缩帧信息
-	virtual bool GetCompressFrame(SD_UINT8* &pData, SDRFrameInfo* pFrameInfo) = 0;
+	// 返回值：>0成功，=0需要继续put，<0失败
+	virtual int GetCompressFrame(SD_UINT8* &pData, SDRFrameInfo* pFrameInfo) = 0;
 
 	virtual bool Release() = 0;
 };

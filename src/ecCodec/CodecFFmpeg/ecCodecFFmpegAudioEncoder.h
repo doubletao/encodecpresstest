@@ -32,7 +32,7 @@ public:
 	virtual bool SetAudioSamplesBufInfo(const SDAudioSamplesBufInfo *pAudioBufInfo);
 	virtual bool WriteSample(const SD_UINT8* pData, SD_UINT32 iSize, bool emInputFlag);
 	virtual bool SetEndofInput();
-	virtual bool GetCompressFrame(SD_UINT8* &pData, SDRFrameInfo* pFrameInfo);
+	virtual int GetCompressFrame(SD_UINT8* &pData, SDRFrameInfo* pFrameInfo);
 	virtual bool Release();
 	AVCodecContext* GetCodecContext() const;
 };

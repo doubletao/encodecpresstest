@@ -182,14 +182,14 @@ bool ecCodecFFmpegAudioEncoder::SetEndofInput()
 	return true;
 }
 
-bool ecCodecFFmpegAudioEncoder::GetCompressFrame(SD_UINT8 *& pData, SDRFrameInfo * pFrameInfo)
+int ecCodecFFmpegAudioEncoder::GetCompressFrame(SD_UINT8 *& pData, SDRFrameInfo * pFrameInfo)
 {
 	if (!m_pCodecCtx || !m_pAudioFrame) {
-		return false;
+		return -2;
 	}
 
 	if (av_audio_fifo_size(m_pAudioFifo) < m_pCodecCtx->frame_size) {
-		return false;
+		return -2;
 	}
 
 	av_audio_fifo_read(m_pAudioFifo, (void**)m_pAudioFrame->data, m_pCodecCtx->frame_size);
@@ -200,14 +200,24 @@ bool ecCodecFFmpegAudioEncoder::GetCompressFrame(SD_UINT8 *& pData, SDRFrameInfo
 
 	int ret = avcodec_send_frame(m_pCodecCtx, m_pAudioFrame);
 	if (ret < 0) {
-		return false;
+		return -2;
 	}
 
 	AVPacket avpkt = { 0 };
 	av_init_packet(&avpkt);
-	if (avcodec_receive_packet(m_pCodecCtx, &avpkt) < 0) {
+	ret = avcodec_receive_packet(m_pCodecCtx, &avpkt);
+	if (ret == AVERROR(EAGAIN))
+	{
+		return 0;
+	}
+	else if (ret == AVERROR_EOF)
+	{
+		return -1;
+	}
+	else if (ret < 0 || avpkt.size < 1) 
+	{
 		av_packet_unref(&avpkt);
-		return false;
+		return -2;
 	}
 
 	memcpy(m_pDestBuffer.get(), avpkt.data, avpkt.size);
@@ -219,7 +229,7 @@ bool ecCodecFFmpegAudioEncoder::GetCompressFrame(SD_UINT8 *& pData, SDRFrameInfo
 
 	av_packet_unref(&avpkt);
 
-	return true;
+	return 1;
 }
 
 bool ecCodecFFmpegAudioEncoder::Release()
