@@ -23,6 +23,7 @@ ecCodecFFmpegProtocolDecoder::ecCodecFFmpegProtocolDecoder()
 	, m_nLastSampleNum(0)
 	, m_nDesChannelCount(0)
 	, m_dFramePerUnit(0)
+	, m_pAvIoBuffer(nullptr)
 {
 	InitializeCriticalSection(&m_lock);
 }
@@ -42,9 +43,9 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 		return false;
 	}
 	//注册所有支持的格式
-	av_register_all();
+	//av_register_all();
 	//网络组件的初始化（非必须）,应该是解网络流的时候在用
-	//avformat_network_init();
+	avformat_network_init();
 	//创建解封装器
 	m_pFormatCtx = avformat_alloc_context();
 	if (m_pFormatCtx)
@@ -190,6 +191,181 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 		else
 		{
 			printf("failed to open input\n");
+		}
+	}
+	else
+	{
+		printf("failed to alloc context\n");
+	}
+	Release();
+	return false;
+}
+
+bool ecCodecFFmpegProtocolDecoder::SetSourceCallback(PCALLBACKREADPACKET pCallbackReadPkt, PCALLBACKINTERRUPT pCallbackInterupt /*= nullptr*/)
+{
+	if (m_bIsInitialized)
+	{
+		printf("release codec before open again\n");
+		return false;
+	}
+	//注册所有支持的格式
+	//av_register_all();
+	//网络组件的初始化（非必须）,应该是解网络流的时候在用
+	avformat_network_init();
+	//创建解封装器
+	m_pFormatCtx = avformat_alloc_context();
+	if (m_pFormatCtx)
+	{
+		//给回调
+		const int nBufferSize = 1920 * 1080 * 2;//大小是个经验值
+		m_pAvIoBuffer = (unsigned char *)av_malloc(nBufferSize);
+		AVIOContext * avio = avio_alloc_context(m_pAvIoBuffer, nBufferSize, 0, this, pCallbackReadPkt, NULL, NULL);
+		if (avio)
+		{
+			m_pFormatCtx->pb = avio;
+			m_pFormatCtx->interrupt_callback.callback = pCallbackInterupt;
+			m_pFormatCtx->interrupt_callback.opaque = this;
+			if (avformat_open_input(&m_pFormatCtx, nullptr, nullptr, nullptr) >= 0)
+			{
+				//得到流数据
+				if (avformat_find_stream_info(m_pFormatCtx, nullptr) >= 0)
+				{
+					//查找视频流
+					m_nVideoIndex = av_find_best_stream(m_pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
+					if (m_nVideoIndex > -1)
+					{
+						//找到视频流后处理视频
+						//根据编码格式查找解码器
+						//先拿到解码参数
+						AVStream * pStreams = m_pFormatCtx->streams[m_nVideoIndex];
+						if (pStreams)
+						{
+							AVCodecParameters * pVideoCodecParm = pStreams->codecpar;
+							if (pVideoCodecParm)
+							{
+								SDVideoMediaInfo videoInfo;
+								videoInfo.enumColorFormat = FFmpegFormatCovert::ConvertColorFormat((AVPixelFormat)pVideoCodecParm->format);
+								videoInfo.dwWidth = pVideoCodecParm->width;
+								videoInfo.dwHeight = pVideoCodecParm->height;
+								videoInfo.dwDataRateInBitsPerSec = (SD_UINT32)pVideoCodecParm->bit_rate;
+								videoInfo.enumVideoType = FFmpegFormatCovert::ConvertVideoCodecType(pVideoCodecParm->codec_id);
+								videoInfo.dwDisplayWidth = (SD_UINT32)(pVideoCodecParm->extradata);
+								videoInfo.dwDisplayHeight = pVideoCodecParm->extradata_size;
+								videoInfo.enumScanMode = FFmpegFormatCovert::ConvertVideoFieldOrder(pVideoCodecParm->field_order);
+								videoInfo.dwStandardScale = pVideoCodecParm->profile;
+								videoInfo.dwStandardRate = pVideoCodecParm->level;
+								videoInfo.dwMaxDataRateInBitsPerSec = pVideoCodecParm->sample_aspect_ratio.den;
+								videoInfo.dwMinDataRateInBitsPerSec = pVideoCodecParm->sample_aspect_ratio.num;
+#if 0
+								AVCodecContext * pCodecCtx = nullptr;
+								AVCodecID codecID = pVideoCodecParm->codec_id;
+								AVCodec * pVideoCodec = avcodec_find_decoder(codecID);
+								if (pVideoCodec)
+								{
+									//解码参数转成解码上下文
+									pCodecCtx = avcodec_alloc_context3(pVideoCodec);
+									avcodec_parameters_to_context(pCodecCtx, pVideoCodecParm);
+								}
+								if (m_VideoDecoder.InitVideoDecoder(pCodecCtx, pVideoCodec))
+#else if
+								//创建解码器
+								if (m_VideoDecoder.InitVideoDecoder(videoInfo))
+#endif
+								{
+									m_pVideoPacket = (AVPacket *)av_malloc(sizeof(AVPacket));
+									av_init_packet(m_pVideoPacket);
+									//每个时间单位对应的帧数，timebase是sec和unit的比值，r_frame_rate是frame和sec的比值，二者相乘得出frame/unit，av_seek_frame以unit为参考值
+									m_dFramePerUnit = av_q2d(m_pFormatCtx->streams[m_nVideoIndex]->time_base) * av_q2d(m_pFormatCtx->streams[m_nVideoIndex]->r_frame_rate);
+									m_bIsInitialized = true;
+								}
+								else
+								{
+									printf("failed to initial video decoder\n");
+								}
+							}
+							else
+							{
+								printf("failed to get video codecparam\n");
+							}
+						}
+					}
+					else
+					{
+						printf("failed to find video stream\n");
+					}
+					//查找音频流
+					m_nAudioIndex = av_find_best_stream(m_pFormatCtx, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
+					if (m_nAudioIndex > -1)
+					{
+						//找到音频流后处理音频
+						//根据编码格式查找解码器
+						//先拿到解码参数
+						AVCodecParameters * pAudioCodecParm = m_pFormatCtx->streams[m_nAudioIndex]->codecpar;
+						AVStream * pStream = m_pFormatCtx->streams[m_nAudioIndex];
+						if (pAudioCodecParm)
+						{
+							if (AV_CODEC_ID_FIRST_AUDIO == pAudioCodecParm->codec_id)
+							{
+								//如果是PCM，则不需要初始化音频解码器
+								m_bIsInitialized = true;
+								m_pAudioPacket = (AVPacket *)av_malloc(sizeof(AVPacket));
+								av_init_packet(m_pAudioPacket);
+								m_nSrcSamplePerSec = pAudioCodecParm->sample_rate;
+								m_nDesChannelCount = pAudioCodecParm->channels;
+							}
+							else
+							{
+								SDAudioMediaInfo audioInfo;
+								audioInfo.enumAudioType = FFmpegFormatCovert::ConvertAudioType(pAudioCodecParm->codec_id);		// 音频编解码类型。
+								audioInfo.dwAudioSubType = pAudioCodecParm->codec_tag;		// 音频编解码的子类型,子类型定义随enumAudioType不同而不同
+								audioInfo.dwChannels = pAudioCodecParm->channels;			// 声道数目
+								audioInfo.dwBitsPerSample = pAudioCodecParm->bits_per_raw_sample;	// 采样位数 
+								audioInfo.dwSamplesPerSec = pAudioCodecParm->sample_rate;	// 每秒采样数量 
+								audioInfo.dwAvgBitsPerSec = pAudioCodecParm->bit_rate;	// 音频码率 bits
+								audioInfo.dwBlockAlign = pAudioCodecParm->block_align;		// 数据块对齐单位(每个采样样本需要的字节数), 声道数*量化数/8, 量化数(16,20?,24,32...										//Below is Version 2 Add.
+								audioInfo.enumAudioCFG = FFmpegFormatCovert::ConvertChannelLayout(pAudioCodecParm->channel_layout);		//声道属性
+								audioInfo.enumChannelSamplesFormat = FFmpegFormatCovert::ConvertSamplesFormat((AVSampleFormat)pAudioCodecParm->format);	//音频声道采样数据格式
+								audioInfo.dwBitsPerSample = pAudioCodecParm->bits_per_coded_sample;
+								audioInfo.extradata = pAudioCodecParm->extradata;
+								audioInfo.extradata_size = pAudioCodecParm->extradata_size;
+								audioInfo.dwStruSize = sizeof(SDAudioMediaInfo);			// 结构大小
+								//创建解码器
+								if (m_AudioDecoder.InitAudioDecoder(audioInfo))
+								{
+									m_nSrcSamplePerSec = audioInfo.dwSamplesPerSec;
+									m_pAudioPacket = (AVPacket *)av_malloc(sizeof(AVPacket));
+									av_init_packet(m_pAudioPacket);
+									m_bIsInitialized = true;
+								}
+								else
+								{
+									printf("failed to initial audio decoder\n");
+								}
+							}
+						}
+					}
+					else
+					{
+						printf("failed to find audio stream\n");
+					}
+					if (m_bIsInitialized)
+					{
+						return true;
+					}
+				}
+				else
+				{
+					printf("failed to find stream\n");
+				}
+			}
+			else
+			{
+				printf("failed to open input\n");
+			}
+		}
+		else
+		{
+			printf("failed to alloc aviocontext\n");
 		}
 	}
 	else
@@ -1048,6 +1224,8 @@ bool ecCodecFFmpegProtocolDecoder::Release()
 	m_bVideoSeek = false;
 	m_nCurrentAudioSeekPos = 0;
 	m_bAudioSeek = false;
+	av_free(m_pAvIoBuffer);
+	m_pAvIoBuffer = nullptr;
 	return true;
 }
 
@@ -1059,4 +1237,14 @@ void ecCodecFFmpegProtocolDecoder::Lock()
 void ecCodecFFmpegProtocolDecoder::Unlock()
 {
 	LeaveCriticalSection(&m_lock);
+}
+
+bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pSamplesBuf, SD_UINT32* pdwRetSampleNum)
+{
+	//从当前位置开始取一帧视频一帧音频
+	SDRFrameInfo frameInfo;
+	bool bVideo = GetVideoBuffer(-1, pFrameBuf, &frameInfo);
+	SD_UINT32 nSampleNum = 0;
+	bool bAudio = GetAudioSamples(-1, nSampleNum, pSamplesBuf, &nSampleNum);
+	return false;
 }

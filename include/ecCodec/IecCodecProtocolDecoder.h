@@ -1,5 +1,9 @@
 #pragma once
 #include "ecCodec.h"
+
+typedef int(*PCALLBACKREADPACKET)(void *,unsigned char *,int);
+typedef int(*PCALLBACKINTERRUPT)(PVOID pM);
+
 class EASY_CODEC_API_EXPORT IecCodecProtocolDecoder
 {
 public:
@@ -8,6 +12,10 @@ public:
 	// 参数：
 	// pFullPath 可能是本地文件或网络地址
 	virtual bool SetSourcePath(const char * pFullPath) = 0;
+
+	// 设置输入回调
+	// 说明：主要供网络流使用，只有数据包而没有具体文件或流地址的情况下使用
+	virtual bool SetSourceCallback(PCALLBACKREADPACKET pCallbackReadPkt, PCALLBACKINTERRUPT pCallbackInterupt = nullptr) = 0;
 
 	//-----------------------------------------------------------------------------------------------//
 	// 解码器信息获取------获取输入文件的信息
@@ -103,6 +111,11 @@ public:
 	) = 0;
 
 	virtual SD_UINT32 GetAudioBufferSize() = 0;
+
+	// 顺解方式取出下一帧画面及一帧画面对应的音频
+	virtual bool GetVABuffer(SD_UINT8* pFrameBuf,
+		SD_UINT8* pSamplesBuf,
+		SD_UINT32* pdwRetSampleNum) = 0;
 
 	//-----------------------------------------------------------------------------------------------//
 	// 解码器关闭操作
