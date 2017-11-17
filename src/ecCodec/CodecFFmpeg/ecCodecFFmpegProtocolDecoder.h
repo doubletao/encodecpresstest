@@ -24,6 +24,7 @@ private:
 	ecCodecFFmpegVideoDecoder m_VideoDecoder;
 	AVPacket * m_pVideoPacket;
 	int64_t m_nCurrentVideoSeekPos;
+	double m_dFramePerUnit;
 	bool m_bVideoSeek;
 
 	int m_nAudioIndex;

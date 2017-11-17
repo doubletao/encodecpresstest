@@ -22,6 +22,7 @@ ecCodecFFmpegProtocolDecoder::ecCodecFFmpegProtocolDecoder()
 	, m_pAudioFifo(nullptr)
 	, m_nLastSampleNum(0)
 	, m_nDesChannelCount(0)
+	, m_dFramePerUnit(0)
 {
 	InitializeCriticalSection(&m_lock);
 }
@@ -98,6 +99,8 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 							{
 								m_pVideoPacket = (AVPacket *)av_malloc(sizeof(AVPacket));
 								av_init_packet(m_pVideoPacket);
+								//每个时间单位对应的帧数，timebase是sec和unit的比值，r_frame_rate是frame和sec的比值，二者相乘得出frame/unit，av_seek_frame以unit为参考值
+								m_dFramePerUnit = av_q2d(m_pFormatCtx->streams[m_nVideoIndex]->time_base) * av_q2d(m_pFormatCtx->streams[m_nVideoIndex]->r_frame_rate);
 								m_bIsInitialized = true;
 							}
 							else
@@ -507,8 +510,29 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex,
 			{
 				if (m_VideoDecoder.PutVideoFrame(pCompressFrame, &frameInfo))
 				{
+					int64_t pktDts = frameInfo.qwDTS;
 					if (pFrameBuf && m_VideoDecoder.GetUnCompressFrame(pFrameBuf, &frameInfo))
 					{
+						if (m_bVideoSeek)
+						{
+							int64_t pts;
+							if (pktDts == AV_NOPTS_VALUE && frameInfo.qwPTS != AV_NOPTS_VALUE)
+							{
+								pts = frameInfo.qwPTS;
+							}
+							else if(pktDts != AV_NOPTS_VALUE) 
+							{
+								pts = pktDts;
+							}
+							else
+							{
+								pts = 0;
+							}
+							if (pts >= m_nCurrentVideoSeekPos / m_dFramePerUnit)
+							{
+								m_bVideoSeek = false;
+							}
+						}
 						m_nCurrentFrame = dwCurFrameShowIndex;
 						if (pFrameInfo)
 						{
@@ -550,8 +574,6 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 		AVStream * pVideoStream = m_pFormatCtx->streams[m_nVideoIndex];
 		if (pVideoStream)
 		{
-			//每个时间单位对应的帧数，timebase是sec和unit的比值，r_frame_rate是frame和sec的比值，二者相乘得出frame/unit，av_seek_frame以unit为参考值
-			double dFramePerUnit = av_q2d(m_pFormatCtx->streams[m_nVideoIndex]->time_base) * av_q2d(m_pFormatCtx->streams[m_nVideoIndex]->r_frame_rate);
 			bool bContinue = false;
 			//对于视频来说，gap单位为帧，3帧以内都视为顺播
 			int64_t nSeekGap = dwCurFrameShowIndex - m_nCurrentFrame;
@@ -571,7 +593,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 					}
 					if (m_nCurrentVideoSeekPos > 0 && m_nCurrentVideoSeekPos <= pVideoStream->r_frame_rate.num * 1.0 / pVideoStream->r_frame_rate.den)
 					{
-						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos / dFramePerUnit, AVSEEK_FLAG_FRAME);
+						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos / m_dFramePerUnit, AVSEEK_FLAG_FRAME);
 						if (nRet >= 0)
 						{
 							bContinue = true;
@@ -579,7 +601,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 					}
 					else if (m_nCurrentVideoSeekPos <= pVideoStream->nb_frames)
 					{
-						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos / dFramePerUnit, AVSEEK_FLAG_BACKWARD);
+						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos / m_dFramePerUnit, AVSEEK_FLAG_BACKWARD);
 						if (nRet >= 0)
 						{
 							bContinue = true;
@@ -594,6 +616,19 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 					ReleaseAudioPackQue();
 					ReleaseVideoPackQue();
 					m_nCurrentFrame = dwCurFrameShowIndex;
+					//清空解码器中缓存待取的数据
+					int nRet = 1;
+					if (m_VideoDecoder.IsInitialized())
+					{
+						SDRFrameInfo frameInfo;
+						SD_UINT8 * pBuffer = new SD_UINT8[m_VideoDecoder.GetBufferSize()];
+						while(nRet > 0)
+						{
+							nRet = m_VideoDecoder.GetUnCompressFrame(pBuffer, &frameInfo);
+						}
+						delete[] pBuffer;
+						pBuffer = nullptr;
+					}
 					m_bVideoSeek = true;
 				}
 			}
@@ -644,13 +679,6 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 						Unlock();
 						m_pVideoPacket = nullptr;
 						continue;
-					}
-					if (m_bVideoSeek)
-					{
-						if (m_pVideoPacket->dts >= m_nCurrentVideoSeekPos / dFramePerUnit)
-						{
-							m_bVideoSeek = false;
-						}
 					}
 					pFrameBuf = m_pVideoPacket->data;
 					if (pFrameInfo)
@@ -850,6 +878,19 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 					//seek动作要清空缓存的pkt
 					ReleaseAudioPackQue();
 					ReleaseVideoPackQue();
+					//清空解码器中缓存待取的数据
+					int nRet = 1;
+					if (m_AudioDecoder.IsInitialized())
+					{
+						SDRFrameInfo frameInfo;
+						SD_UINT8 * pBuffer = new SD_UINT8[80];
+						while(nRet > 0)
+						{
+							nRet = m_AudioDecoder.GetSample(pBuffer, 10);
+						}
+						delete[] pBuffer;
+						pBuffer = nullptr;
+					}
 					m_bAudioSeek = true;
 				}
 			}
@@ -973,6 +1014,7 @@ bool ecCodecFFmpegProtocolDecoder::Release()
 	m_nAudioIndex = -1;
 	m_nDesSamplePerSec = 0;
 	m_nSrcSamplePerSec = 0;
+	m_dFramePerUnit = 0;
 	if (m_pVideoPacket)
 	{
 		av_packet_free(&m_pVideoPacket);

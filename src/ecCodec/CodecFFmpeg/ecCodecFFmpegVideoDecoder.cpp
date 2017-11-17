@@ -234,14 +234,20 @@ int ecCodecFFmpegVideoDecoder::GetUnCompressFrame(SD_UINT8 *& lpFrameBuffer, SDR
 			FFmpegFormatCovert::ConvertPDataToBuffer(pScaledData, m_VideoScaler.GetDesLineSize(), lpFrameBuffer, m_VideoScaler.GetBufferSize(),
 				FFmpegFormatCovert::ConvertPixelFormat(m_emDesColorFormat), m_nDesWidth, m_nDesHeight, sizeof(SD_UINT8));
 			pFrameInfo->iSize = m_VideoScaler.GetBufferSize();
-			pFrameInfo->qwDTS = m_pFrame->pkt_dts;
 		}
 		else
 		{
 			FFmpegFormatCovert::ConvertPDataToBuffer(m_pFrame->data, m_pFrame->linesize, lpFrameBuffer, GetBufferSize(),
 				FFmpegFormatCovert::ConvertPixelFormat(m_emDesColorFormat), m_nDesWidth, m_nDesHeight, sizeof(SD_UINT8));
 			pFrameInfo->iSize = GetBufferSize();
-			pFrameInfo->qwDTS = m_pFrame->pkt_dts;
+		}
+		if (m_pFrame->opaque && *(uint64_t*)m_pFrame->opaque != AV_NOPTS_VALUE)
+		{
+			pFrameInfo->qwDTS = *(uint64_t *)m_pFrame->opaque;
+		}
+		else
+		{
+			pFrameInfo->qwDTS = AV_NOPTS_VALUE;
 		}
 	}
 
