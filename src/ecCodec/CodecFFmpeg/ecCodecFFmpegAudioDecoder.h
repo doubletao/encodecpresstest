@@ -41,6 +41,7 @@ public:
 	virtual bool SetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo);
 	virtual bool PutFrame(const SD_UINT8* pData, const SDRFrameInfo* pFrameInfo);
 	virtual int  GetSample(SD_UINT8* &lpBuffer, SD_UINT32 nSampleNum);
+	virtual double GetCurrentMilSecTimestamp(int num, int den);
 	virtual SD_UINT32 GetBufferSize();
 	virtual bool IsInitialized();
 	virtual bool Release();

@@ -404,3 +404,25 @@ bool ecCodecFFmpegAudioDecoder::Release()
 	m_bIsInitialized = false;
 	return true;
 }
+
+double ecCodecFFmpegAudioDecoder::GetCurrentMilSecTimestamp(int num, int den)
+{
+	double dRet = 0.0f;
+	if (m_pSrcFrame)
+	{
+		uint64_t nPts = 0;
+		if (m_pSrcFrame->opaque && *(uint64_t*)m_pSrcFrame->opaque != AV_NOPTS_VALUE)
+		{
+			nPts = *(uint64_t *)m_pSrcFrame->opaque;
+		}
+		else
+		{
+			nPts = AV_NOPTS_VALUE;
+		}
+		if (num > 0 && den > 0)
+		{
+			dRet = nPts * 1.0f * num / den;
+		}
+	}
+	return dRet;
+}

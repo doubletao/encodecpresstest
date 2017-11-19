@@ -877,112 +877,115 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_UINT32 dwSampleNum, SD_UINT8 * pSamplesBuf, SD_UINT32 * pdwRetSampleNum)
 {
 	bool bRet = false;
-	if (dwCurSamplePos >= 0)
+	if (dwSampleNum > 0)
 	{
-		if (m_bIsInitialized && (m_AudioDecoder.IsInitialized()
-			|| (m_pFormatCtx && m_nAudioIndex > -1
-				&& AV_CODEC_ID_FIRST_AUDIO == m_pFormatCtx->streams[m_nAudioIndex]->codecpar->codec_id)))
+		if (dwCurSamplePos >= 0)
 		{
-			SDRFrameInfo frameInfo;
-			SD_UINT8 * pCompressFrame = nullptr;
-			m_nCurrentAudioSeekPos = dwCurSamplePos;
-			//转换到源采样率单位
-			if (m_nDesSamplePerSec > 0
-				&& m_nSrcSamplePerSec > 0)
+			if (m_bIsInitialized && (m_AudioDecoder.IsInitialized()
+				|| (m_pFormatCtx && m_nAudioIndex > -1
+				&& AV_CODEC_ID_FIRST_AUDIO == m_pFormatCtx->streams[m_nAudioIndex]->codecpar->codec_id)))
 			{
-				m_nCurrentAudioSeekPos = m_nCurrentAudioSeekPos * 1.0 / m_nDesSamplePerSec * m_nSrcSamplePerSec;
-			}
-			while (GetAudioFrame(dwCurSamplePos, pCompressFrame, &frameInfo) && pCompressFrame)
-			{
-				if (m_pFormatCtx && m_nAudioIndex > -1
-					&& AV_CODEC_ID_FIRST_AUDIO == m_pFormatCtx->streams[m_nAudioIndex]->codecpar->codec_id)
+				SDRFrameInfo frameInfo;
+				SD_UINT8 * pCompressFrame = nullptr;
+				m_nCurrentAudioSeekPos = dwCurSamplePos;
+				//转换到源采样率单位
+				if (m_nDesSamplePerSec > 0
+					&& m_nSrcSamplePerSec > 0)
 				{
-					int nChannelCount = m_nDesChannelCount;
-					if (dwSampleNum != m_nLastSampleNum)
-					{
-						if (m_pAudioFifo)
-						{
-							av_audio_fifo_free(m_pAudioFifo);
-							m_pAudioFifo = nullptr;
-						}
-					}
-
-					if (!m_pAudioFifo)
-					{
-						m_pAudioFifo = av_audio_fifo_alloc((AVSampleFormat)m_pFormatCtx->streams[m_nAudioIndex]->codecpar->format,
-							2, dwSampleNum);
-					}
-					if (!m_pAudioFifo)
-					{
-						return false;
-					}
-					m_nLastSampleNum = dwSampleNum;
-
-					int data_size = av_get_bytes_per_sample((AVSampleFormat)m_pFormatCtx->streams[m_nAudioIndex]->codecpar->format);
-					if (data_size <= 0)
-					{
-						return false;
-					}
-
-					av_audio_fifo_write(m_pAudioFifo, (void**)&pCompressFrame, frameInfo.iSize / data_size / nChannelCount);
-					if (av_audio_fifo_size(m_pAudioFifo) >= dwSampleNum)
-					{
-						av_audio_fifo_read(m_pAudioFifo, (void **)&pSamplesBuf, dwSampleNum);
-						m_nCurrentSample = dwCurSamplePos;
-						if (pdwRetSampleNum)
-						{
-							*pdwRetSampleNum = dwSampleNum;
-						}
-						return true;
-					}
+					m_nCurrentAudioSeekPos = m_nCurrentAudioSeekPos * 1.0 / m_nDesSamplePerSec * m_nSrcSamplePerSec;
 				}
-				else
+				while (GetAudioFrame(dwCurSamplePos, pCompressFrame, &frameInfo) && pCompressFrame)
 				{
-					if (m_AudioDecoder.PutFrame(pCompressFrame, &frameInfo))
+					if (m_pFormatCtx && m_nAudioIndex > -1
+						&& AV_CODEC_ID_FIRST_AUDIO == m_pFormatCtx->streams[m_nAudioIndex]->codecpar->codec_id)
 					{
-						int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf, dwSampleNum);
-						if (nBufferSize > 0)
+						int nChannelCount = m_nDesChannelCount;
+						if (dwSampleNum != m_nLastSampleNum)
 						{
+							if (m_pAudioFifo)
+							{
+								av_audio_fifo_free(m_pAudioFifo);
+								m_pAudioFifo = nullptr;
+							}
+						}
+
+						if (!m_pAudioFifo)
+						{
+							m_pAudioFifo = av_audio_fifo_alloc((AVSampleFormat)m_pFormatCtx->streams[m_nAudioIndex]->codecpar->format,
+								2, dwSampleNum);
+						}
+						if (!m_pAudioFifo)
+						{
+							return false;
+						}
+						m_nLastSampleNum = dwSampleNum;
+
+						int data_size = av_get_bytes_per_sample((AVSampleFormat)m_pFormatCtx->streams[m_nAudioIndex]->codecpar->format);
+						if (data_size <= 0)
+						{
+							return false;
+						}
+
+						av_audio_fifo_write(m_pAudioFifo, (void**)&pCompressFrame, frameInfo.iSize / data_size / nChannelCount);
+						if (av_audio_fifo_size(m_pAudioFifo) >= dwSampleNum)
+						{
+							av_audio_fifo_read(m_pAudioFifo, (void **)&pSamplesBuf, dwSampleNum);
 							m_nCurrentSample = dwCurSamplePos;
 							if (pdwRetSampleNum)
 							{
-								*pdwRetSampleNum = nBufferSize;
+								*pdwRetSampleNum = dwSampleNum;
 							}
-							if (!m_bVideoSeek)
-							{
-								return true;
-							}
+							return true;
 						}
-						else if (nBufferSize == 0)
+					}
+					else
+					{
+						if (m_AudioDecoder.PutFrame(pCompressFrame, &frameInfo))
 						{
-							continue;
+							int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf, dwSampleNum);
+							if (nBufferSize > 0)
+							{
+								m_nCurrentSample = dwCurSamplePos;
+								if (pdwRetSampleNum)
+								{
+									*pdwRetSampleNum = nBufferSize;
+								}
+								if (!m_bVideoSeek)
+								{
+									return true;
+								}
+							}
+							else if (nBufferSize == 0)
+							{
+								continue;
+							}
+							else
+							{
+								return false;
+							}
 						}
 						else
 						{
 							return false;
 						}
 					}
-					else
-					{
-						return false;
-					}
 				}
-			}
-			//有一种情况是视音频存储相对比较集中，音频frame已经读完了（在缓冲队列里了）视频还有很多，此时应该检查一下解码器里还有没有东西
-			//产生这种情况的原因是音频做了双重缓冲，除了读文件时的frame队列，还存在一个fifo的输出缓冲，可能有一批已经解码完成的音频还没被取走，而视频不存在输出缓冲，所以不存在这种问题
-			if (m_AudioDecoder.IsInitialized())
-			{
-				int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf, dwSampleNum);
-				if (nBufferSize > 0)
+				//有一种情况是视音频存储相对比较集中，音频frame已经读完了（在缓冲队列里了）视频还有很多，此时应该检查一下解码器里还有没有东西
+				//产生这种情况的原因是音频做了双重缓冲，除了读文件时的frame队列，还存在一个fifo的输出缓冲，可能有一批已经解码完成的音频还没被取走，而视频不存在输出缓冲，所以不存在这种问题
+				if (m_AudioDecoder.IsInitialized())
 				{
-					m_nCurrentSample = dwCurSamplePos;
-					if (pdwRetSampleNum)
+					int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf, dwSampleNum);
+					if (nBufferSize > 0)
 					{
-						*pdwRetSampleNum = nBufferSize;
-					}
-					if (!m_bVideoSeek)
-					{
-						return true;
+						m_nCurrentSample = dwCurSamplePos;
+						if (pdwRetSampleNum)
+						{
+							*pdwRetSampleNum = nBufferSize;
+						}
+						if (!m_bVideoSeek)
+						{
+							return true;
+						}
 					}
 				}
 			}
@@ -1245,6 +1248,16 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 	SDRFrameInfo frameInfo;
 	bool bVideo = GetVideoBuffer(-1, pFrameBuf, &frameInfo);
 	SD_UINT32 nSampleNum = 0;
+	//算出每帧画面对应的音频数
+	if (true)
+	{
+	}
 	bool bAudio = GetAudioSamples(-1, nSampleNum, pSamplesBuf, &nSampleNum);
+	if ((bVideo && !bAudio)
+		|| (!bVideo && bAudio))
+	{
+		//如果仅有视频或者仅有音频，不用搞什么同步了，直接返回相应的值就行了
+		return true;
+	}
 	return false;
 }

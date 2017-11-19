@@ -25,6 +25,9 @@ public:
 	//如果返回0，说明frame不足以凑足当前要求的采样数，需要继续put
 	virtual int  GetSample(SD_UINT8* &lpBuffer, SD_UINT32 nSampleNum) = 0;
 
+	// 取得最近一次数据的时间戳（单位：毫秒）
+	virtual double GetCurrentMilSecTimestamp(int num, int den) = 0;
+
 	//得到buffer大小
 	virtual SD_UINT32 GetBufferSize() = 0;
 
