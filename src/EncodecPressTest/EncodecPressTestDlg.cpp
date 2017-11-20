@@ -286,6 +286,7 @@ void CEncodecPressTestDlg::DoPlay()
 							{
 								int nClock = clock();
 								SDRFrameInfo frameInfo;
+#if 0
 								if (streamMediaInfoEx.dwVideoStreamCount > 0)
 								{
 									bContinue = pDecoder->GetVideoBuffer(m_nDispFrame, pVideoData, &frameInfo);
@@ -311,6 +312,11 @@ void CEncodecPressTestDlg::DoPlay()
 									int i = 0;
 									i++;
 								}
+#else
+								if (pDecoder->GetVABuffer(pVideoData, pAudioData, &numAudioSample))
+								{
+								}
+#endif
 
 #ifdef DEBUG_AUDIO_OUTFILE
 								//音频先写到文件里
@@ -325,7 +331,8 @@ void CEncodecPressTestDlg::DoPlay()
 										SDRFrameInfo frameInfoTmp;
 										frameInfoTmp.emDataType = STREAM_DATATYPE_VIDEO;
 										frameInfoTmp.iVersion = 0;		// 结构版本号。		4---4[序列化占用字节－序列化位置]
-										frameInfoTmp.iSize = frameInfo.iSize;// nWidth * nHeight * 2;			// 帧数据大小		4---16
+										//frameInfoTmp.iSize = frameInfo.iSize;// nWidth * nHeight * 2;			// 帧数据大小		4---16
+										frameInfoTmp.iSize = pDecoder->GetVideoBufferSize();// nWidth * nHeight * 2;			// 帧数据大小		4---16
 										frameInfoTmp.dwFrameIndex = m_nDispFrame;	// 帧数据流顺序		4---28
 										frameInfoTmp.dwFrameNum = 1;		// 视频/音频帧数量	4---32
 										frameInfoTmp.iSamplesOffset = 0;	// 标识RawAudio音频、视频帧中有效采样的偏移数，大于0表示从开始偏移，小于0表示从尾部开始向前偏移		4---36
@@ -335,7 +342,7 @@ void CEncodecPressTestDlg::DoPlay()
 										frameInfoTmp.dwShowIndex = m_nDispFrame;	// 帧数据显示顺序			4---104
 										frameInfoTmp.emFrameType = FRAMETYPE_I;   	// 帧类型 				4---108
 										frameInfoTmp.extradata_size = 0;
-										if (!pEncoder->PutFrameBuffer(pVideoData, frameInfo.iSize, pAudioData, numAudioSample))
+										if (!pEncoder->PutFrameBuffer(pVideoData, frameInfoTmp.iSize, pAudioData, numAudioSample))
 										{
 											//strMsg.Format(_T("encoder %d: lost one frame"), i);
 											//PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());

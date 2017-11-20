@@ -1247,17 +1247,118 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 	//从当前位置开始取一帧视频一帧音频
 	SDRFrameInfo frameInfo;
 	bool bVideo = GetVideoBuffer(-1, pFrameBuf, &frameInfo);
-	SD_UINT32 nSampleNum = 0;
+	SD_UINT32 nSampleNum = 1024;
 	//算出每帧画面对应的音频数
-	if (true)
+	if (m_pFormatCtx && m_pFormatCtx->streams
+		&& m_nVideoIndex > -1 && m_pFormatCtx->streams[m_nVideoIndex]
+		&& m_nAudioIndex > -1 && m_pFormatCtx->streams[m_nAudioIndex])
 	{
+		//计算条件是VA的stream都存在，此时才能计算
+		double dSamplePerSec = m_pFormatCtx->streams[m_nAudioIndex]->codecpar->sample_rate;//每秒sample数
+		double dFramePerSec = m_pFormatCtx->streams[m_nVideoIndex]->r_frame_rate.num * 1.0 / m_pFormatCtx->streams[m_nVideoIndex]->r_frame_rate.den;//每秒的视频帧数
+		nSampleNum = dSamplePerSec / dFramePerSec;
 	}
-	bool bAudio = GetAudioSamples(-1, nSampleNum, pSamplesBuf, &nSampleNum);
+	bool bAudio = GetAudioSamples(-1, nSampleNum, pSamplesBuf, pdwRetSampleNum);
 	if ((bVideo && !bAudio)
 		|| (!bVideo && bAudio))
 	{
 		//如果仅有视频或者仅有音频，不用搞什么同步了，直接返回相应的值就行了
 		return true;
+	}
+	else
+	{
+		if (m_pFormatCtx && m_pFormatCtx->streams)
+		{
+			int nVNum = 0;
+			int nVDen = 0;
+			int nANum = 0;
+			int nADen = 0;
+			//将音频时间戳当作标准时间戳，将视频往音频上靠拢
+			double dStTm = 0.0f;
+			double dVideoTm = 0.0f;
+			double dAudioTm = 0.0f;
+			if (m_VideoDecoder.IsInitialized() && m_nVideoIndex > -1)
+			{
+				AVStream * pStream = m_pFormatCtx->streams[m_nVideoIndex];
+				if (pStream)
+				{
+					nVNum = pStream->time_base.num;
+					nVDen = pStream->time_base.den;
+					dVideoTm = m_VideoDecoder.GetCurrentMilSecTimestamp(nVNum, nVDen);
+					//if (dVideoTm > dStTm)
+					//{
+					//	dStTm = dVideoTm;
+					//}
+				}
+			}
+			if (m_AudioDecoder.IsInitialized() && m_nAudioIndex > -1)
+			{
+				AVStream * pStream = m_pFormatCtx->streams[m_nAudioIndex];
+				if (pStream)
+				{
+					nANum = pStream->time_base.num;
+					nADen = pStream->time_base.den;
+					dAudioTm = m_AudioDecoder.GetCurrentMilSecTimestamp(nANum, nADen);
+					if (dAudioTm > dStTm)
+					{
+						dStTm = dAudioTm;
+					}
+				}
+			}
+#ifdef _DEBUG
+#if 1
+			FILE * pFile;
+			fopen_s(&pFile, "debug.txt", "ab");
+			if (pFile)
+			{
+				int n = dStTm;
+				char pStr[20] = {0};
+				itoa(n, pStr, 10);
+				fwrite(pStr, strlen(pStr), 1, pFile);
+				char c = '\n';
+				fwrite(&c, sizeof(c), 1, pFile);
+				fclose(pFile);
+			}
+#endif
+#endif
+			//为防止当pts取不到时导致下边的校正陷入死循环，加上一个判定值，如果判定值连续三次未发生改变，则放弃并退出循环
+			double dVLast = dVideoTm;
+			double dALast = dAudioTm;
+			int nEvenCount = 0;
+			int nTimeGap = 10;
+			//将视音频都向标准时间戳上靠，差距在指定时间以内，不予理会，指定时间以外，需要处理
+			while (dStTm - dVideoTm < nTimeGap || dStTm - dAudioTm < nTimeGap)
+			{
+				if (!(dStTm - dVideoTm < nTimeGap))
+				{
+					GetVideoBuffer(-1, pFrameBuf, &frameInfo);
+					dVideoTm = m_VideoDecoder.GetCurrentMilSecTimestamp(nVNum, nVDen);
+				}
+				else if (!(dStTm - dAudioTm < nTimeGap))
+				{
+					GetAudioSamples(-1, nSampleNum, pSamplesBuf, pdwRetSampleNum);
+					dAudioTm = m_AudioDecoder.GetCurrentMilSecTimestamp(nANum, nADen);
+				}
+				//1毫秒以内视为没变化
+				if (dVideoTm - dVLast < 1)
+				{
+					nEvenCount++;
+					dVLast = dVideoTm;
+				}
+				//1毫秒以内视为没变化
+				if (dAudioTm - dALast < 1)
+				{
+					nEvenCount++;
+					dALast = dAudioTm;
+				}
+				if (nEvenCount > 3)
+				{
+					printf("sync VA through pts error\n");
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 	return false;
 }

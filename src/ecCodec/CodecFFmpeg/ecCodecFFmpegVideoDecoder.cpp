@@ -329,7 +329,15 @@ double ecCodecFFmpegVideoDecoder::GetCurrentMilSecTimestamp(int num, int den)
 	if (m_pFrame)
 	{
 		uint64_t nPts = 0;
-		if (m_pFrame->opaque && *(uint64_t*)m_pFrame->opaque != AV_NOPTS_VALUE)
+		if (m_pFrame->pts != AV_NOPTS_VALUE)
+		{
+			nPts = m_pFrame->pts;
+		}
+		else if (m_pFrame->pkt_dts != AV_NOPTS_VALUE)
+		{
+			nPts = m_pFrame->pkt_dts;
+		}
+		else if (m_pFrame->opaque && *(uint64_t*)m_pFrame->opaque != AV_NOPTS_VALUE)
 		{
 			nPts = *(uint64_t *)m_pFrame->opaque;
 		}
@@ -342,5 +350,5 @@ double ecCodecFFmpegVideoDecoder::GetCurrentMilSecTimestamp(int num, int den)
 			dRet = nPts * 1.0f * num / den;
 		}
 	}
-	return dRet;
+	return dRet * 1000;
 }

@@ -411,7 +411,15 @@ double ecCodecFFmpegAudioDecoder::GetCurrentMilSecTimestamp(int num, int den)
 	if (m_pSrcFrame)
 	{
 		uint64_t nPts = 0;
-		if (m_pSrcFrame->opaque && *(uint64_t*)m_pSrcFrame->opaque != AV_NOPTS_VALUE)
+		if (m_pSrcFrame->pts != AV_NOPTS_VALUE)
+		{
+			nPts = m_pSrcFrame->pts;
+		}
+		else if (m_pSrcFrame->pkt_dts != AV_NOPTS_VALUE)
+		{
+			nPts = m_pSrcFrame->pkt_dts;
+		}
+		else if (m_pSrcFrame->opaque && *(uint64_t*)m_pSrcFrame->opaque != AV_NOPTS_VALUE)
 		{
 			nPts = *(uint64_t *)m_pSrcFrame->opaque;
 		}
@@ -424,5 +432,5 @@ double ecCodecFFmpegAudioDecoder::GetCurrentMilSecTimestamp(int num, int den)
 			dRet = nPts * 1.0f * num / den;
 		}
 	}
-	return dRet;
+	return dRet * 1000;
 }
