@@ -313,9 +313,7 @@ void CEncodecPressTestDlg::DoPlay()
 									i++;
 								}
 #else
-								if (pDecoder->GetVABuffer(pVideoData, pAudioData, &numAudioSample))
-								{
-								}
+								bContinue = pDecoder->GetVABuffer(pVideoData, pAudioData, &numAudioSample);
 #endif
 
 #ifdef DEBUG_AUDIO_OUTFILE
