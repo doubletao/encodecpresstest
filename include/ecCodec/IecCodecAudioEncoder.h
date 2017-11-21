@@ -16,7 +16,7 @@ public:
 	// 返回值：1 成功、 0 错误
 	// 说明：PCM音频数据信息与SAudioSamplesBufInfo描述一致
 	// pData:PCM音频数据
-	// iSize:PCM音频数据大小
+	// iSize:PCM音频的sample
 	// emInputFlag:1结束、0未结束
 	virtual bool WriteSample(const SD_UINT8* pData, SD_UINT32 iSize, bool emInputFlag) = 0;
 

@@ -189,7 +189,7 @@ int ecCodecFFmpegAudioEncoder::GetCompressFrame(SD_UINT8 *& pData, SDRFrameInfo 
 	}
 
 	if (av_audio_fifo_size(m_pAudioFifo) < m_pCodecCtx->frame_size) {
-		return -2;
+		return -3;
 	}
 
 	av_audio_fifo_read(m_pAudioFifo, (void**)m_pAudioFrame->data, m_pCodecCtx->frame_size);
@@ -200,7 +200,7 @@ int ecCodecFFmpegAudioEncoder::GetCompressFrame(SD_UINT8 *& pData, SDRFrameInfo 
 
 	int ret = avcodec_send_frame(m_pCodecCtx, m_pAudioFrame);
 	if (ret < 0) {
-		return -2;
+		return -4;
 	}
 
 	AVPacket avpkt = { 0 };
@@ -217,7 +217,7 @@ int ecCodecFFmpegAudioEncoder::GetCompressFrame(SD_UINT8 *& pData, SDRFrameInfo 
 	else if (ret < 0 || avpkt.size < 1) 
 	{
 		av_packet_unref(&avpkt);
-		return -2;
+		return -5;
 	}
 
 	memcpy(m_pDestBuffer.get(), avpkt.data, avpkt.size);

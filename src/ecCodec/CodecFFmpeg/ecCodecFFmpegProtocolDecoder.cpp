@@ -1316,9 +1316,6 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 			}
 #endif
 #endif
-			//为防止当pts取不到时导致下边的校正陷入死循环，加上一个判定值，如果判定值连续三次未发生改变，则放弃并退出循环
-			double dVLast = dVideoTm;
-			double dALast = dAudioTm;
 			int nEvenCount = 0;
 			int nTimeGap = 120;
 			//将视音频都向标准时间戳上靠，差距在指定时间以内，不予理会，指定时间以外，需要处理
