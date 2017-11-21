@@ -475,8 +475,6 @@ void CEncodecPressTestDlg::DoPlay()
 		strMsg.Format(_T("maxmem = %d"), nMaxMem);
 		m_fileLog.WriteString(strMsg);
 		m_fileLog.WriteString(_T("\r\n"));
-		m_fileLog.Close();
-		m_bLogOpened = false;
 	}
 }
 
@@ -510,6 +508,11 @@ CEncodecPressTestDlg::~CEncodecPressTestDlg()
 		m_pEncoder[i] = nullptr;
 	}
 	ecCodec_ReleaseCodecFactory(m_ecfactory);
+	if (m_bLogOpened)
+	{
+		m_fileLog.Close();
+		m_bLogOpened = false;
+	}
 }
 
 void CEncodecPressTestDlg::DoDataExchange(CDataExchange* pDX)
@@ -740,6 +743,14 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 		}
 	}
 
+	CString strFileName;
+	CTime tm = CTime::GetCurrentTime();
+	strFileName.Format(_T("%04d%02d%02d%02d%02d%02d_%d.txt"), tm.GetYear(), tm.GetMonth(), tm.GetDay(), tm.GetHour(), tm.GetMinute(), tm.GetSecond(), clock());
+	if (!m_bLogOpened && m_fileLog.Open(strFileName, CFile::modeCreate | CFile::modeWrite))
+	{
+		m_bLogOpened = true;
+	}
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -794,13 +805,6 @@ HCURSOR CEncodecPressTestDlg::OnQueryDragIcon()
 
 void CEncodecPressTestDlg::OnBnClickedBtnStart()
 {
-	CString strFileName;
-	CTime tm = CTime::GetCurrentTime();
-	strFileName.Format(_T("%04d%02d%02d%02d%02d%02d_%d.txt"), tm.GetYear(), tm.GetMonth(), tm.GetDay(), tm.GetHour(), tm.GetMinute(), tm.GetSecond(), clock());
-	if (!m_bLogOpened && m_fileLog.Open(strFileName, CFile::modeCreate | CFile::modeWrite))
-	{
-		m_bLogOpened = true;
-	}
 	StartPlay();
 }
 
