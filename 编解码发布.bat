@@ -1,5 +1,44 @@
 set DIR_PATH=%cd%
 set OUT_DIR_PATH=%DIR_PATH%\release%date:~0,4%%date:~5,2%%date:~8,2%%tm1%%tm2%%tm3%%time:~3,2%%time:~6,2%
+set SVNDIR="C:\Program Files\TortoiseSVN\bin"
+set VSINSTALLDIR="C:\Program Files (x86)\Microsoft Visual Studio 10.0"
+
+#@echo update working path...
+#@echo off
+#if not exist "%SVNDIR%\TortoiseProc.exe" goto StartDev
+#set SVN="%SVNDIR%\TortoiseProc.exe"
+#"%SVN%" /command:update /path:".\" /notempfile /closeonend:1
+#@echo %DIR_PATH% already updated
+goto StartDev
+
+:StartDev
+@echo   off
+rem set VC_PATH="C:\Program Files(x86)\Microsoft Visual Studio 10.0\Common7\IDE\"
+rem set VC_PATH="C:\Program Files(x86)\DevSoft\VC10\Common7\IDE\"
+cd /d $DIR_PATH$
+
+if not exist "%VSINSTALLDIR%\Common7\IDE\DEVENV.EXE" goto EnvError
+@SET DEVENV="%VSINSTALLDIR%\Common7\IDE\DEVENV.EXE"
+
+del ReleaseBuild.log
+del DebugBuild.log
+
+@echo [%date% %time%]:begin compile
+
+@echo [%time%]:Building EncodecPressTest_2010 Debug ...
+"%DEVENV%" ".\EncodecPressTest_2010.sln" /Build "Debug|x64" /out DebugBuild.log
+FOR /F "tokens=6 delims= " %%i IN ('FIND/N "====" "DebugBuild.log" ') DO SET e3=%%i
+IF %e3% NEQ 0 ECHO ".\EncodecPressTest_2010.sln" Debug mode finding %e3% ERRORs
+IF %e3% NEQ 0 GOTO StartDev
+
+@echo [%time%]:Building EncodecPressTest_2010.sln Release ...
+"%DEVENV%" ".\EncodecPressTest_2010.sln" /Build "Release|x64" /out ReleaseBuild.log
+FOR /F "tokens=6 delims= " %%i IN ('FIND/N "====" "ReleaseBuild.log" ') DO SET e2=%%i
+IF %e2% NEQ 0 ECHO ".\EncodecPressTest_2010.sln" Release mode finding %e2% ERRORs
+IF %e2% NEQ 0 GOTO StartDev
+
+@echo [%time%]:checking ended
+
 mkdir %OUT_DIR_PATH%
 mkdir %OUT_DIR_PATH%\bin
 mkdir %OUT_DIR_PATH%\include
