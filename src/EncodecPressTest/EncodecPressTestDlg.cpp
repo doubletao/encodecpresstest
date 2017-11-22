@@ -150,6 +150,13 @@ void CEncodecPressTestDlg::DoPlay()
 		bForbidLoseFrame = pBtn->GetCheck();
 	}
 
+	bool bForcePtsAlign = false;
+	pBtn = (CButton *)GetDlgItem(IDC_CHK_FRAME_PLAY);
+	if (pBtn && ::IsWindow(pBtn->GetSafeHwnd()))
+	{
+		bForcePtsAlign = pBtn->GetCheck();
+	}
+
 	m_nDispFrame = 0;
 	Lock();
 	m_nFrame = 0;
@@ -286,36 +293,32 @@ void CEncodecPressTestDlg::DoPlay()
 							{
 								int nClock = clock();
 								SDRFrameInfo frameInfo;
-#if 0
-								if (streamMediaInfoEx.dwVideoStreamCount > 0)
+								if (!bForcePtsAlign)
 								{
-									bContinue = pDecoder->GetVideoBuffer(m_nDispFrame, pVideoData, &frameInfo);
+									if (streamMediaInfoEx.dwVideoStreamCount > 0)
+									{
+										bContinue = pDecoder->GetVideoBuffer(m_nDispFrame, pVideoData, &frameInfo);
+									}
+									if (!bContinue)
+									{
+										strMsg.Format(_T("video get failed:frame:%d audio:%d"), m_nDispFrame, nAudioPos);
+										PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
+									}
+									if (streamMediaInfoEx.dwAudioStreamCount > 0)
+									{
+										bContinue = pDecoder->GetAudioSamples(nAudioPos, SamplePerFrame, pAudioData, &numAudioSample);
+										//bContinue = pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
+									}
+									if (!bContinue)
+									{
+										strMsg.Format(_T("audio get failed:frame:%d audio:%d"), m_nDispFrame, nAudioPos);
+										PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
+									}
 								}
-								if (!bContinue)
+								else
 								{
-									strMsg.Format(_T("video get failed:frame:%d audio:%d"), m_nDispFrame, nAudioPos);
-									PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
-									//AfxMessageBox(strMsg);
-									int i = 0;
-									i++;
+									bContinue = pDecoder->GetVABuffer(pVideoData, pAudioData, &numAudioSample);
 								}
-								if (streamMediaInfoEx.dwAudioStreamCount > 0)
-								{
-									bContinue = pDecoder->GetAudioSamples(nAudioPos, SamplePerFrame, pAudioData, &numAudioSample);
-									//bContinue = pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
-								}
-								if (!bContinue)
-								{
-									strMsg.Format(_T("audio get failed:frame:%d audio:%d"), m_nDispFrame, nAudioPos);
-									PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
-									//AfxMessageBox(strMsg);
-									int i = 0;
-									i++;
-								}
-#else
-								bContinue = pDecoder->GetVABuffer(pVideoData, pAudioData, &numAudioSample);
-#endif
-
 #ifdef DEBUG_AUDIO_OUTFILE
 								//音频先写到文件里
 								fwrite(pAudioData, 1, numAudioSample * 8, pAudioFile);
@@ -359,7 +362,26 @@ void CEncodecPressTestDlg::DoPlay()
 										bContinue = true;
 										strMsg.Format(_T("loop mark repair continue:frame:%d audio:%d"), m_nDispFrame, nAudioPos);
 										PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
-										//AfxMessageBox(strMsg);
+
+										if (streamMediaInfoEx.dwVideoStreamCount > 0)
+										{
+											bContinue = pDecoder->GetVideoBuffer(m_nDispFrame, pVideoData, &frameInfo);
+										}
+										if (!bContinue)
+										{
+											strMsg.Format(_T("video get failed:frame:%d audio:%d"), m_nDispFrame, nAudioPos);
+											PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
+										}
+										if (streamMediaInfoEx.dwAudioStreamCount > 0)
+										{
+											bContinue = pDecoder->GetAudioSamples(nAudioPos, SamplePerFrame, pAudioData, &numAudioSample);
+											//bContinue = pDecoder->GetAudioSamples(-1, SamplePerFrame, pAudioData, &numAudioSample);
+										}
+										if (!bContinue)
+										{
+											strMsg.Format(_T("audio get failed:frame:%d audio:%d"), m_nDispFrame, nAudioPos);
+											PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
+										}
 									}
 								}
 								Lock();
