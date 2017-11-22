@@ -258,10 +258,11 @@ AVPixelFormat FFmpegFormatCovert::ConvertPixelFormat(SD_COLOR_FORMAT emColorForm
 
 int FFmpegFormatCovert::ConvertVideoProfile(SD_CODEC_PROFILE emProfile)
 {
-	int profile = FF_PROFILE_H264_BASELINE;
+	int profile = FF_PROFILE_UNKNOWN;
 	switch (emProfile)
 	{
 	case PROFILE_UNKNOW:
+		profile = FF_PROFILE_UNKNOWN;
 		break;
 	case PROFILE_AVC_BASELINE:
 		profile = FF_PROFILE_H264_BASELINE;

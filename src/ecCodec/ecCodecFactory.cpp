@@ -61,7 +61,7 @@ LPCTSTR GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVide
 	streamInfo.sVideoMediaInfo.enumScanMode = SDVIDEOSCANMODE_FirstFieldTop;
 	streamInfo.sVideoMediaInfo.enumColorFormat = emColorFormat;//(SDCOLORFORMAT_YUVP_420)////////////////////////////////////////////////////////////////////////////
 	streamInfo.sVideoMediaInfo.enumVideoType = emVideoType; //(SDVIDEOTYPE_H264)////////////////////////////////////////////////////////////////////////////
-	streamInfo.sVideoMediaInfo.dwVideoSubType = PROFILE_AVC_MAIN;
+	streamInfo.sVideoMediaInfo.dwVideoSubType = PROFILE_UNKNOW;
 	streamInfo.sVideoMediaInfo.enumDataRateType = SDDATARATE_CONSTANT;
 	streamInfo.sVideoMediaInfo.dwGOPSize = 100;////////////////////////////////////////////////////////////////////////////
 	streamInfo.sVideoMediaInfo.dwReferencePeriod = 1;
