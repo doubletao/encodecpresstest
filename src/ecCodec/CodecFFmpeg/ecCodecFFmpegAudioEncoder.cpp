@@ -189,7 +189,7 @@ int ecCodecFFmpegAudioEncoder::GetCompressFrame(SD_UINT8 *& pData, SDRFrameInfo 
 	}
 
 	if (av_audio_fifo_size(m_pAudioFifo) < m_pCodecCtx->frame_size) {
-		return -3;
+		return 0;
 	}
 
 	av_audio_fifo_read(m_pAudioFifo, (void**)m_pAudioFrame->data, m_pCodecCtx->frame_size);
