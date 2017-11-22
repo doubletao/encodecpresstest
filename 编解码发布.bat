@@ -91,3 +91,5 @@ xcopy /E %DIR_PATH%\include\Player\* %OUT_DIR_PATH%\include\Player
 xcopy /E %DIR_PATH%\include\SDDefine\* %OUT_DIR_PATH%\include\SDDefine
 xcopy /E %DIR_PATH%\lib\ecCodec\* %OUT_DIR_PATH%\lib\ecCodec
 xcopy /E %DIR_PATH%\lib\Player\* %OUT_DIR_PATH%\lib\Player
+
+pause
