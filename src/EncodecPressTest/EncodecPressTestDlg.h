@@ -72,14 +72,14 @@ private:
 	void OnCheckEncodec(int nIndex);
 
 	bool GetCodecCheck(int nIndex);
-	EmVideoStandard GetCodecVideoStandard(int nIndex);
+	SD_VIDEO_STANDARD GetCodecVideoStandard(int nIndex);
 	SD_VIDEO_TYPE GetCodecVideoType(int nIndex);
 	SD_COLOR_FORMAT GetCodecColorFmt(int nIndex);
 	SD_AUDIO_TYPE GetCodecAudioType(int nIndex);
 	int GetCodecH264Level(int nIndex);
 
 	void DealCtrlFileName();
-	CString GenerateFileInfoName(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, int nH264Level);
+	CString GenerateFileInfoName(SD_VIDEO_STANDARD emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, int nH264Level);
 protected:
 	HICON m_hIcon;
 

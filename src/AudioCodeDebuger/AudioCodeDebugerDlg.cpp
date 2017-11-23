@@ -161,7 +161,7 @@ void CAudioCodeDebugerDlg::OnBnClickedOk()
 	IecCodecFactory * pFac = ecCodec_CreateCodecFactory();
 	IecCodecAudioDecoder * pAudioDecoder = pFac->GetAudioDecoder();
 	SDStreamMediaInfo mediaInfo;
-	GetPresetMediaInfo(EmVideoStandard_PAL, SDVIDEOTYPE_H264, SDCOLORFORMAT_YUVP_420, SDAUDIOTYPE_AAC, 48000, 5, mediaInfo);
+	GetPresetMediaInfo(SDVIDEOSTANDARD_PAL, SDVIDEOTYPE_H264, SDCOLORFORMAT_YUVP_420, SDAUDIOTYPE_AAC, 48000, 5, mediaInfo);
 	pAudioDecoder->InitAudioDecoder(mediaInfo.sAudioMediaInfo);
 	SDAudioMediaInfo audioInfo;
 	audioInfo.enumAudioType = SDAUDIOTYPE_AAC;

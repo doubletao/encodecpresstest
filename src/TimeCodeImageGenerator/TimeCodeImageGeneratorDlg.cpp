@@ -441,7 +441,7 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 	memset(m_pVideoBuf, 0, nVideoBufSize);
 	//配置输出文件信息
 	SDStreamMediaInfo streamInfo;
-	CString strSufix = GetPresetMediaInfo(EmVideoStandard_HD, SDVIDEOTYPE_H264, SDCOLORFORMAT_YUVP_422, SDAUDIOTYPE_AAC, 1, 48000, streamInfo);
+	CString strSufix = GetPresetMediaInfo(SDVIDEOSTANDARD_HD1080i_25, SDVIDEOTYPE_H264, SDCOLORFORMAT_YUVP_422, SDAUDIOTYPE_AAC, 1, 48000, streamInfo);
 	streamInfo.sVideoMediaInfo.dwGOPSize = 1;
 	bool bRet =	pEncodec->SetSinkFile(&streamInfo, ConverCStringToStdString(strFilePreName + _T("video") + strSufix).c_str());
 	//设置视频画面输入格式

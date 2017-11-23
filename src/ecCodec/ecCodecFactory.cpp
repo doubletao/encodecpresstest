@@ -20,11 +20,11 @@ EASY_CODEC_API_EXPORT bool ecCodec_ReleaseCodecFactory(IecCodecFactory *& pCodec
 	return true;
 }
 
-LPCTSTR GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, DWORD dwSamplePerSec, int nH264Level, OUT SDStreamMediaInfo & streamInfo)
+LPCTSTR GetPresetMediaInfo(SD_VIDEO_STANDARD emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, DWORD dwSamplePerSec, int nH264Level, OUT SDStreamMediaInfo & streamInfo)
 {
 	switch (emVideoStandard)
 	{
-	case EmVideoStandard_PAL:
+	case SDVIDEOSTANDARD_PAL:
 		streamInfo.sVideoMediaInfo.dwWidth = 720;////////////////////////////////////////////////////////////////////////////
 		streamInfo.sVideoMediaInfo.dwHeight = 576;////////////////////////////////////////////////////////////////////////////
 		streamInfo.sVideoMediaInfo.dwStandardRate = 25;////////////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ LPCTSTR GetPresetMediaInfo(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVide
 		streamInfo.sVideoMediaInfo.enumColorMatrix = SDCOLORMATRIX_ITU_R470_2BG;			// 颜色空间变换系数(ISO13818-2)
 		streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 50000000;
 		break;
-	case EmVideoStandard_HD:
+	case SDVIDEOSTANDARD_HD1080i_25:
 		streamInfo.sVideoMediaInfo.dwWidth = 1920;////////////////////////////////////////////////////////////////////////////
 		streamInfo.sVideoMediaInfo.dwHeight = 1080;////////////////////////////////////////////////////////////////////////////
 		streamInfo.sVideoMediaInfo.dwStandardRate = 25;////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,13 @@
 #pragma once
+//#define PLAYER_USE_SDLPAINT
+#ifdef PLAYER_USE_SDLPAINT
 #include "SDL2\SDL.h"
+#else
+#include "SDL2\SDL.h"
+#include "ddraw.h"
+#include "..\SDDefine\SDDefine.h"
+#include "..\SDDefine\SDVADefine.h"
+#endif
 
 struct BufferLoop
 {
@@ -23,11 +31,33 @@ struct BufferLoop
 class VideoPlayer
 {
 private:
+#ifdef PLAYER_USE_SDLPAINT
 	SDL_Window *screen;
 	SDL_Renderer* sdlRenderer;
 	SDL_Texture* sdlTexture;
 	int m_nWndWidth;
 	int m_nWndHeight;
+#else
+	bool m_bInitialize;
+
+	LPDIRECTDRAW			m_pDDObject;            //DirexctDraw×¨ÓÃ
+	LPDIRECTDRAWSURFACE		m_pPrimary; 
+	LPDIRECTDRAWSURFACE		m_pBack; 
+	LPDIRECTDRAWCLIPPER		m_pDDClipper; 
+	LPDDSURFACEDESC			m_pSurfdesc;
+
+	HWND					m_hDrawWnd;
+	unsigned int			m_dwSrcBufWidth;
+	unsigned int			m_dwSrcBufHeight;
+	SD_COLOR_FORMAT			m_enumSrcBufColorFormat;
+	SD_COLOR_FORMAT			m_enumDisplayColorFormat;
+
+	unsigned int			m_dwDstWidth;
+	unsigned int			m_dwDstHeight;
+	int						m_dwSrcLine;
+	int						m_dwDstLine;
+	LPBYTE					m_pDstImgBuf;
+#endif
 	BufferLoop m_AudioDataLoop;
 	char * m_pAudioBuffer;
 public:
@@ -43,5 +73,9 @@ public:
 	int PushYUVFrame(unsigned char **& data, int *& linesize);
 	int PushAudioSample(unsigned char * data, int nBufSize);
 	void ResetPlayer();
+#ifndef PLAYER_USE_SDLPAINT
+	void Render_SYCOLORFORMAT_YUV422toYUY2( unsigned char *dst, int stride, unsigned char *buffer, int Clip_Width, int Clip_Height );
+	void Render_SYCOLORFORMAT_UYVYtoYUY2( unsigned char *dst, int stride, unsigned char *buffer, int Clip_Width, int Clip_Height );
+#endif
 };
 

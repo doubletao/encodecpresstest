@@ -3,6 +3,7 @@
 #include <assert.h>
 #pragma comment(lib, "SDL2.lib")
 #pragma comment(lib, "SDL2main.lib")
+#pragma comment(lib, "ddraw.lib")
 
 void VideoPlayer::fill_audio(void * udata, Uint8 * stream, int len)
 {
@@ -17,12 +18,31 @@ void VideoPlayer::fill_audio(void * udata, Uint8 * stream, int len)
 }
 
 VideoPlayer::VideoPlayer()
-	: screen(nullptr)
+	: m_pAudioBuffer(nullptr)
+#ifdef PLAYER_USE_SDLPAINT
 	, sdlRenderer(nullptr)
 	, sdlTexture(nullptr)
 	, m_nWndWidth(0)
 	, m_nWndHeight(0)
-	, m_pAudioBuffer(nullptr)
+	, screen(nullptr)
+#else
+	, m_pDDObject(nullptr)
+	, m_pPrimary(nullptr)
+	, m_pBack(nullptr)
+	, m_pDDClipper(nullptr)
+	, m_pSurfdesc(nullptr)
+	, m_hDrawWnd(nullptr)
+	, m_pDstImgBuf(nullptr)
+	, m_dwSrcBufWidth(0)
+	, m_dwSrcBufHeight(0)
+	, m_enumSrcBufColorFormat(SDCOLORFORMAT_UNKNOW)
+	, m_enumDisplayColorFormat(SDCOLORFORMAT_UNKNOW)
+	, m_dwDstWidth(0)
+	, m_dwDstHeight(0)
+	, m_dwSrcLine(0)
+	, m_dwDstLine(0)
+	, m_bInitialize(false)
+#endif
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER)) 
 	{
@@ -36,6 +56,7 @@ VideoPlayer::VideoPlayer()
 
 VideoPlayer::~VideoPlayer()
 {
+#ifdef PLAYER_USE_SDLPAINT
 	if (screen)
 	{
 		SDL_DestroyWindow(screen);
@@ -51,6 +72,43 @@ VideoPlayer::~VideoPlayer()
 		SDL_DestroyTexture(sdlTexture);
 		sdlTexture = nullptr;
 	}
+#else
+	if (m_pBack) 
+	{
+		m_pBack->Release();
+		m_pBack = NULL;
+	}
+
+	if (m_pSurfdesc) 
+	{
+		delete m_pSurfdesc;
+		m_pSurfdesc = NULL;
+	}
+
+	if (m_pDDClipper) 
+	{
+		m_pDDClipper->Release();
+		m_pDDClipper = NULL;
+	}
+	if (m_pPrimary) 
+	{
+		m_pPrimary->Release();
+		m_pPrimary = NULL;
+	}
+
+	if (m_pDDObject) 
+	{
+		m_pDDObject->Release();
+		m_pDDObject = NULL;
+	}
+
+	if (m_pDstImgBuf)
+	{
+		delete[] m_pDstImgBuf;
+		m_pDstImgBuf = NULL;
+	}
+	m_bInitialize = false;
+#endif
 	SDL_Quit();
 	delete[] m_pAudioBuffer;
 	m_pAudioBuffer = nullptr;
@@ -58,6 +116,7 @@ VideoPlayer::~VideoPlayer()
 
 int VideoPlayer::IntialWnd(unsigned int nFormat, int x, int y, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall)
 {
+#ifdef PLAYER_USE_SDLPAINT
 	m_nWndWidth = nWndWidth;
 	m_nWndHeight = nWndHeight;
 	//先创建screen
@@ -85,6 +144,7 @@ int VideoPlayer::IntialWnd(unsigned int nFormat, int x, int y, int nWndWidth, in
 		printf("SDL: could not create texture - exiting:%s\n", SDL_GetError());
 		return 0;
 	}
+#endif
 
 	//打开音频并开始播放静音
 	//SDL_AudioSpec
@@ -109,6 +169,7 @@ int VideoPlayer::IntialWnd(unsigned int nFormat, int x, int y, int nWndWidth, in
 
 int VideoPlayer::IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall)
 {
+#ifdef PLAYER_USE_SDLPAINT
 	m_nWndWidth = nWndWidth;
 	m_nWndHeight = nWndHeight;
 	//先创建screen
@@ -135,6 +196,118 @@ int VideoPlayer::IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int
 		printf("SDL: could not create texture - exiting:%s\n", SDL_GetError());
 		return 0;
 	}
+#else
+	m_hDrawWnd				= (HWND)hWnd;
+	m_dwSrcBufWidth			= nBufWidth;
+	m_dwSrcBufHeight		= nBufHeight;
+	m_enumSrcBufColorFormat	= SDCOLORFORMAT_UYVY;
+	m_dwDstWidth			= (nWndWidth + 1)/2*2;
+	m_dwDstHeight			= (nWndHeight + 1)/2*2;
+	m_pDstImgBuf			= new BYTE[nWndWidth*m_dwDstHeight*4];
+	m_dwSrcLine				= m_dwSrcBufWidth*2;
+	m_dwDstLine				= nWndWidth*2;
+
+	HRESULT hr = DirectDrawCreate(NULL, &m_pDDObject, NULL);
+	if (hr != NO_ERROR)
+	{
+		return S_FALSE;
+	}
+
+	DDCAPS ddCaps;
+	ZeroMemory(&ddCaps, sizeof(DDCAPS));
+	ddCaps.dwSize = sizeof(DDCAPS);
+	hr = m_pDDObject->GetCaps(&ddCaps, NULL);
+	if (hr != NO_ERROR || ddCaps.dwVidMemFree < 1024*1024)
+	{
+		return S_FALSE;
+	}
+
+	hr = m_pDDObject->SetCooperativeLevel(m_hDrawWnd, DDSCL_NORMAL);
+	if (hr != NO_ERROR)
+	{
+		return S_FALSE;
+	}
+
+	DDSURFACEDESC  ddsd;
+	ddsd.dwSize = sizeof(ddsd);
+	ddsd.dwFlags = DDSD_CAPS;
+	ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+	hr = m_pDDObject->CreateSurface(&ddsd, &m_pPrimary, NULL);
+	if (hr != NO_ERROR)
+	{
+		return S_FALSE;
+	}
+
+	hr = m_pDDObject->CreateClipper(0, &m_pDDClipper, NULL);
+	if (hr != NO_ERROR)
+	{
+		return S_FALSE;
+	}
+
+	hr = m_pDDClipper->SetHWnd(0, m_hDrawWnd);
+	if (hr != NO_ERROR)
+	{
+		return S_FALSE;
+	}
+
+	hr = m_pPrimary->SetClipper(m_pDDClipper);
+	if (hr != NO_ERROR)
+	{
+		return S_FALSE;
+	}
+
+	ddsd.dwWidth		=  m_dwDstWidth;
+	ddsd.dwHeight		= m_dwDstHeight;
+	ddsd.dwFlags		= DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
+	ddsd.ddsCaps.dwCaps	= DDSCAPS_VIDEOMEMORY | DDSCAPS_OFFSCREENPLAIN|DDSCAPS_LIVEVIDEO;
+	ZeroMemory(&ddsd.ddpfPixelFormat, sizeof(DDPIXELFORMAT));
+
+	ddsd.ddpfPixelFormat.dwSize	= sizeof(DDPIXELFORMAT);
+	if (m_enumSrcBufColorFormat == SDCOLORFORMAT_UYVY)
+	{
+		ddsd.ddpfPixelFormat.dwSize			= sizeof(DDPIXELFORMAT);
+		ddsd.ddpfPixelFormat.dwFlags		= DDPF_YUV|DDPF_FOURCC;
+		ddsd.ddpfPixelFormat.dwFourCC		= 'YVYU'/*MAKEFOURCC('U', 'Y', 'V', 'Y')*/;
+		ddsd.ddpfPixelFormat.dwRGBBitCount	= 16;
+		hr = m_pDDObject->CreateSurface(&ddsd, &m_pBack, NULL);
+		if (hr != NO_ERROR)
+		{
+			ddsd.ddpfPixelFormat.dwFourCC		= '2YUY';
+			ddsd.ddpfPixelFormat.dwRGBBitCount	= 16;
+			hr = m_pDDObject->CreateSurface(&ddsd, &m_pBack, NULL);
+			if (hr != NO_ERROR)
+			{
+				return S_FALSE;
+			}
+			m_enumDisplayColorFormat = SDCOLORFORMAT_YUYV;
+		}
+		else
+		{
+			m_enumDisplayColorFormat = SDCOLORFORMAT_UYVY;
+		}
+	} 
+	else if (m_enumSrcBufColorFormat == SDCOLORFORMAT_BGRA) 
+	{
+		ddsd.ddpfPixelFormat.dwFlags       = DDPF_RGB;
+		ddsd.ddpfPixelFormat.dwRGBBitCount = 32;
+		ddsd.ddpfPixelFormat.dwRBitMask    = 0x00FF0000; 
+		ddsd.ddpfPixelFormat.dwGBitMask    = 0x0000FF00;
+		ddsd.ddpfPixelFormat.dwBBitMask    = 0x000000FF; 
+		ddsd.ddpfPixelFormat.dwRGBAlphaBitMask =0XFF000000;
+		hr = m_pDDObject->CreateSurface(&ddsd, &m_pBack, NULL);
+		if (hr != NO_ERROR)
+		{
+			return S_FALSE;
+		}
+		m_enumDisplayColorFormat = SDCOLORFORMAT_BGRA;
+	}
+
+	m_pSurfdesc = new DDSURFACEDESC;
+	memset(m_pSurfdesc,0,sizeof(DDSURFACEDESC));
+	m_pSurfdesc->dwSize = sizeof(DDSURFACEDESC);
+
+	m_bInitialize = TRUE;
+#endif
 
 	//打开音频并开始播放静音
 	//SDL_AudioSpec
@@ -159,6 +332,7 @@ int VideoPlayer::IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int
 
 int VideoPlayer::SetBufferFWH(unsigned int nFormat, int nBufWidth, int nBufHeight)
 {
+#ifdef PLAYER_USE_SDLPAINT
 	if (sdlTexture)
 	{
 		SDL_DestroyTexture(sdlTexture);
@@ -170,22 +344,118 @@ int VideoPlayer::SetBufferFWH(unsigned int nFormat, int nBufWidth, int nBufHeigh
 		printf("SDL: could not create texture - exiting:%s\n", SDL_GetError());
 		return 0;
 	}
+#else
+
+#endif
 	return 0;
 }
 
 int VideoPlayer::PushFrame(unsigned char * data, int linesize)
 {
 	//将数据刷出来
+#ifdef PLAYER_USE_SDLPAINT
 	SDL_UpdateTexture(sdlTexture, nullptr, data, linesize);
 	SDL_RenderClear(sdlRenderer);
 	SDL_RenderCopy(sdlRenderer, sdlTexture, nullptr, nullptr);
 	SDL_RenderPresent(sdlRenderer);
+#else
+	if (m_bInitialize == FALSE)
+	{
+		return 0;
+	}
+	HRESULT	hr = NO_ERROR;
+
+	if (data == NULL || m_pBack == NULL)
+	{
+		return E_FAIL;
+	}
+
+	PBYTE pDrawBuf	= data;
+
+	hr = m_pBack->Lock(NULL, m_pSurfdesc, DDLOCK_WAIT, NULL);
+	if (hr != NO_ERROR)
+	{
+		m_pBack->Restore();
+		hr = m_pBack->Lock(NULL, m_pSurfdesc, DDLOCK_WAIT, NULL);
+		if (hr != NO_ERROR)
+		{
+			return hr;
+		}
+	}
+	BYTE* pBuffer = pDrawBuf;
+	if (m_enumSrcBufColorFormat == SDCOLORFORMAT_BGRA)
+	{
+		BYTE* pAddress = (BYTE*) m_pSurfdesc->lpSurface;
+		BYTE* pSource  = pBuffer;
+		int iSrcPitch = m_dwDstWidth*4;
+		for (DWORD y = 0; y < m_dwDstHeight; y++)
+		{
+			memcpy(pAddress, pSource, iSrcPitch);
+			pAddress += m_pSurfdesc->lPitch;
+			pSource  += iSrcPitch;
+		}
+	} 
+	else if (m_enumSrcBufColorFormat == SDCOLORFORMAT_YUYV)
+	{
+		BYTE* pAddress = (BYTE*)m_pSurfdesc->lpSurface;
+		BYTE* pSource  = pBuffer;
+		for (DWORD y = 0; y < m_dwDstHeight; y++)
+		{
+			memcpy(pAddress, pSource, m_dwDstWidth*2);
+			pAddress += m_pSurfdesc->lPitch;
+			pSource  += (m_dwDstWidth*2);
+		}
+	} 
+	else if (m_enumSrcBufColorFormat == SDCOLORFORMAT_UYVY)
+	{
+		if (m_enumDisplayColorFormat == SDCOLORFORMAT_UYVY)
+		{
+			BYTE* pAddress = (BYTE*)m_pSurfdesc->lpSurface;
+			BYTE* pSource  = pBuffer;
+			int iSrcPitch = m_dwDstWidth*2;
+
+			for (DWORD y = 0; y < m_dwDstHeight; y++)
+			{
+				memcpy(pAddress, pSource, iSrcPitch);	
+				pAddress += m_pSurfdesc->lPitch;
+				pSource  += iSrcPitch;
+			}
+
+		} 
+		else if (m_enumDisplayColorFormat == SDCOLORFORMAT_YUYV)
+		{
+			Render_SYCOLORFORMAT_UYVYtoYUY2((BYTE*)m_pSurfdesc->lpSurface,
+				m_pSurfdesc->lPitch,
+				pBuffer,
+				m_dwDstWidth, m_dwDstHeight);
+		}
+	}
+
+	hr = m_pBack->Unlock(m_pSurfdesc->lpSurface);
+	if (hr != NO_ERROR)
+	{
+		return hr;
+	}
+
+	if (m_pPrimary->IsLost() == DDERR_SURFACELOST) 
+	{
+		hr = m_pPrimary->Restore();
+	}
+
+	if (m_pPrimary)
+	{
+		RECT rect = {0, 0, m_dwDstWidth, m_dwDstHeight};
+		RECT rectDraw = {354, 182, 911, 579};
+		hr = m_pPrimary->Blt(&rectDraw, m_pBack, &rect, DDBLT_WAIT, NULL);
+	}
+#endif
 	return 1;
 }
 
 int VideoPlayer::PushYUVFrame(unsigned char **& data, int *& linesize)
 {
 	//将数据刷出来
+#ifdef PLAYER_USE_SDLPAINT
 	SDL_UpdateYUVTexture(sdlTexture, nullptr
 		, data[0], linesize[0]
 		, data[1], linesize[1]
@@ -198,6 +468,7 @@ int VideoPlayer::PushYUVFrame(unsigned char **& data, int *& linesize)
 	rtDes.h = m_nWndHeight;
 	SDL_RenderCopy(sdlRenderer, sdlTexture, nullptr, &rtDes);
 	SDL_RenderPresent(sdlRenderer);
+#endif
 	return 1;
 }
 
@@ -212,6 +483,55 @@ void VideoPlayer::ResetPlayer()
 
 }
 
+#ifndef PLAYER_USE_SDLPAINT
+void VideoPlayer::Render_SYCOLORFORMAT_YUV422toYUY2(unsigned char *dst, int stride, unsigned char *buffer, int Clip_Width, int Clip_Height)
+{
+	BOOL IsU = FALSE;
+	DWORD i,j;
+	BYTE* m_pY = buffer;
+	BYTE* m_pU = m_pY + Clip_Width*Clip_Height;
+	BYTE* m_pV = m_pU + Clip_Width*Clip_Height/2;
+
+	for (j = 0; j < DWORD(Clip_Height); j++) {
+		IsU = TRUE;
+		for (i = 0; i < DWORD(Clip_Width); i++)	
+		{
+			dst[2*i] = *m_pY;
+			if(IsU)
+			{
+				dst[2*i+1] = *m_pU;  
+				m_pU++;
+
+				IsU = FALSE;
+			}
+			else
+			{
+				dst[2*i+1] = *m_pV;  
+				m_pV++;
+
+				IsU = TRUE;
+			}
+			m_pY++;
+		}
+		dst += stride;
+	}
+}
+
+void VideoPlayer::Render_SYCOLORFORMAT_UYVYtoYUY2(unsigned char *dst, int stride, unsigned char *buffer, int Clip_Width, int Clip_Height)
+{
+	DWORD i,j;
+	for (j = 0; j < DWORD(Clip_Height); j++)	
+	{
+		for (i = 0; i < DWORD(Clip_Width); i++)	
+		{
+			dst[2*i] = buffer[2*i+1];  
+			dst[2*i+1] = buffer[2*i];  
+		}
+		dst += stride;
+		buffer += Clip_Width*2;
+	}
+}
+#endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static const int BUFFER_GROWTH = 5 * 1024 * 2014;
 BufferLoop::BufferLoop()

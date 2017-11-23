@@ -33,6 +33,9 @@ typedef uint32_t Uint32;
 DWORD SDL_PIXELFORMAT_IYUV =      /**< Planar mode: Y + U + V  (3 planes) */
 SDL_DEFINE_PIXELFOURCC('I', 'Y', 'U', 'V');
 
+DWORD SDL_PIXELFORMAT_UYVY =      /**< Packed mode: U0+Y0+V0+Y1 (1 plane) */
+	SDL_DEFINE_PIXELFOURCC('U', 'Y', 'V', 'Y');
+
 #define ENABLE_ENCODE
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
@@ -136,6 +139,24 @@ void CEncodecPressTestDlg::DoPlay()
 		cstrOutPath = ConverCStringToStdString(strPath);
 	}
 
+	CWnd * pPlayerWnd = GetDlgItem(IDC_DECODER_SCREEN);
+	if (pPlayerWnd && ::IsWindow(pPlayerWnd->GetSafeHwnd()))
+	{
+		CRect rectDraw;
+		::GetClientRect(pPlayerWnd->GetSafeHwnd(), &rectDraw);
+		POINT po;
+		po.x = rectDraw.left;
+		po.y = rectDraw.top;
+		::ClientToScreen(pPlayerWnd->GetSafeHwnd(), &po);
+		rectDraw.top += po.y;
+		rectDraw.left += po.x;
+		rectDraw.right += po.x;
+		rectDraw.bottom += po.y;
+
+		int i = 0;
+		i++;
+	}
+
 	bool bLoopPlay = false;
 	CButton * pBtn = (CButton *)GetDlgItem(IDC_CHK_LOOPPLAY);
 	if (pBtn && ::IsWindow(pBtn->GetSafeHwnd()))
@@ -180,15 +201,15 @@ void CEncodecPressTestDlg::DoPlay()
 			{
 				if (pDecoder->SetSourcePath(cstrPath.c_str()))
 				{
-					int nWidth = 720;
-					int nHeight = 576;
+					int nWidth = 557;
+					int nHeight = 397;
 					SDStreamMediaInfoEx streamMediaInfoEx;
 					SDAudioMediaInfo audioInfo;
-					audioInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM_32;
+					audioInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM;
 					audioInfo.dwBitsPerSample = 32;
 					audioInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
 					audioInfo.dwAvgBitsPerSec = audioInfo.dwSamplesPerSec*audioInfo.dwBitsPerSample*audioInfo.dwChannels;
-					audioInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive_32bit;
+					audioInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
 					audioInfo.dwSamplesPerSec = 48000;
 					audioInfo.dwChannels = 2;
 					pDecoder->SetAudioSamplesBufInfo(&audioInfo);
@@ -197,11 +218,11 @@ void CEncodecPressTestDlg::DoPlay()
 						m_nTimebaseDen = streamMediaInfoEx.sVideoMediaInfo.dwStandardRate;
 						m_nTimebaseNum = streamMediaInfoEx.sVideoMediaInfo.dwStandardScale;
 						bool bContinue = true;
-						m_player.SetBufferFWH(SDL_PIXELFORMAT_IYUV, nWidth, nHeight);
+						m_player.SetBufferFWH(SDL_PIXELFORMAT_UYVY, nWidth, nHeight);
 						SDVideoFrameImageBufInfo videoFrameImageBufInfo;
 						videoFrameImageBufInfo.dwXSize = nWidth;
 						videoFrameImageBufInfo.dwYSize = nHeight;
-						videoFrameImageBufInfo.enumColorFormat = SDCOLORFORMAT_YUVP_420;// streamMediaInfoEx.sVideoMediaInfo.enumColorFormat;
+						videoFrameImageBufInfo.enumColorFormat = SDCOLORFORMAT_UYVY;// streamMediaInfoEx.sVideoMediaInfo.enumColorFormat;
 						bContinue = pDecoder->SetVideoFrameBufInfo(&videoFrameImageBufInfo, nullptr);
 
 						SD_UINT32 nVideoBufferSize = pDecoder->GetVideoBufferSize();
@@ -237,7 +258,7 @@ void CEncodecPressTestDlg::DoPlay()
 									if (pEncoder)
 									{
 										SDStreamMediaInfo streamInfo;
-										EmVideoStandard emVideoStandard = GetCodecVideoStandard(i);
+										SD_VIDEO_STANDARD emVideoStandard = GetCodecVideoStandard(i);
 										SD_VIDEO_TYPE emVideoType = GetCodecVideoType(i);
 										SD_COLOR_FORMAT emColorFmt = GetCodecColorFmt(i);
 										//SD_COLOR_FORMAT emColorFmt = SDCOLORFORMAT_YUVP_422;
@@ -410,7 +431,14 @@ void CEncodecPressTestDlg::DoPlay()
 									}
 								}
 
-								m_player.PushFrame(pVideoData, nWidth);
+								if (videoFrameImageBufInfo.enumColorFormat == SDCOLORFORMAT_YUVP_420)
+								{
+									m_player.PushFrame(pVideoData, nWidth);
+								}
+								else if (videoFrameImageBufInfo.enumColorFormat == SDCOLORFORMAT_UYVY)
+								{
+									m_player.PushFrame(pVideoData, nWidth * 2);
+								}
 								m_player.PushAudioSample(pAudioData, numAudioSample * 4);
 								int nStay = 40 - (clock() - nClock);
 								if (nStay < 0)
@@ -481,6 +509,7 @@ void CEncodecPressTestDlg::DoPlay()
 								}
 							}
 						}
+						deleteC(pAudioData);
 						deleteC(pVideoData);
 					}
 				}
@@ -678,7 +707,7 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 	{
 		CRect rtPlayer;
 		pPlayerWnd->GetWindowRect(rtPlayer);
-		m_player.IntialWnd(SDL_PIXELFORMAT_IYUV, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920);
+		m_player.IntialWnd(SDL_PIXELFORMAT_UYVY, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920);
 	}
 
 	CWnd * pWnd = GetDlgItem(IDC_EDIT_OUT_FILE_PATH);
@@ -1248,20 +1277,20 @@ bool CEncodecPressTestDlg::GetCodecCheck(int nIndex)
 	return bRet;
 }
 
-EmVideoStandard CEncodecPressTestDlg::GetCodecVideoStandard(int nIndex)
+SD_VIDEO_STANDARD CEncodecPressTestDlg::GetCodecVideoStandard(int nIndex)
 {
-	EmVideoStandard emRet = EmVideoStandard_PAL;
+	SD_VIDEO_STANDARD emRet = SDVIDEOSTANDARD_PAL;
 	CComboBox * pCombo = GetCodecVideoStandardCombo(nIndex);
 	if (pCombo)
 	{
 		int nSel = pCombo->GetCurSel();
 		if (nSel == 0)
 		{
-			emRet = EmVideoStandard_PAL;
+			emRet = SDVIDEOSTANDARD_PAL;
 		}
 		else
 		{
-			emRet = EmVideoStandard_HD;
+			emRet = SDVIDEOSTANDARD_HD1080i_25;
 		}
 	}
 	return emRet;
@@ -1351,7 +1380,7 @@ void CEncodecPressTestDlg::DealCtrlFileName()
 	{
 		if (GetCodecCheck(i))
 		{
-			EmVideoStandard emVideoStandard = GetCodecVideoStandard(i);
+			SD_VIDEO_STANDARD emVideoStandard = GetCodecVideoStandard(i);
 			SD_VIDEO_TYPE emVideoType = GetCodecVideoType(i);
 			SD_COLOR_FORMAT emColorFmt = GetCodecColorFmt(i);
 			SD_AUDIO_TYPE emAudioType = GetCodecAudioType(i);
@@ -1383,15 +1412,15 @@ void CEncodecPressTestDlg::DealCtrlFileName()
 	}
 }
 
-CString CEncodecPressTestDlg::GenerateFileInfoName(EmVideoStandard emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, int nH264Level)
+CString CEncodecPressTestDlg::GenerateFileInfoName(SD_VIDEO_STANDARD emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, int nH264Level)
 {
 	CString strFileName;
 	switch (emVideoStandard)
 	{
-	case EmVideoStandard_PAL:
+	case SDVIDEOSTANDARD_PAL:
 		strFileName.AppendFormat(_T("PAL"));
 		break;
-	case EmVideoStandard_HD:
+	case SDVIDEOSTANDARD_HD1080i_25:
 		strFileName.AppendFormat(_T("HD"));
 		break;
 	default:
