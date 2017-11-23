@@ -4267,6 +4267,8 @@ enum SD_CHANNELSAMPLE_FORMAT	//音频声道采样数据格式
 	SDCHANNELSAMPLESFORMAT_Unknow				=	0,
 	SDCHANNELSAMPLESFORMAT_Progressive			=	1,			//音频声道采样数据连续排列...CH1(Sn)CH2(Sn)CH1(Sn+1)CH2(Sn+1)...
 	SDCHANNELSAMPLESFORMAT_Segmented			=	2,			//音频声道采样数据分割排列...CH1(Sn)CH1(Sn+1)...CH2(Sn)CH2(Sn+1)...
+	SDCHANNELSAMPLESFORMAT_Progressive_32bit	=	3,			//音频声道采样数据连续排列...CH1(Sn)CH2(Sn)CH1(Sn+1)CH2(Sn+1)...
+	SDCHANNELSAMPLESFORMAT_Segmented_32bit		=	4,			//音频声道采样数据分割排列...CH1(Sn)CH1(Sn+1)...CH2(Sn)CH2(Sn+1)...
 };
 
 //得到音频声道采样数据格式的名称
@@ -4281,6 +4283,12 @@ SD_INLINE CSDString GeChannelSamplesFormat(SD_CHANNELSAMPLE_FORMAT enumChannelSa
 		case SDCHANNELSAMPLESFORMAT_Segmented:
 			str = _T("Segmented");
 			break;
+		case SDCHANNELSAMPLESFORMAT_Progressive_32bit:
+			str = _T("Progressive_32bit");
+			break;
+		case SDCHANNELSAMPLESFORMAT_Segmented_32bit:
+			str = _T("Segmented_32bit");
+			break;
 	}
 	return str;
 };
@@ -4288,9 +4296,11 @@ SD_INLINE CSDString GeChannelSamplesFormat(SD_CHANNELSAMPLE_FORMAT enumChannelSa
 //依据音频声道采样数据格式,声道数目和数据块对齐单位得到音频数据块的大小
 SD_INLINE	SD_UINT32	GetChannelSamplesFormatBufSizeInByte(SD_CHANNELSAMPLE_FORMAT enumChannelSamplesFormat, SD_UINT32 dwChannels, SD_UINT32 dwBlockAlign, SD_UINT32 dwSamplesCount)
 {
-	if (enumChannelSamplesFormat == SDCHANNELSAMPLESFORMAT_Progressive)
+	if (enumChannelSamplesFormat == SDCHANNELSAMPLESFORMAT_Progressive
+		|| enumChannelSamplesFormat == SDCHANNELSAMPLESFORMAT_Progressive_32bit)
 		return dwBlockAlign*dwSamplesCount;
-	else if (enumChannelSamplesFormat == SDCHANNELSAMPLESFORMAT_Segmented)
+	else if (enumChannelSamplesFormat == SDCHANNELSAMPLESFORMAT_Segmented
+		|| enumChannelSamplesFormat == SDCHANNELSAMPLESFORMAT_Segmented_32bit)
 		return dwChannels*dwBlockAlign*dwSamplesCount;
 	else
 		return 0;

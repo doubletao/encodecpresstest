@@ -188,7 +188,7 @@ void CEncodecPressTestDlg::DoPlay()
 					audioInfo.dwBitsPerSample = 32;
 					audioInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
 					audioInfo.dwAvgBitsPerSec = audioInfo.dwSamplesPerSec*audioInfo.dwBitsPerSample*audioInfo.dwChannels;
-					audioInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
+					audioInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive_32bit;
 					audioInfo.dwSamplesPerSec = 48000;
 					audioInfo.dwChannels = 2;
 					pDecoder->SetAudioSamplesBufInfo(&audioInfo);

@@ -320,6 +320,12 @@ AVSampleFormat FFmpegFormatCovert::ConvertSamplesFormat(SD_CHANNELSAMPLE_FORMAT 
 	case SDCHANNELSAMPLESFORMAT_Segmented:
 		avSampleFmt = AV_SAMPLE_FMT_S16P;
 		break;
+	case SDCHANNELSAMPLESFORMAT_Progressive_32bit:
+		avSampleFmt = AV_SAMPLE_FMT_S32;
+		break;
+	case SDCHANNELSAMPLESFORMAT_Segmented_32bit:
+		avSampleFmt = AV_SAMPLE_FMT_S32P;
+		break;
 	default:
 		//留个后门，可以直接指定ffmpeg类型
 		avSampleFmt = (AVSampleFormat)emSampleFormat;
@@ -338,6 +344,12 @@ SD_CHANNELSAMPLE_FORMAT FFmpegFormatCovert::ConvertSamplesFormat(AVSampleFormat 
 		break;
 	case AV_SAMPLE_FMT_S16P:
 		emSampleRet = SDCHANNELSAMPLESFORMAT_Segmented;
+		break;
+	case AV_SAMPLE_FMT_S32:
+		emSampleRet = SDCHANNELSAMPLESFORMAT_Progressive_32bit;
+		break;
+	case AV_SAMPLE_FMT_S32P:
+		emSampleRet = SDCHANNELSAMPLESFORMAT_Segmented_32bit;
 		break;
 	default:
 		emSampleRet = SD_CHANNELSAMPLE_FORMAT(emSampleFormat);
