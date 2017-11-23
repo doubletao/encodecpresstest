@@ -50,8 +50,23 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 	m_pFormatCtx = avformat_alloc_context();
 	if (m_pFormatCtx)
 	{
+		std::string strurl = pFullPath;
+		AVDictionary * format_opts = nullptr;
+		if ( std::string::npos != strurl.find("rtsp://") )
+		{
+			char option_key[]="rtsp_transport";  
+			char option_value[]="http";  
+			av_dict_set(&format_opts,option_key,option_value,0); 
+		}
+		else
+		{
+			char option_key[]="scan_all_pmts";  
+			char option_value[]="1";  
+			av_dict_set(&format_opts,option_key,option_value,0); 
+		}
+
 		//解封装
-		if (avformat_open_input(&m_pFormatCtx, pFullPath, nullptr, nullptr) == 0)
+		if (avformat_open_input(&m_pFormatCtx, pFullPath, nullptr, &format_opts) == 0)
 		{
 			//得到流数据
 			if (avformat_find_stream_info(m_pFormatCtx, nullptr) >= 0)
@@ -201,7 +216,7 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 	return false;
 }
 
-bool ecCodecFFmpegProtocolDecoder::SetSourceCallback(PCALLBACKREADPACKET pCallbackReadPkt, PCALLBACKINTERRUPT pCallbackInterupt /*= nullptr*/)
+bool ecCodecFFmpegProtocolDecoder::SetSourceCallback(PCALLBACKREADPACKET pCallbackReadPkt, void * pUserParam/* = nullptr*/, PCALLBACKINTERRUPT pCallbackInterupt /*= nullptr*/)
 {
 	if (m_bIsInitialized)
 	{
@@ -219,7 +234,7 @@ bool ecCodecFFmpegProtocolDecoder::SetSourceCallback(PCALLBACKREADPACKET pCallba
 		//给回调
 		const int nBufferSize = 1920 * 1080 * 2;//大小是个经验值
 		m_pAvIoBuffer = (unsigned char *)av_malloc(nBufferSize);
-		AVIOContext * avio = avio_alloc_context(m_pAvIoBuffer, nBufferSize, 0, this, pCallbackReadPkt, NULL, NULL);
+		AVIOContext * avio = avio_alloc_context(m_pAvIoBuffer, nBufferSize, 0, pUserParam, pCallbackReadPkt, NULL, NULL);
 		if (avio)
 		{
 			m_pFormatCtx->pb = avio;

@@ -15,7 +15,7 @@ public:
 
 	// 设置输入回调
 	// 说明：主要供网络流使用，只有数据包而没有具体文件或流地址的情况下使用
-	virtual bool SetSourceCallback(PCALLBACKREADPACKET pCallbackReadPkt, PCALLBACKINTERRUPT pCallbackInterupt = nullptr) = 0;
+	virtual bool SetSourceCallback(PCALLBACKREADPACKET pCallbackReadPkt, void * pUserParam = nullptr, PCALLBACKINTERRUPT pCallbackInterupt = nullptr) = 0;
 
 	//-----------------------------------------------------------------------------------------------//
 	// 解码器信息获取------获取输入文件的信息

@@ -54,7 +54,7 @@ protected:
 	void ReleaseAudioPackQue();
 public:
 	virtual bool SetSourcePath(const char * pFullPath);
-	virtual bool SetSourceCallback(PCALLBACKREADPACKET pCallbackReadPkt, PCALLBACKINTERRUPT pCallbackInterupt = nullptr);
+	virtual bool SetSourceCallback(PCALLBACKREADPACKET pCallbackReadPkt, void * pUserParam = nullptr, PCALLBACKINTERRUPT pCallbackInterupt = nullptr);
 	virtual bool GetFileGlobalMediaInfo(SDStreamMediaInfo *psMediaInfo);
 	virtual bool GetFileGlobalMediaInfo(SDStreamMediaInfoEx *psMediaInfoEx);
 	virtual bool IsCanReadVideoFrame();
