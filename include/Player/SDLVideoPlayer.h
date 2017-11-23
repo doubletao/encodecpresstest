@@ -10,6 +10,9 @@
 #endif
 #endif // SDL_VIDEO_PLAYER_API
 
+//#define PLAYER_USE_SDLPAINT
+//typedef RECT(* CallbackGetDrawRect)(HWND hWnd);
+
 class SDL_VIDEO_PLAYER_EXPORT SDLVideoPlayer
 {
 private:
@@ -25,4 +28,9 @@ public:
 	int PushYUVFrame(unsigned char **& data, int *& linesize);
 	int PushAudioSample(unsigned char * data, int nBufSize);
 	void ResetPlayer();
+#ifdef PLAYER_USE_SDLPAINT
+	int IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall);
+#else
+	int IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall, void * pCallbackGetDrawRect);
+#endif
 };

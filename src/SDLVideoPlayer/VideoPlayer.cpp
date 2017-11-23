@@ -167,9 +167,9 @@ int VideoPlayer::IntialWnd(unsigned int nFormat, int x, int y, int nWndWidth, in
 	return 1;
 }
 
+#ifdef PLAYER_USE_SDLPAINT
 int VideoPlayer::IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall)
 {
-#ifdef PLAYER_USE_SDLPAINT
 	m_nWndWidth = nWndWidth;
 	m_nWndHeight = nWndHeight;
 	//ÏÈ´´½¨screen
@@ -197,15 +197,18 @@ int VideoPlayer::IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int
 		return 0;
 	}
 #else
+int VideoPlayer::IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall, void * pCallbackGetDrawRect)
+{
 	m_hDrawWnd				= (HWND)hWnd;
 	m_dwSrcBufWidth			= nBufWidth;
 	m_dwSrcBufHeight		= nBufHeight;
 	m_enumSrcBufColorFormat	= SDCOLORFORMAT_UYVY;
 	m_dwDstWidth			= (nWndWidth + 1)/2*2;
-	m_dwDstHeight			= (nWndHeight + 1)/2*2;
+	m_dwDstHeight			= (nWndHeight)/2*2;
 	m_pDstImgBuf			= new BYTE[nWndWidth*m_dwDstHeight*4];
 	m_dwSrcLine				= m_dwSrcBufWidth*2;
 	m_dwDstLine				= nWndWidth*2;
+	m_pCallbackGetDrawRect	= (CallbackGetDrawRect)pCallbackGetDrawRect;
 
 	HRESULT hr = DirectDrawCreate(NULL, &m_pDDObject, NULL);
 	if (hr != NO_ERROR)
@@ -445,7 +448,11 @@ int VideoPlayer::PushFrame(unsigned char * data, int linesize)
 	if (m_pPrimary)
 	{
 		RECT rect = {0, 0, m_dwDstWidth, m_dwDstHeight};
-		RECT rectDraw = {354, 182, 911, 579};
+		RECT rectDraw = {0};
+		if (m_pCallbackGetDrawRect)
+		{
+			rectDraw = m_pCallbackGetDrawRect(m_hDrawWnd);
+		}
 		hr = m_pPrimary->Blt(&rectDraw, m_pBack, &rect, DDBLT_WAIT, NULL);
 	}
 #endif

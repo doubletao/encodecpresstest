@@ -1,5 +1,4 @@
 #pragma once
-//#define PLAYER_USE_SDLPAINT
 #ifdef PLAYER_USE_SDLPAINT
 #include "SDL2\SDL.h"
 #else
@@ -7,6 +6,7 @@
 #include "ddraw.h"
 #include "..\SDDefine\SDDefine.h"
 #include "..\SDDefine\SDVADefine.h"
+typedef RECT(* CallbackGetDrawRect)(HWND hWnd);
 #endif
 
 struct BufferLoop
@@ -57,6 +57,7 @@ private:
 	int						m_dwSrcLine;
 	int						m_dwDstLine;
 	LPBYTE					m_pDstImgBuf;
+	CallbackGetDrawRect		m_pCallbackGetDrawRect;
 #endif
 	BufferLoop m_AudioDataLoop;
 	char * m_pAudioBuffer;
@@ -67,13 +68,15 @@ protected:
 	static void fill_audio(void *udata, Uint8 *stream, int len);
 public:
 	int IntialWnd(unsigned int nFormat, int x, int y, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall);
-	int IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall);
 	int SetBufferFWH(unsigned int nFormat, int nBufWidth, int nBufHeight);
 	int PushFrame(unsigned char * data, int linesize);
 	int PushYUVFrame(unsigned char **& data, int *& linesize);
 	int PushAudioSample(unsigned char * data, int nBufSize);
 	void ResetPlayer();
-#ifndef PLAYER_USE_SDLPAINT
+#ifdef PLAYER_USE_SDLPAINT
+	int IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall);
+#else
+	int IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall, void * pCallbackGetDrawRect);
 	void Render_SYCOLORFORMAT_YUV422toYUY2( unsigned char *dst, int stride, unsigned char *buffer, int Clip_Width, int Clip_Height );
 	void Render_SYCOLORFORMAT_UYVYtoYUY2( unsigned char *dst, int stride, unsigned char *buffer, int Clip_Width, int Clip_Height );
 #endif

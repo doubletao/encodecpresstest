@@ -139,10 +139,10 @@ void CEncodecPressTestDlg::DoPlay()
 		cstrOutPath = ConverCStringToStdString(strPath);
 	}
 
+	CRect rectDraw;
 	CWnd * pPlayerWnd = GetDlgItem(IDC_DECODER_SCREEN);
 	if (pPlayerWnd && ::IsWindow(pPlayerWnd->GetSafeHwnd()))
 	{
-		CRect rectDraw;
 		::GetClientRect(pPlayerWnd->GetSafeHwnd(), &rectDraw);
 		POINT po;
 		po.x = rectDraw.left;
@@ -152,9 +152,6 @@ void CEncodecPressTestDlg::DoPlay()
 		rectDraw.left += po.x;
 		rectDraw.right += po.x;
 		rectDraw.bottom += po.y;
-
-		int i = 0;
-		i++;
 	}
 
 	bool bLoopPlay = false;
@@ -201,8 +198,8 @@ void CEncodecPressTestDlg::DoPlay()
 			{
 				if (pDecoder->SetSourcePath(cstrPath.c_str()))
 				{
-					int nWidth = 557;
-					int nHeight = 397;
+					int nWidth = rectDraw.Width();
+					int nHeight = rectDraw.Height();
 					SDStreamMediaInfoEx streamMediaInfoEx;
 					SDAudioMediaInfo audioInfo;
 					audioInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM;
@@ -672,6 +669,21 @@ void CEncodecPressTestDlg::OnDestroy()
 	CDialogEx::OnDestroy();
 }
 
+RECT CallbackGetDrawRect(HWND hWnd)
+{
+	RECT rtRet = {0};
+	::GetClientRect(hWnd, &rtRet);
+	POINT po;
+	po.x = rtRet.left;
+	po.y = rtRet.top;
+	::ClientToScreen(hWnd, &po);
+	rtRet.top += po.y;
+	rtRet.left += po.x;
+	rtRet.right += po.x;
+	rtRet.bottom += po.y;
+	return rtRet;
+}
+
 BOOL CEncodecPressTestDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
@@ -707,7 +719,7 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 	{
 		CRect rtPlayer;
 		pPlayerWnd->GetWindowRect(rtPlayer);
-		m_player.IntialWnd(SDL_PIXELFORMAT_UYVY, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920);
+		m_player.IntialWnd(SDL_PIXELFORMAT_UYVY, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920, CallbackGetDrawRect);
 	}
 
 	CWnd * pWnd = GetDlgItem(IDC_EDIT_OUT_FILE_PATH);

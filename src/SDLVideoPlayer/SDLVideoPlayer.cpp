@@ -1,6 +1,10 @@
 #include "SDLVideoPlayer.h"
 #include "VideoPlayer.h"
 
+#ifndef PLAYER_USE_SDLPAINT
+typedef RECT(* CallbackGetDrawRect)(HWND hWnd);
+#endif
+
 static VideoPlayer * StaticCast(void * pPlayer)
 {
 	return static_cast<VideoPlayer *>(pPlayer);
@@ -27,10 +31,17 @@ int SDLVideoPlayer::IntialWnd(unsigned int nFormat, int x, int y, int nWndWidth,
 	return StaticCast(m_wndPlayer)->IntialWnd(nFormat, x, y, nWndWidth, nWndHeight, nBufWidth, nBufHeight, nAudioSampPerSec, nSamplePerCall);
 }
 
+#ifdef PLAYER_USE_SDLPAINT
 int SDLVideoPlayer::IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall)
 {
 	return StaticCast(m_wndPlayer)->IntialWnd(nFormat, hWnd, nWndWidth, nWndHeight, nBufWidth, nBufHeight, nAudioSampPerSec, nSamplePerCall);
 }
+#else
+int SDLVideoPlayer::IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall, void * pCallbackGetDrawRect)
+{
+	return StaticCast(m_wndPlayer)->IntialWnd(nFormat, hWnd, nWndWidth, nWndHeight, nBufWidth, nBufHeight, nAudioSampPerSec, nSamplePerCall, (CallbackGetDrawRect)pCallbackGetDrawRect);
+}
+#endif
 
 int SDLVideoPlayer::SetBufferFWH(unsigned int nFormat, int nBufWidth, int nBufHeight)
 {
