@@ -57,7 +57,7 @@ public:
 
 	// 设置解码得到的音频采样数据参数
 	// 说明：如果不调用，将没有音频频输出; 在只需要获取视频的情况下, 不调用该函数可以占用较少的资源。
-	virtual bool SetAudioSamplesBufInfo(const SDAudioSamplesBufInfo *pAudioBufInfo) = 0;
+	virtual bool SetAudioSamplesBufInfo(const SDAudioMediaInfo *pAudioBufInfo) = 0;
 	// 获取先前所设置的解码音频采样数据参数
 	virtual bool GetAudioSamplesBufInfo(SDAudioSamplesBufInfo *pAudioBufInfo) = 0;
 

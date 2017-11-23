@@ -610,22 +610,14 @@ SD_INT32 ecCodecFFmpegProtocolDecoder::GetVideoDecoderThread()
 	return SD_INT32();
 }
 
-bool ecCodecFFmpegProtocolDecoder::SetAudioSamplesBufInfo(const SDAudioSamplesBufInfo * pAudioBufInfo)
+bool ecCodecFFmpegProtocolDecoder::SetAudioSamplesBufInfo(const SDAudioMediaInfo * pAudioInfo)
 {
-	if (m_AudioDecoder.IsInitialized() && pAudioBufInfo)
+	if (m_AudioDecoder.IsInitialized() && pAudioInfo)
 	{
-		SDAudioMediaInfo mediaInfo;
-		mediaInfo.dwChannels = pAudioBufInfo->dwChannels;
-		mediaInfo.dwBitsPerSample = pAudioBufInfo->dwBitsPerSample;
-		mediaInfo.dwSamplesPerSec = pAudioBufInfo->dwSamplesPerSec;
-		mediaInfo.dwAvgBitsPerSec = pAudioBufInfo->dwAvgBitsPerSec;
-		mediaInfo.dwBlockAlign = pAudioBufInfo->dwBlockAlign;
-		mediaInfo.enumAudioCFG = pAudioBufInfo->enumAudioCFG;
-		mediaInfo.enumChannelSamplesFormat = pAudioBufInfo->enumChannelSamplesFormat;
-		if (m_AudioDecoder.SetAudioMediaInfo(&mediaInfo))
+		if (m_AudioDecoder.SetAudioMediaInfo(pAudioInfo))
 		{
-			m_nDesSamplePerSec = pAudioBufInfo->dwSamplesPerSec;
-			m_nDesChannelCount = pAudioBufInfo->dwChannels;
+			m_nDesSamplePerSec = pAudioInfo->dwSamplesPerSec;
+			m_nDesChannelCount = pAudioInfo->dwChannels;
 			return true;
 		}
 	}

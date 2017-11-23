@@ -42,5 +42,6 @@ public:
 	int PushFrame(unsigned char * data, int linesize);
 	int PushYUVFrame(unsigned char **& data, int *& linesize);
 	int PushAudioSample(unsigned char * data, int nBufSize);
+	void ResetPlayer();
 };
 

@@ -283,12 +283,13 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate()
 				{
 					if (pDecoder->SetSourcePath(cstrPath.c_str()))
 					{
-						SDAudioSamplesBufInfo audioSamplesBufInfo;
-						audioSamplesBufInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
-						audioSamplesBufInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
-						audioSamplesBufInfo.dwSamplesPerSec = 48000;
-						audioSamplesBufInfo.dwChannels = 2;
-						pDecoder->SetAudioSamplesBufInfo(&audioSamplesBufInfo);
+						SDAudioMediaInfo audioInfo;
+						audioInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM;
+						audioInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
+						audioInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
+						audioInfo.dwSamplesPerSec = 48000;
+						audioInfo.dwChannels = 2;
+						pDecoder->SetAudioSamplesBufInfo(&audioInfo);
 						if (pDecoder->GetFileGlobalMediaInfo(&streamMediaInfoEx))
 						{
 							SDVideoFrameImageBufInfo videoFrameImageBufInfo;

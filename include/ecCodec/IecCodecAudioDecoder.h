@@ -9,7 +9,7 @@ public:
 	virtual bool InitAudioDecoder(const SDAudioMediaInfo &sAudioInfo) = 0;
 
 	// 设置输出音频格式
-	virtual bool SetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo) = 0;
+	virtual bool SetAudioMediaInfo(const SDAudioMediaInfo * pAudioInfo) = 0;
 
 	// 输入压缩音频数据(按帧为单位输入,带时间信息补偿)
 	// 返回值：1 成功、0 错误

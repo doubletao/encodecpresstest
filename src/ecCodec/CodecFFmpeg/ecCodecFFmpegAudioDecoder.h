@@ -38,7 +38,7 @@ public:
 public:
 	virtual bool InitAudioDecoder(const SDAudioMediaInfo &sAudioInfo);
 	virtual bool GetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo);
-	virtual bool SetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo);
+	virtual bool SetAudioMediaInfo(const SDAudioMediaInfo * pAudioInfo);
 	virtual bool PutFrame(const SD_UINT8* pData, const SDRFrameInfo* pFrameInfo);
 	virtual int  GetSample(SD_UINT8* &lpBuffer, SD_UINT32 nSampleNum);
 	virtual double GetCurrentMilSecTimestamp(int num, int den);

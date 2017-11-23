@@ -207,6 +207,7 @@ bool ecCodecFFmpegScaler::Release()
 	if (m_pScaleCtx)
 	{
 		sws_freeContext(m_pScaleCtx);
+		m_pScaleCtx = nullptr;
 	}
 	if (m_pScaleFrame)
 	{

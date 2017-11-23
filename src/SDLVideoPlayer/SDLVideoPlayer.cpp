@@ -51,3 +51,8 @@ int SDLVideoPlayer::PushAudioSample(unsigned char * data, int nBufSize)
 {
 	return StaticCast(m_wndPlayer)->PushAudioSample(data, nBufSize);
 }
+
+void SDLVideoPlayer::ResetPlayer()
+{
+	return StaticCast(m_wndPlayer)->ResetPlayer();
+}

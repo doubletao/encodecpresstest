@@ -108,6 +108,9 @@ AVCodecID FFmpegFormatCovert::ConvertCodecId(SD_AUDIO_TYPE emAudioType)
 	case SDAUDIOTYPE_WAVE_PCM:
 		codecId = AV_CODEC_ID_PCM_S16LE;
 		break;
+	case SDAUDIOTYPE_WAVE_PCM_32:
+		codecId = AV_CODEC_ID_PCM_S32LE;
+		break;
 	case SDAUDIOTYPE_MP1:
 		codecId = AV_CODEC_ID_MP1;
 		break;
@@ -171,6 +174,9 @@ SD_AUDIO_TYPE FFmpegFormatCovert::ConvertAudioType(AVCodecID emCodecID)
 	{
 	case AV_CODEC_ID_PCM_S16LE:
 		emAudioType = SDAUDIOTYPE_WAVE_PCM;
+		break;
+	case  AV_CODEC_ID_PCM_S32LE:
+		emAudioType = SDAUDIOTYPE_WAVE_PCM_32;
 		break;
 	case AV_CODEC_ID_MP1:
 		emAudioType = SDAUDIOTYPE_MP1;

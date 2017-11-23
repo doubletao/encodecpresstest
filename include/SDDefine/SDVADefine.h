@@ -2696,6 +2696,7 @@ enum SD_AUDIO_TYPE	// 音频编解码格式类型
 	SDAUDIOTYPE_UNKNOW				= 0x00000000,       // @emem  unknow type.
 	
 	SDAUDIOTYPE_WAVE_PCM			= 0x00000001,		// WAVE PCM 音频压缩方式
+	SDAUDIOTYPE_WAVE_PCM_32			= 0x00000011,		// WAVE PCM 音频压缩方式
 
 	SDAUDIOTYPE_MP1					= 0x00000004,		// MPEG1 音频 (Layer 1) 压缩方式
 	SDAUDIOTYPE_MP2					= 0x00000008,		// MPEG1 音频 (Layer 2) 压缩方式

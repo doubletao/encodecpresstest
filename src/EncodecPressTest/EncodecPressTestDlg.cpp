@@ -183,12 +183,15 @@ void CEncodecPressTestDlg::DoPlay()
 					int nWidth = 720;
 					int nHeight = 576;
 					SDStreamMediaInfoEx streamMediaInfoEx;
-					SDAudioSamplesBufInfo audioSamplesBufInfo;
-					audioSamplesBufInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
-					audioSamplesBufInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
-					audioSamplesBufInfo.dwSamplesPerSec = 48000;
-					audioSamplesBufInfo.dwChannels = 2;
-					pDecoder->SetAudioSamplesBufInfo(&audioSamplesBufInfo);
+					SDAudioMediaInfo audioInfo;
+					audioInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM_32;
+					audioInfo.dwBitsPerSample = 32;
+					audioInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
+					audioInfo.dwAvgBitsPerSec = audioInfo.dwSamplesPerSec*audioInfo.dwBitsPerSample*audioInfo.dwChannels;
+					audioInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
+					audioInfo.dwSamplesPerSec = 48000;
+					audioInfo.dwChannels = 2;
+					pDecoder->SetAudioSamplesBufInfo(&audioInfo);
 					if (pDecoder->GetFileGlobalMediaInfo(&streamMediaInfoEx))
 					{
 						m_nTimebaseDen = streamMediaInfoEx.sVideoMediaInfo.dwStandardRate;
@@ -214,7 +217,7 @@ void CEncodecPressTestDlg::DoPlay()
 							//每秒的视频帧数
 							double dFramePerSec = streamMediaInfoEx.sVideoMediaInfo.dwStandardRate * 1.0 / streamMediaInfoEx.sVideoMediaInfo.dwStandardScale;
 							//每秒的采样数
-							double dSamplePerSec = audioSamplesBufInfo.dwSamplesPerSec;
+							double dSamplePerSec = audioInfo.dwSamplesPerSec;
 							//每帧对应的sample数=每秒的采样数/每秒的视频帧数
 							SamplePerFrame = dSamplePerSec / dFramePerSec;
 						}
@@ -264,8 +267,17 @@ void CEncodecPressTestDlg::DoPlay()
 											imageBufInfo.dwScanXByteSize = nWidth * 2;
 											imageBufInfo.enumColorFormat = videoFrameImageBufInfo.enumColorFormat;
 											imageBufInfo.enumScanMode = SDVIDEOSCANMODE_FirstFieldTop;
+
+											SDAudioSamplesBufInfo audioBufInfo;
+											audioBufInfo.dwChannels = audioInfo.dwChannels;
+											audioBufInfo.dwBitsPerSample = audioInfo.dwBitsPerSample;
+											audioBufInfo.dwSamplesPerSec = audioInfo.dwSamplesPerSec;
+											audioBufInfo.dwAvgBitsPerSec = audioInfo.dwAvgBitsPerSec;
+											audioBufInfo.dwBlockAlign = audioInfo.dwBlockAlign;
+											audioBufInfo.enumAudioCFG = audioInfo.enumAudioCFG;
+											audioBufInfo.enumChannelSamplesFormat = audioInfo.enumChannelSamplesFormat;
 											//SResamplerPara resamplePara;
-											if (pEncoder->SetInputParam(imageBufInfo, audioSamplesBufInfo, bForbidLoseFrame))
+											if (pEncoder->SetInputParam(imageBufInfo, audioBufInfo, bForbidLoseFrame))
 											{
 												pEncoder->Start();
 											}
@@ -477,6 +489,7 @@ void CEncodecPressTestDlg::DoPlay()
 #endif
 
 				//干掉解码器
+				pDecoder->Release();
 				m_ecfactory->DeleteProtocolDecoder(pDecoder);
 				//干掉编码器
 				for (size_t i = 0; i < 8; i++)

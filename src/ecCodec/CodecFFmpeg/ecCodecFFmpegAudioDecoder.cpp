@@ -106,7 +106,7 @@ bool ecCodecFFmpegAudioDecoder::GetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo)
 	return false;
 }
 
-bool ecCodecFFmpegAudioDecoder::SetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo)
+bool ecCodecFFmpegAudioDecoder::SetAudioMediaInfo(const SDAudioMediaInfo * pAudioInfo)
 {
 	if (!pAudioInfo || !m_pCodecCtx) {
 		return false;

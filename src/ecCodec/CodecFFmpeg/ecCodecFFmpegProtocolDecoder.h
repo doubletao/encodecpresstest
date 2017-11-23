@@ -66,7 +66,7 @@ public:
 	virtual SD_UINT32 GetAudioBufferSize();
 	virtual bool SetVideoDecoderThread(SD_INT32 dwDecoderThread);
 	virtual SD_INT32 GetVideoDecoderThread();
-	virtual bool SetAudioSamplesBufInfo(const SDAudioSamplesBufInfo *pAudioBufInfo);
+	virtual bool SetAudioSamplesBufInfo(const SDAudioMediaInfo * pAudioInfo);
 	virtual bool GetAudioSamplesBufInfo(SDAudioSamplesBufInfo *pAudioBufInfo);
 	virtual bool GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex, SD_UINT8* pFrameBuf, SDRFrameInfo *pFrameInfo = NULL);
 	virtual bool GetVideoFrame(SD_UINT64 dwCurFrameStreamIndex, SD_UINT8* &pFrameBuf, SDRFrameInfo *pFrameInfo = NULL);
