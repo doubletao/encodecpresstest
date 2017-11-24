@@ -3,21 +3,15 @@ set OUT_DIR_PATH=%DIR_PATH%\release%date:~0,4%%date:~5,2%%date:~8,2%%tm1%%tm2%%t
 set SVNDIR="C:\Program Files\TortoiseSVN\bin"
 set VSINSTALLDIR="C:\Program Files (x86)\Microsoft Visual Studio 10.0"
 
-#@echo update working path...
-#@echo off
-#if not exist "%SVNDIR%\TortoiseProc.exe" goto StartDev
-#set SVN="%SVNDIR%\TortoiseProc.exe"
-#"%SVN%" /command:update /path:".\" /notempfile /closeonend:1
-#@echo %DIR_PATH% already updated
 goto StartDev
 
+@echo off
 :StartDev
-@echo   off
 rem set VC_PATH="C:\Program Files(x86)\Microsoft Visual Studio 10.0\Common7\IDE\"
 rem set VC_PATH="C:\Program Files(x86)\DevSoft\VC10\Common7\IDE\"
 cd /d $DIR_PATH$
 
-if not exist "%VSINSTALLDIR%\Common7\IDE\DEVENV.EXE" goto EnvError
+if not exist %VSINSTALLDIR%\Common7\IDE\DEVENV.EXE goto EnvError
 @SET DEVENV="%VSINSTALLDIR%\Common7\IDE\DEVENV.EXE"
 
 del ReleaseBuild.log
@@ -91,5 +85,11 @@ xcopy /E %DIR_PATH%\include\Player\* %OUT_DIR_PATH%\include\Player
 xcopy /E %DIR_PATH%\include\SDDefine\* %OUT_DIR_PATH%\include\SDDefine
 xcopy /E %DIR_PATH%\lib\ecCodec\* %OUT_DIR_PATH%\lib\ecCodec
 xcopy /E %DIR_PATH%\lib\Player\* %OUT_DIR_PATH%\lib\Player
+goto End
 
+:EnvError
+@echo cannot find DEVENV.EXE
+goto End
+
+:End
 pause
