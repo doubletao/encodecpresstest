@@ -92,8 +92,8 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath, void * 
 							videoInfo.dwHeight = pVideoCodecParm->height;
 							videoInfo.dwDataRateInBitsPerSec = (SD_UINT32)pVideoCodecParm->bit_rate;
 							videoInfo.enumVideoType = FFmpegFormatCovert::ConvertVideoCodecType(pVideoCodecParm->codec_id);
-							videoInfo.dwDisplayWidth = (SD_UINT32)(pVideoCodecParm->extradata);
-							videoInfo.dwDisplayHeight = pVideoCodecParm->extradata_size;
+							videoInfo.extradata = pVideoCodecParm->extradata;
+							videoInfo.extradata_size = pVideoCodecParm->extradata_size;
 							videoInfo.enumScanMode = FFmpegFormatCovert::ConvertVideoFieldOrder(pVideoCodecParm->field_order);
 							videoInfo.dwStandardScale = pVideoCodecParm->profile;
 							videoInfo.dwStandardRate = pVideoCodecParm->level;

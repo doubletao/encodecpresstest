@@ -37,8 +37,8 @@ bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(const SDVideoMediaInfo & pSrcVi
 			m_pCodecCtx->height = pSrcVideoInfo.dwHeight;
 			m_pCodecCtx->bit_rate = pSrcVideoInfo.dwDataRateInBitsPerSec;
 			m_pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
-			m_pCodecCtx->extradata = (uint8_t *)pSrcVideoInfo.dwDisplayWidth;
-			m_pCodecCtx->extradata_size = pSrcVideoInfo.dwDisplayHeight;
+			m_pCodecCtx->extradata = pSrcVideoInfo.extradata;
+			m_pCodecCtx->extradata_size = pSrcVideoInfo.extradata_size;
 			m_pCodecCtx->field_order = FFmpegFormatCovert::ConvertVideoFieldOrder(pSrcVideoInfo.enumScanMode);
 			m_pCodecCtx->profile = pSrcVideoInfo.dwStandardScale;
 			m_pCodecCtx->level = pSrcVideoInfo.dwStandardRate;

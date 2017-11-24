@@ -3681,6 +3681,8 @@ struct SDVideoMediaInfo	// 视频基本属性
 	SD_UINT32				dwMinDataRateInBitsPerSec;	// 最小码率, based on *****bits/S******
 	SD_UINT8				dwH264EncoderLevel;	//H264编码级别，范围1-9，默认5，1最慢质量最高，9最快质量最低（仅对H264编码有效）
 	mutable SD_INT32		dwFlags;
+	SD_UINT8 *				extradata;
+	int						extradata_size;
 	
 	SDVideoMediaInfo()
 	{
@@ -3708,6 +3710,8 @@ struct SDVideoMediaInfo	// 视频基本属性
 		dwMinDataRateInBitsPerSec = 0;
 		dwFlags = 0;
 		dwH264EncoderLevel = 5;
+		extradata = nullptr;
+		extradata_size = 0;
 	};
 
 	SDVideoMediaInfo(const SDVideoMediaInfo &other)
@@ -3741,6 +3745,8 @@ struct SDVideoMediaInfo	// 视频基本属性
 		dwMinDataRateInBitsPerSec = other.dwMinDataRateInBitsPerSec;
 		dwFlags = other.dwFlags;
 		dwH264EncoderLevel = other.dwH264EncoderLevel;
+		extradata = other.extradata;
+		extradata_size = other.extradata_size;
 		return *this;
 	};
 
@@ -3785,9 +3791,11 @@ struct SDVideoMediaInfo	// 视频基本属性
 			return SD_FALSE;
 		if (dwMaxDataRateInBitsPerSec != other.dwMaxDataRateInBitsPerSec || dwMinDataRateInBitsPerSec != other.dwMinDataRateInBitsPerSec)
 			return SD_FALSE;
-		if (dwFlags != other.dwFlags || dwFlags != other.dwFlags)
+		if (dwFlags != other.dwFlags)
 			return SD_FALSE;
-		if (dwH264EncoderLevel != other.dwH264EncoderLevel || dwH264EncoderLevel != other.dwH264EncoderLevel)
+		if (dwH264EncoderLevel != other.dwH264EncoderLevel)
+			return SD_FALSE;
+		if (extradata != other.extradata || extradata_size != other.extradata_size)
 			return SD_FALSE;
 
 		return SD_TRUE;
@@ -3837,6 +3845,8 @@ struct SDVideoMediaInfo	// 视频基本属性
 		if (dwFlags != other.dwFlags || dwFlags != other.dwFlags)
 			return SD_TRUE;
 		if (dwH264EncoderLevel != other.dwH264EncoderLevel || dwH264EncoderLevel != other.dwH264EncoderLevel)
+			return SD_TRUE;
+		if (extradata != other.extradata || extradata_size != other.extradata_size)
 			return SD_TRUE;
 
 		return SD_FALSE;
@@ -3954,6 +3964,8 @@ struct SDVideoMediaInfo	// 视频基本属性
 
 					dwH264EncoderLevel = (SD_UINT8)((*((SD_UINT8 *)pbStruBuf)));
 					pbStruBuf += sizeof(SD_UINT8);
+
+
 				}
 				
 				return SD_TRUE;
