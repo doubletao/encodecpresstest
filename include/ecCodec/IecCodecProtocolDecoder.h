@@ -11,7 +11,7 @@ public:
 	// 说明：必须先调用该函数并调用成功，才能继续调用其它函数
 	// 参数：
 	// pFullPath 可能是本地文件或网络地址
-	virtual bool SetSourcePath(const char * pFullPath) = 0;
+	virtual bool SetSourcePath(const char * pFullPath, void * pUserParam = nullptr, PCALLBACKINTERRUPT pCallbackInterupt = nullptr) = 0;
 
 	// 设置输入回调
 	// 说明：主要供网络流使用，只有数据包而没有具体文件或流地址的情况下使用

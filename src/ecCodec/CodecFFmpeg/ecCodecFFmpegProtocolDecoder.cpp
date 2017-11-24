@@ -35,7 +35,7 @@ ecCodecFFmpegProtocolDecoder::~ecCodecFFmpegProtocolDecoder()
 	DeleteCriticalSection(&m_lock);
 }
 
-bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
+bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath, void * pUserParam/* = nullptr*/, PCALLBACKINTERRUPT pCallbackInterupt /*= nullptr*/)
 {
 	if (m_bIsInitialized)
 	{
@@ -68,6 +68,8 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath)
 		//解封装
 		if (avformat_open_input(&m_pFormatCtx, pFullPath, nullptr, &format_opts) == 0)
 		{
+			m_pFormatCtx->interrupt_callback.callback = pCallbackInterupt;
+			m_pFormatCtx->interrupt_callback.opaque = pUserParam;
 			//得到流数据
 			if (avformat_find_stream_info(m_pFormatCtx, nullptr) >= 0)
 			{
@@ -239,7 +241,7 @@ bool ecCodecFFmpegProtocolDecoder::SetSourceCallback(PCALLBACKREADPACKET pCallba
 		{
 			m_pFormatCtx->pb = avio;
 			m_pFormatCtx->interrupt_callback.callback = pCallbackInterupt;
-			m_pFormatCtx->interrupt_callback.opaque = this;
+			m_pFormatCtx->interrupt_callback.opaque = pUserParam;
 			if (avformat_open_input(&m_pFormatCtx, nullptr, nullptr, nullptr) >= 0)
 			{
 				//得到流数据
@@ -1261,7 +1263,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 		&& m_nAudioIndex > -1 && m_pFormatCtx->streams[m_nAudioIndex])
 	{
 		//计算条件是VA的stream都存在，此时才能计算
-		double dSamplePerSec = m_pFormatCtx->streams[m_nAudioIndex]->codecpar->sample_rate;//每秒sample数
+		double dSamplePerSec = m_nDesSamplePerSec;//每秒sample数
 		double dFramePerSec = m_pFormatCtx->streams[m_nVideoIndex]->r_frame_rate.num * 1.0 / m_pFormatCtx->streams[m_nVideoIndex]->r_frame_rate.den;//每秒的视频帧数
 		nSampleNum = dSamplePerSec / dFramePerSec;
 	}
@@ -1326,7 +1328,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 			int nEvenCount = 0;
 			int nTimeGap = 120;
 			//将视音频都向标准时间戳上靠，差距在指定时间以内，不予理会，指定时间以外，需要处理
-			int nLoopMax = 5;//每个循环最多走5次
+			int nLoopMax = 50;//每个循环最多走50次
 			while (abs(dAudioTm - dVideoTm) > nTimeGap && nLoopMax--)
 			{
 				if (dVideoTm - dAudioTm > nTimeGap)
