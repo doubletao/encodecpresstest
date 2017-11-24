@@ -1,14 +1,12 @@
 set DIR_PATH=%cd%
 set OUT_DIR_PATH=%DIR_PATH%\release%date:~0,4%%date:~5,2%%date:~8,2%%tm1%%tm2%%tm3%%time:~3,2%%time:~6,2%
 set SVNDIR="C:\Program Files\TortoiseSVN\bin"
-set VSINSTALLDIR="C:\Program Files (x86)\Microsoft Visual Studio 10.0"
+set VSINSTALLDIR="C:\Program Files (x86)\Microsoft Visual Studio 14.0"
 
 goto StartDev
 
 @echo off
 :StartDev
-rem set VC_PATH="C:\Program Files(x86)\Microsoft Visual Studio 10.0\Common7\IDE\"
-rem set VC_PATH="C:\Program Files(x86)\DevSoft\VC10\Common7\IDE\"
 cd /d $DIR_PATH$
 
 if not exist %VSINSTALLDIR%\Common7\IDE\DEVENV.EXE goto EnvError
