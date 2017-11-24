@@ -28,6 +28,7 @@ bool ecCodecFFmpegVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDestV
 
 	AVCodecID codecId = FFmpegFormatCovert::ConvertCodecId(pDestVideoInfo->enumVideoType);
 	AVCodec* pVideoEncoder = avcodec_find_encoder(codecId);
+	//AVCodec *  pVideoEncoder = avcodec_find_encoder_by_name("h264_qsv");
 	if (!pVideoEncoder) {
 		return false;
 	}

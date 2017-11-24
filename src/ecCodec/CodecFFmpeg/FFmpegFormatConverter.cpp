@@ -252,9 +252,9 @@ AVPixelFormat FFmpegFormatCovert::ConvertPixelFormat(SD_COLOR_FORMAT emColorForm
 	case SDCOLORFORMAT_YUVP_420:
 		pixelFormat = AV_PIX_FMT_YUV420P;
 		break;
-	//case SDCOLORFORMAT_YUVP_NV12:
-	//	pixelFormat = AV_PIX_FMT_NV12;
-	//	break;
+	case SDCOLORFORMAT_INTEL:
+		pixelFormat = AV_PIX_FMT_NV12;
+		break;
 	case SDCOLORFORMAT_YUVP_411:
 		pixelFormat = AV_PIX_FMT_YUV411P;
 		break;

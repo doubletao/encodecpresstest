@@ -276,6 +276,7 @@ void CEncodecPressTestDlg::DoPlay()
 										}
 
 										GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, nH264Level, streamInfo);
+										//streamInfo.sVideoMediaInfo.enumColorFormat = SDCOLORFORMAT_INTEL;
 										if (pEncoder->SetOutputVAParam(streamInfo, (cstrOutPath + ConverCStringToStdString(strFileName).c_str()).c_str()))
 										{
 											//设置视频编码输入格式
