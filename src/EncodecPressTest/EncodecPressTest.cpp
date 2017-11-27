@@ -1,6 +1,9 @@
 
 // EncodecPressTest.cpp : 定义应用程序的类行为。
 //
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 
 #include "stdafx.h"
 #include "EncodecPressTest.h"
@@ -27,6 +30,7 @@ CEncodecPressTestApp::CEncodecPressTestApp()
 
 	// TODO: 在此处添加构造代码，
 	// 将所有重要的初始化放置在 InitInstance 中
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 }
 
 

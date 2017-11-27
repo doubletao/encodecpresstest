@@ -1,3 +1,6 @@
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 #include "ecCodecFFmpegVideoDecoder.h"
 #include "FFmpegFormatConverter.h"
 #pragma comment(lib, "avcodec.lib")

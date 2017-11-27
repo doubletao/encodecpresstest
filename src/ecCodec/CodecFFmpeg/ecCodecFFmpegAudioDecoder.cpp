@@ -1,3 +1,6 @@
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 #include "ecCodecFFmpegAudioDecoder.h"
 #pragma comment(lib, "avcodec.lib")
 #pragma comment(lib, "avutil.lib")
@@ -296,7 +299,7 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 			fwrite(m_pSrcFrame->data[0], 1, m_pSrcFrame->linesize[0], fp_debug);
 			fclose(fp_debug);
 		}
-		int swr_size = m_AudioResampler.Resample(&lpBuffer, AVCODEC_MAX_AUDIO_FRAME_SIZE,
+		int swr_size = m_AudioResampler.Resample(&lpBuffer, nSampleNum * data_size * m_pSrcFrame->channels,
 			(const uint8_t **)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
 #endif
 

@@ -1,3 +1,6 @@
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 #include "ecCodecFactory.h"
 #include "SDVADefine.h"
 #include "SDVADefineEx.h"
