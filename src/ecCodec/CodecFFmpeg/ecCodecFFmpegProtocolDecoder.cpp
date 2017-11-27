@@ -65,11 +65,11 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath, void * 
 			av_dict_set(&format_opts,option_key,option_value,0); 
 		}
 
+		m_pFormatCtx->interrupt_callback.callback = pCallbackInterupt;
+		m_pFormatCtx->interrupt_callback.opaque = pUserParam;
 		//解封装
 		if (avformat_open_input(&m_pFormatCtx, pFullPath, nullptr, &format_opts) == 0)
 		{
-			m_pFormatCtx->interrupt_callback.callback = pCallbackInterupt;
-			m_pFormatCtx->interrupt_callback.opaque = pUserParam;
 			//得到流数据
 			if (avformat_find_stream_info(m_pFormatCtx, nullptr) >= 0)
 			{
@@ -1219,8 +1219,7 @@ bool ecCodecFFmpegProtocolDecoder::Release()
 	ReleaseVideoPackQue();
 	if (m_pFormatCtx)
 	{
-		avformat_free_context(m_pFormatCtx);
-		m_pFormatCtx = nullptr;
+		avformat_close_input(&m_pFormatCtx);
 	}
 	if (m_pAudioFifo)
 	{

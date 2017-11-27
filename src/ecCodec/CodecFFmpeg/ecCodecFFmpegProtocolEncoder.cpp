@@ -39,15 +39,13 @@ bool ecCodecFFmpegProtocolEncoder::SetSinkFile(const SDStreamMediaInfo * pStream
 
 	if (pStreamMediaInfo->dwVideoStreamCount > 0 && !CreateVideoStream(pStreamMediaInfo->sVideoMediaInfo)) 
 	{
-		avformat_free_context(m_pFormatCtx);
-		m_pFormatCtx = nullptr;
+		avformat_close_input(&m_pFormatCtx);
 		return false;
 	}
 
 	if (pStreamMediaInfo->dwAudioStreamCount > 0 && !CreateAudioStream(pStreamMediaInfo->sAudioMediaInfo))
 	{
-		avformat_free_context(m_pFormatCtx);
-		m_pFormatCtx = nullptr;
+		avformat_close_input(&m_pFormatCtx);
 		return false;
 	}
 
@@ -55,8 +53,7 @@ bool ecCodecFFmpegProtocolEncoder::SetSinkFile(const SDStreamMediaInfo * pStream
 	{
 		if (avio_open(&m_pFormatCtx->pb, pFileName, AVIO_FLAG_READ_WRITE) < 0)
 		{
-			avformat_free_context(m_pFormatCtx);
-			m_pFormatCtx = nullptr;
+			avformat_close_input(&m_pFormatCtx);
 			m_bWritable = false;
 			return false;
 		}
@@ -74,8 +71,7 @@ bool ecCodecFFmpegProtocolEncoder::SetSinkFile(const SDStreamMediaInfo * pStream
 		if (av_strerror(nRet, errbuf, sizeof(errbuf)) < 0)
 			strerror_s(errbuf, AVUNERROR(nRet));
 		avio_closep(&m_pFormatCtx->pb);
-		avformat_free_context(m_pFormatCtx);
-		m_pFormatCtx = nullptr;
+		avformat_close_input(&m_pFormatCtx);
 		return false;
 	}
 
@@ -312,8 +308,7 @@ bool ecCodecFFmpegProtocolEncoder::Release()
 		if (m_pFormatCtx->pb) {
 			avio_closep(&m_pFormatCtx->pb);
 		}
-		avformat_free_context(m_pFormatCtx);
-		m_pFormatCtx = nullptr;
+		avformat_close_input(&m_pFormatCtx);
 	}
 
 	return true;
