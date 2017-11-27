@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "EncodecThreader.h"
 
-static const int SAMPLE_SIZE = 8;
+static const int SAMPLE_SIZE = 4;
 
 EncodecThreader::EncodecThreader()
 	: m_pEncoder(nullptr)

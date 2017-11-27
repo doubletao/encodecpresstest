@@ -31,7 +31,7 @@ public:
 	virtual int GetUnCompressFrame(SD_UINT8* &lpFrameBuffer, SDRFrameInfo *pFrameInfo);
 	virtual bool GetVideoMediaInfo(SDVideoMediaInfo * mediaInfo);
 	virtual bool SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo *pOutBufInfo);
-	virtual double GetCurrentMilSecTimestamp(int num, int den);
+	virtual double GetCurrentMilSecTimestamp(int num, int den, uint64_t nStartTm);
 	virtual bool IsInitialized();
 	virtual SD_UINT32 GetBufferSize();
 	virtual bool Release();

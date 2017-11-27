@@ -326,7 +326,7 @@ bool ecCodecFFmpegVideoDecoder::Release()
 	return true;
 }
 
-double ecCodecFFmpegVideoDecoder::GetCurrentMilSecTimestamp(int num, int den)
+double ecCodecFFmpegVideoDecoder::GetCurrentMilSecTimestamp(int num, int den, uint64_t nStartTm)
 {
 	double dRet = 0.0f;
 	if (m_pFrame)
@@ -350,7 +350,7 @@ double ecCodecFFmpegVideoDecoder::GetCurrentMilSecTimestamp(int num, int den)
 		}
 		if (num > 0 && den > 0)
 		{
-			dRet = nPts * 1.0f * num / den;
+			dRet = (nPts + nStartTm) * 1.0f * num / den;
 		}
 	}
 	return dRet * 1000;

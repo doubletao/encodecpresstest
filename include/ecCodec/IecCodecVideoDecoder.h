@@ -29,7 +29,7 @@ public:
 	virtual int GetUnCompressFrame(SD_UINT8* &lpFrameBuffer, SDRFrameInfo *pFrameInfo) = 0;
 
 	// 取得最近一次数据的时间戳（单位：毫秒）
-	virtual double GetCurrentMilSecTimestamp(int num, int den) = 0;
+	virtual double GetCurrentMilSecTimestamp(int num, int den, uint64_t nStartTm) = 0;
 
 	// 得到解码的流信息
 	// 返回值：

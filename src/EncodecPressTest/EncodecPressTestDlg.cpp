@@ -226,7 +226,7 @@ void CEncodecPressTestDlg::DoPlay()
 
 						SD_UINT32 nVideoBufferSize = pDecoder->GetVideoBufferSize();
 						SD_UINT32 nAudioBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
-						//nAudioBufferSize = 1920 * 4;
+						nAudioBufferSize = 1920 * 4;
 						uint8_t * pVideoData = new uint8_t[nVideoBufferSize];
 						memset(pVideoData, 0, nVideoBufferSize * sizeof(uint8_t));
 						uint8_t * pAudioData = new uint8_t[nAudioBufferSize];

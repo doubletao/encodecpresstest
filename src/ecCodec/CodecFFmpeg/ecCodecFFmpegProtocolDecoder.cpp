@@ -1286,8 +1286,10 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 		{
 			int nVNum = 0;
 			int nVDen = 0;
+			int64_t nVStartTm = 0;
 			int nANum = 0;
 			int nADen = 0;
+			int64_t nAStartTm = 0;
 			//将音频时间戳当作标准时间戳，将视频往音频上靠拢
 			double dVideoTm = 0.0f;
 			double dAudioTm = 0.0f;
@@ -1298,7 +1300,8 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 				{
 					nVNum = pStream->time_base.num;
 					nVDen = pStream->time_base.den;
-					dVideoTm = m_VideoDecoder.GetCurrentMilSecTimestamp(nVNum, nVDen);
+					//nVStartTm = pStream->start_time;
+					dVideoTm = m_VideoDecoder.GetCurrentMilSecTimestamp(nVNum, nVDen, nVStartTm);
 				}
 			}
 			if (m_AudioDecoder.IsInitialized() && m_nAudioIndex > -1)
@@ -1308,7 +1311,8 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 				{
 					nANum = pStream->time_base.num;
 					nADen = pStream->time_base.den;
-					dAudioTm = m_AudioDecoder.GetCurrentMilSecTimestamp(nANum, nADen);
+					//nAStartTm = pStream->start_time;
+					dAudioTm = m_AudioDecoder.GetCurrentMilSecTimestamp(nANum, nADen, nAStartTm);
 				}
 			}
 #ifdef _DEBUG
@@ -1328,22 +1332,29 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 #endif
 #endif
 			int nEvenCount = 0;
-			int nTimeGap = 120;
+			int nTimeGapStd = 40;
 			//将视音频都向标准时间戳上靠，差距在指定时间以内，不予理会，指定时间以外，需要处理
-			int nLoopMax = 50;//每个循环最多走50次
-			while (abs(dAudioTm - dVideoTm) > nTimeGap && nLoopMax--)
+			int nLoopMax = 5000;//每个循环最多走50次
+			while (abs(dVideoTm - dAudioTm) > nTimeGapStd && nLoopMax--)
 			{
-				if (dVideoTm - dAudioTm > nTimeGap)
+				if (dVideoTm - dAudioTm > nTimeGapStd)
 				{
 					GetAudioSamples(-1, nSampleNum, pSamplesBuf, pdwRetSampleNum);
-					dAudioTm = m_AudioDecoder.GetCurrentMilSecTimestamp(nVNum, nVDen);
+					dAudioTm = m_AudioDecoder.GetCurrentMilSecTimestamp(nANum, nADen, nAStartTm);
+					//dAudioTm += 40;
+					OutputDebugStringA("drop one audio");
 				}
-				else if (dAudioTm - dVideoTm > nTimeGap)
+				else if (dAudioTm - dVideoTm > nTimeGapStd)
 				{
 					GetVideoBuffer(-1, pFrameBuf, &frameInfo);
-					dVideoTm = m_VideoDecoder.GetCurrentMilSecTimestamp(nVNum, nVDen);
+					dVideoTm = m_VideoDecoder.GetCurrentMilSecTimestamp(nVNum, nVDen, nVStartTm);
+					//dVideoTm += 40;
+					//OutputDebugStringA("drop one video");
 				}
 			}
+			//char szOutput[256];
+			//sprintf_s(szOutput, 256, "dVideoTm=%f, dAudioTm=%f, gap=%f, startgap=%ld\r\n", dVideoTm, dAudioTm, dVideoTm - dAudioTm, nVStartTm - nAStartTm);
+			//OutputDebugStringA(szOutput);
 			return true;
 		}
 	}

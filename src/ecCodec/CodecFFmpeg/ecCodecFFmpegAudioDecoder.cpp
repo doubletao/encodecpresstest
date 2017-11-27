@@ -17,6 +17,7 @@ ecCodecFFmpegAudioDecoder::ecCodecFFmpegAudioDecoder()
 	, m_nDesSampleRate(0)
 	, m_nDesChannelCount(0)
 	, m_nLastSampleNum(0)
+	, m_pAudioResBuf(nullptr)
 #ifndef DEBUG_USE_RESAMPLER
 	, m_pSwrFrame(nullptr)
 	, m_pSwrCtx(nullptr)
@@ -287,7 +288,6 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 		}
 		int swr_size = m_AudioResampler.Resample(lpBuffer, lpBuffer);
 #else
-		int data_size = av_get_bytes_per_sample((AVSampleFormat)m_pSrcFrame->format);
 		//FFmpegFormatCovert::ConvertPDataToBuffer(m_pSrcFrame->data, &m_pSrcFrame->nb_samples, lpBuffer, nSampleNum * data_size,
 		//	(AVSampleFormat)m_pSrcFrame->format, 2, m_pSrcFrame->nb_samples);
 		if (0)
@@ -299,11 +299,15 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 			fwrite(m_pSrcFrame->data[0], 1, m_pSrcFrame->linesize[0], fp_debug);
 			fclose(fp_debug);
 		}
-		int swr_size = m_AudioResampler.Resample(&lpBuffer, nSampleNum * data_size * m_pSrcFrame->channels,
+		if (nullptr == m_pAudioResBuf)
+		{
+			m_pAudioResBuf = new SD_UINT8[AVCODEC_MAX_AUDIO_FRAME_SIZE];
+		}
+		int swr_size = m_AudioResampler.Resample(&m_pAudioResBuf, AVCODEC_MAX_AUDIO_FRAME_SIZE,
 			(const uint8_t **)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
 #endif
 
-		av_audio_fifo_write(m_pAudioFifo, (void**)&lpBuffer, swr_size);
+		av_audio_fifo_write(m_pAudioFifo, (void**)&m_pAudioResBuf, swr_size);
 	}
 #else
 	if (m_pSwrCtx && m_pSwrFrame)
@@ -340,6 +344,10 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 		av_audio_fifo_write(m_pAudioFifo, (void**)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
 	}
 
+	//int nDebug = av_audio_fifo_size(m_pAudioFifo);
+	//char szOutput[256];
+	//sprintf_s(szOutput, 256, "nDebug=%d\r\n", nDebug);
+	//OutputDebugStringA(szOutput);
 	if (av_audio_fifo_size(m_pAudioFifo) >= nSampleNum)
 	{
 		av_audio_fifo_read(m_pAudioFifo, (void **)&lpBuffer, nSampleNum);
@@ -404,11 +412,16 @@ bool ecCodecFFmpegAudioDecoder::Release()
 		swr_free(&m_pSwrCtx);
 	}
 #endif
+	if (m_pAudioResBuf)
+	{
+		delete[] m_pAudioResBuf;
+		m_pAudioResBuf = nullptr;
+	}
 	m_bIsInitialized = false;
 	return true;
 }
 
-double ecCodecFFmpegAudioDecoder::GetCurrentMilSecTimestamp(int num, int den)
+double ecCodecFFmpegAudioDecoder::GetCurrentMilSecTimestamp(int num, int den, uint64_t nStartTm)
 {
 	double dRet = 0.0f;
 	if (m_pSrcFrame)
@@ -430,9 +443,15 @@ double ecCodecFFmpegAudioDecoder::GetCurrentMilSecTimestamp(int num, int den)
 		{
 			nPts = AV_NOPTS_VALUE;
 		}
+		//考虑当前缓冲区中音频数
+		if (m_pAudioFifo)
+		{
+			int nBufSample = av_audio_fifo_size(m_pAudioFifo);
+			dRet = nBufSample * 1.0 / m_nDesSampleRate;
+		}
 		if (num > 0 && den > 0)
 		{
-			dRet = nPts * 1.0f * num / den;
+			dRet += (nPts + nStartTm) * 1.0f * num / den;
 		}
 	}
 	return dRet * 1000;

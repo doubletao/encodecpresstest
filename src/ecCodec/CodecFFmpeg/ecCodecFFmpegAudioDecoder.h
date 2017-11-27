@@ -26,6 +26,7 @@ private:
 	SD_INT32 m_nDesSampleRate;
 	SD_INT32 m_nDesChannelCount;
 	SD_INT32 m_nLastSampleNum;
+	SD_UINT8 * m_pAudioResBuf;
 #ifdef DEBUG_USE_RESAMPLER
 	ecCodecFFmpegResampler m_AudioResampler;
 #else
@@ -41,7 +42,7 @@ public:
 	virtual bool SetAudioMediaInfo(const SDAudioMediaInfo * pAudioInfo);
 	virtual bool PutFrame(const SD_UINT8* pData, const SDRFrameInfo* pFrameInfo);
 	virtual int  GetSample(SD_UINT8* &lpBuffer, SD_UINT32 nSampleNum);
-	virtual double GetCurrentMilSecTimestamp(int num, int den);
+	virtual double GetCurrentMilSecTimestamp(int num, int den, uint64_t nStartTm);
 	virtual SD_UINT32 GetBufferSize();
 	virtual bool IsInitialized();
 	virtual bool Release();

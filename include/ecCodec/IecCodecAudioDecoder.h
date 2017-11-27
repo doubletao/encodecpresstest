@@ -26,7 +26,7 @@ public:
 	virtual int  GetSample(SD_UINT8* &lpBuffer, SD_UINT32 nSampleNum) = 0;
 
 	// 取得最近一次数据的时间戳（单位：毫秒）
-	virtual double GetCurrentMilSecTimestamp(int num, int den) = 0;
+	virtual double GetCurrentMilSecTimestamp(int num, int den, uint64_t nStartTm) = 0;
 
 	//得到buffer大小
 	virtual SD_UINT32 GetBufferSize() = 0;
