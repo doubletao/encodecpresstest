@@ -27,6 +27,7 @@ private:
 	SD_INT32 m_nDesChannelCount;
 	SD_INT32 m_nLastSampleNum;
 	SD_UINT8 * m_pAudioResBuf;
+	uint64_t m_nLastPts;
 #ifdef DEBUG_USE_RESAMPLER
 	ecCodecFFmpegResampler m_AudioResampler;
 #else

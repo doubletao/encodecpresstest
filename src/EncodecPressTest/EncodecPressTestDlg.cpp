@@ -224,14 +224,6 @@ void CEncodecPressTestDlg::DoPlay()
 						videoFrameImageBufInfo.enumColorFormat = SDCOLORFORMAT_UYVY;// streamMediaInfoEx.sVideoMediaInfo.enumColorFormat;
 						bContinue = pDecoder->SetVideoFrameBufInfo(&videoFrameImageBufInfo, nullptr);
 
-						SD_UINT32 nVideoBufferSize = pDecoder->GetVideoBufferSize();
-						SD_UINT32 nAudioBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
-						nAudioBufferSize = 1920 * 4;
-						uint8_t * pVideoData = new uint8_t[nVideoBufferSize];
-						memset(pVideoData, 0, nVideoBufferSize * sizeof(uint8_t));
-						uint8_t * pAudioData = new uint8_t[nAudioBufferSize];
-						memset(pAudioData, 0, nAudioBufferSize * sizeof(uint8_t));
-						SD_UINT32 numAudioSample = 0;
 						//根据帧率及采样率来算出每帧对应的sample数
 						SD_UINT32 SamplePerFrame = 2048;
 						{
@@ -242,6 +234,16 @@ void CEncodecPressTestDlg::DoPlay()
 							//每帧对应的sample数=每秒的采样数/每秒的视频帧数
 							SamplePerFrame = dSamplePerSec / dFramePerSec;
 						}
+
+						SD_UINT32 nVideoBufferSize = pDecoder->GetVideoBufferSize();
+						SD_UINT32 nAudioBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+						nAudioBufferSize = SamplePerFrame * 4;
+						uint8_t * pVideoData = new uint8_t[nVideoBufferSize];
+						memset(pVideoData, 0, nVideoBufferSize * sizeof(uint8_t));
+						uint8_t * pAudioData = new uint8_t[nAudioBufferSize];
+						memset(pAudioData, 0, nAudioBufferSize * sizeof(uint8_t));
+						SD_UINT32 numAudioSample = 0;
+						
 						bool bFirst = false;
 						m_ctrSlider.SetRange(0, streamMediaInfoEx.dwVideoFrameNum);
 						m_ctrSlider.SetTicFreq(streamMediaInfoEx.dwVideoFrameNum / 100.0);

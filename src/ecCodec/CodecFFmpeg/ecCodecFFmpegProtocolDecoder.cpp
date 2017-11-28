@@ -891,11 +891,37 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 	bool bRet = false;
 	if (dwSampleNum > 0)
 	{
-		if (dwCurSamplePos >= 0)
+		if (dwCurSamplePos >= 0 && m_bIsInitialized)
 		{
-			if (m_bIsInitialized && (m_AudioDecoder.IsInitialized()
+			//有一种情况是视音频存储相对比较集中，音频frame已经读完了（在缓冲队列里了）视频还有很多，此时应该检查一下解码器里还有没有东西
+			//产生这种情况的原因是音频做了双重缓冲，除了读文件时的frame队列，还存在一个fifo的输出缓冲，可能有一批已经解码完成的音频还没被取走，而视频不存在输出缓冲，所以不存在这种问题
+			//所以对于非seek的情况，应该先尝试从缓冲中读取数据
+			if (m_AudioDecoder.IsInitialized())
+			{
+				//对于音频来说，gap单位为毫秒，100毫秒以内都视为顺播
+				int64_t nSeekGap = 0;
+				if (dwCurSamplePos != (SD_UINT32)-1 && m_nSrcSamplePerSec > 0)
+				{
+					nSeekGap = dwCurSamplePos - m_nCurrentSample;
+					nSeekGap = nSeekGap * 1000.0 / m_nDesSamplePerSec;
+				}
+				if (abs(nSeekGap) <= 100)
+				{
+					int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf, dwSampleNum);
+					if (nBufferSize > 0)
+					{
+						m_nCurrentSample = dwCurSamplePos;
+						if (pdwRetSampleNum)
+						{
+							*pdwRetSampleNum = nBufferSize;
+						}
+						return true;
+					}
+				}
+			}
+			if (m_AudioDecoder.IsInitialized()
 				|| (m_pFormatCtx && m_nAudioIndex > -1
-				&& AV_CODEC_ID_FIRST_AUDIO == m_pFormatCtx->streams[m_nAudioIndex]->codecpar->codec_id)))
+				&& AV_CODEC_ID_FIRST_AUDIO == m_pFormatCtx->streams[m_nAudioIndex]->codecpar->codec_id))
 			{
 				SDRFrameInfo frameInfo;
 				SD_UINT8 * pCompressFrame = nullptr;
@@ -979,24 +1005,6 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 						else
 						{
 							return false;
-						}
-					}
-				}
-				//有一种情况是视音频存储相对比较集中，音频frame已经读完了（在缓冲队列里了）视频还有很多，此时应该检查一下解码器里还有没有东西
-				//产生这种情况的原因是音频做了双重缓冲，除了读文件时的frame队列，还存在一个fifo的输出缓冲，可能有一批已经解码完成的音频还没被取走，而视频不存在输出缓冲，所以不存在这种问题
-				if (m_AudioDecoder.IsInitialized())
-				{
-					int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf, dwSampleNum);
-					if (nBufferSize > 0)
-					{
-						m_nCurrentSample = dwCurSamplePos;
-						if (pdwRetSampleNum)
-						{
-							*pdwRetSampleNum = nBufferSize;
-						}
-						if (!m_bVideoSeek)
-						{
-							return true;
 						}
 					}
 				}
@@ -1334,7 +1342,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 			int nEvenCount = 0;
 			int nTimeGapStd = 40;
 			//将视音频都向标准时间戳上靠，差距在指定时间以内，不予理会，指定时间以外，需要处理
-			int nLoopMax = 5000;//每个循环最多走50次
+			int nLoopMax = 500;//每个循环最多走500次
 			while (abs(dVideoTm - dAudioTm) > nTimeGapStd && nLoopMax--)
 			{
 				if (dVideoTm - dAudioTm > nTimeGapStd)

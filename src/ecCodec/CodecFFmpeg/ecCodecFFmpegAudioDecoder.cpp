@@ -18,6 +18,7 @@ ecCodecFFmpegAudioDecoder::ecCodecFFmpegAudioDecoder()
 	, m_nDesChannelCount(0)
 	, m_nLastSampleNum(0)
 	, m_pAudioResBuf(nullptr)
+	, m_nLastPts(0)
 #ifndef DEBUG_USE_RESAMPLER
 	, m_pSwrFrame(nullptr)
 	, m_pSwrCtx(nullptr)
@@ -246,6 +247,23 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 		return -2;
 	}
 
+	if (m_pSrcFrame->pts != AV_NOPTS_VALUE)
+	{
+		m_nLastPts = m_pSrcFrame->pts;
+	}
+	else if (m_pSrcFrame->pkt_dts != AV_NOPTS_VALUE)
+	{
+		m_nLastPts = m_pSrcFrame->pkt_dts;
+	}
+	else if (m_pSrcFrame->opaque && *(uint64_t*)m_pSrcFrame->opaque != AV_NOPTS_VALUE)
+	{
+		m_nLastPts = *(uint64_t *)m_pSrcFrame->opaque;
+	}
+	else
+	{
+		m_nLastPts = AV_NOPTS_VALUE;
+	}
+
 	if (nSampleNum != m_nLastSampleNum)
 	{
 		if (m_pAudioFifo)
@@ -413,6 +431,7 @@ bool ecCodecFFmpegAudioDecoder::Release()
 		delete[] m_pAudioResBuf;
 		m_pAudioResBuf = nullptr;
 	}
+	m_nLastPts = 0;
 	m_bIsInitialized = false;
 	return true;
 }
@@ -422,23 +441,6 @@ double ecCodecFFmpegAudioDecoder::GetCurrentMilSecTimestamp(int num, int den, ui
 	double dRet = 0.0f;
 	if (m_pSrcFrame)
 	{
-		uint64_t nPts = 0;
-		if (m_pSrcFrame->pts != AV_NOPTS_VALUE)
-		{
-			nPts = m_pSrcFrame->pts;
-		}
-		else if (m_pSrcFrame->pkt_dts != AV_NOPTS_VALUE)
-		{
-			nPts = m_pSrcFrame->pkt_dts;
-		}
-		else if (m_pSrcFrame->opaque && *(uint64_t*)m_pSrcFrame->opaque != AV_NOPTS_VALUE)
-		{
-			nPts = *(uint64_t *)m_pSrcFrame->opaque;
-		}
-		else
-		{
-			nPts = AV_NOPTS_VALUE;
-		}
 		//考虑当前缓冲区中音频数
 		double dBufTm = 0.0f;
 		if (m_pAudioFifo)
@@ -452,7 +454,7 @@ double ecCodecFFmpegAudioDecoder::GetCurrentMilSecTimestamp(int num, int den, ui
 		}
 		if (num > 0 && den > 0)
 		{
-			dRet = (nPts + nStartTm) * 1.0f * num / den - dBufTm;
+			dRet = (m_nLastPts + nStartTm) * 1.0f * num / den - dBufTm;
 		}
 	}
 	return dRet * 1000;
