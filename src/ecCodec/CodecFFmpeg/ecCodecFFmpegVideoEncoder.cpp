@@ -30,14 +30,23 @@ bool ecCodecFFmpegVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDestV
 		return false;
 
 	AVCodecID codecId = FFmpegFormatCovert::ConvertCodecId(pDestVideoInfo->enumVideoType);
-	AVCodec* pVideoEncoder = avcodec_find_encoder(codecId);
-	//AVCodec *  pVideoEncoder = avcodec_find_encoder_by_name("h264_qsv");
-	if (!pVideoEncoder) {
+	AVCodec* pVideoEncoder = nullptr;
+	if (AV_CODEC_ID_H264 == codecId && SDCOLORFORMAT_INTEL == pDestVideoInfo->enumColorFormat)
+	{
+		pVideoEncoder = avcodec_find_encoder_by_name("h264_qsv");
+	}
+	else
+	{
+		pVideoEncoder = avcodec_find_encoder(codecId);
+	}
+	if (!pVideoEncoder) 
+	{
 		return false;
 	}
 
 	m_pCodecCtx = avcodec_alloc_context3(pVideoEncoder);
-	if (!m_pCodecCtx) {
+	if (!m_pCodecCtx) 
+	{
 		return false;
 	}
 
@@ -76,7 +85,8 @@ bool ecCodecFFmpegVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDestV
 	}
 
 	int ret = avcodec_open2(m_pCodecCtx, pVideoEncoder, nullptr);
-	if (ret < 0) {
+	if (ret < 0) 
+	{
 		char errbuf[128] = { 0 };
 		const char *errbuf_ptr = errbuf;
 		if (av_strerror(ret, errbuf, sizeof(errbuf)) < 0)
@@ -92,7 +102,8 @@ bool ecCodecFFmpegVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDestV
 
 bool ecCodecFFmpegVideoEncoder::SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo * pVideoBufInfo)
 {
-	if (!pVideoBufInfo || !m_pCodecCtx) {
+	if (!pVideoBufInfo || !m_pCodecCtx) 
+	{
 		return false;
 	}
 
@@ -104,13 +115,15 @@ bool ecCodecFFmpegVideoEncoder::SetVideoFrameBufInfo(const SDVideoFrameImageBufI
 
 	int ret = av_image_alloc(m_pSourceFrame->data, m_pSourceFrame->linesize,
 		pVideoBufInfo->dwXSize, pVideoBufInfo->dwYSize, pixelFormat, 4);
-	if (ret < 0) {
+	if (ret < 0) 
+	{
 		return false;
 	}
 
 	bool bScale = (pVideoBufInfo->dwXSize != m_pCodecCtx->width ||
 		pVideoBufInfo->dwYSize != m_pCodecCtx->height || pixelFormat != m_pCodecCtx->pix_fmt);
-	if (!bScale) {	// 无需缩放直接返回
+	if (!bScale) 
+	{	// 无需缩放直接返回
 		return true;
 	}
 
@@ -121,14 +134,16 @@ bool ecCodecFFmpegVideoEncoder::SetVideoFrameBufInfo(const SDVideoFrameImageBufI
 
 	ret = av_image_alloc(m_pScaleFrame->data, m_pScaleFrame->linesize,
 		m_pCodecCtx->width, m_pCodecCtx->height, (AVPixelFormat)m_pScaleFrame->format, 4);
-	if (ret < 0) {
+	if (ret < 0) 
+	{
 		return false;
 	}
 
 	m_pSwsCtx = sws_getContext(pVideoBufInfo->dwXSize, pVideoBufInfo->dwYSize, pixelFormat,
 		m_pCodecCtx->width, m_pCodecCtx->height, m_pCodecCtx->pix_fmt,
 		SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
-	if (!m_pSwsCtx) {
+	if (!m_pSwsCtx) 
+	{
 		return false;
 	}
 
@@ -193,7 +208,8 @@ bool ecCodecFFmpegVideoEncoder::PutFrame(const SD_UINT8 * pFrameBuffer, const SD
 	}
 
 	int ret = avcodec_send_frame(m_pCodecCtx, pSourceFrame);
-	if (ret < 0) {
+	if (ret < 0) 
+	{
 		char errbuf[128] = { 0 };
 		const char *errbuf_ptr = errbuf;
 		if (av_strerror(ret, errbuf, sizeof(errbuf)) < 0)

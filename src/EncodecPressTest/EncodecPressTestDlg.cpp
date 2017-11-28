@@ -1329,9 +1329,13 @@ SD_VIDEO_TYPE CEncodecPressTestDlg::GetCodecVideoType(int nIndex)
 		{
 			emRet = SDVIDEOTYPE_MPEG4;
 		}
-		else
+		else if (nSel == 2)
 		{
 			emRet = SDVIDEOTYPE_MPEG2_IFRAME;
+		}
+		else if (nSel == 3)
+		{
+			emRet = SDVIDEOTYPE_H264_INTEL;
 		}
 	}
 	return emRet;
@@ -1348,9 +1352,13 @@ SD_COLOR_FORMAT CEncodecPressTestDlg::GetCodecColorFmt(int nIndex)
 		{
 			emRet = SDCOLORFORMAT_YUVP_420;
 		}
-		else
+		else if (nSel == 1)
 		{
 			emRet = SDCOLORFORMAT_YUVP_422;
+		}
+		else
+		{
+			emRet = SDCOLORFORMAT_INTEL;
 		}
 	}
 	return emRet;
@@ -1456,6 +1464,10 @@ CString CEncodecPressTestDlg::GenerateFileInfoName(SD_VIDEO_STANDARD emVideoStan
 		strFileName.AppendFormat(_T("_H264"));
 		strFileName.AppendFormat(_T("_%d"), nH264Level);
 		break;
+	case SDVIDEOTYPE_H264_INTEL:
+		strFileName.AppendFormat(_T("_Intel264"));
+		strFileName.AppendFormat(_T("_%d"), nH264Level);
+		break;
 	default:
 		break;
 	}
@@ -1466,6 +1478,9 @@ CString CEncodecPressTestDlg::GenerateFileInfoName(SD_VIDEO_STANDARD emVideoStan
 		break;
 	case SDCOLORFORMAT_YUVP_420:
 		strFileName.AppendFormat(_T("_YUV420p"));
+		break;
+	case SDCOLORFORMAT_INTEL:
+		strFileName.AppendFormat(_T("_Intel_NV12"));
 		break;
 	default:
 		break;

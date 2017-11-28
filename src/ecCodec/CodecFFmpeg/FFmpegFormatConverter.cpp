@@ -77,6 +77,9 @@ AVCodecID FFmpegFormatCovert::ConvertCodecId(SD_VIDEO_TYPE emVideoType)
 	case SDVIDEOTYPE_H264:
 		codecId = AV_CODEC_ID_H264;
 		break;
+	case SDVIDEOTYPE_H264_INTEL:
+		codecId = AV_CODEC_ID_H264;
+		break;
 	case SDVIDEOTYPE_H265:
 		codecId = AV_CODEC_ID_H265;
 		break;
@@ -600,9 +603,9 @@ SD_COLOR_FORMAT FFmpegFormatCovert::ConvertColorFormat(AVPixelFormat pixelFormat
 	case AV_PIX_FMT_YUV420P:
 		emColorFormat = SDCOLORFORMAT_YUVP_420;
 		break;
-		//case SDCOLORFORMAT_YUVP_NV12:
-		//	pixelFormat = AV_PIX_FMT_NV12;
-		//	break;
+	case AV_PIX_FMT_NV12:
+		emColorFormat = SDCOLORFORMAT_INTEL;
+		break;
 	case AV_PIX_FMT_YUV411P:
 		emColorFormat = SDCOLORFORMAT_YUVP_411;
 		break;

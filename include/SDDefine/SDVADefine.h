@@ -2557,6 +2557,8 @@ enum SD_VIDEO_TYPE		// 视频编码格式类型
 	
 	SDVIDEOTYPE_GIA						= 0x20000000,	// EasyCode定义---Graphics Image of ALPHA
 	SDVIDEOTYPE_LOSSLESS           		= 0x80000000,	// EasyCode无损压缩格式
+
+	SDVIDEOTYPE_H264_INTEL				= 0x00000011,	// H264压缩格式intel编码器
 };
 
 //得到视频编码格式类型的名称
