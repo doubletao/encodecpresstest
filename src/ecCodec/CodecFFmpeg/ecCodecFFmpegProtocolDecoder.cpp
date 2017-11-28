@@ -269,8 +269,8 @@ bool ecCodecFFmpegProtocolDecoder::SetSourceCallback(PCALLBACKREADPACKET pCallba
 								videoInfo.dwHeight = pVideoCodecParm->height;
 								videoInfo.dwDataRateInBitsPerSec = (SD_UINT32)pVideoCodecParm->bit_rate;
 								videoInfo.enumVideoType = FFmpegFormatCovert::ConvertVideoCodecType(pVideoCodecParm->codec_id);
-								videoInfo.dwDisplayWidth = (SD_UINT32)(pVideoCodecParm->extradata);
-								videoInfo.dwDisplayHeight = pVideoCodecParm->extradata_size;
+								videoInfo.extradata = pVideoCodecParm->extradata;
+								videoInfo.extradata_size = pVideoCodecParm->extradata_size;
 								videoInfo.enumScanMode = FFmpegFormatCovert::ConvertVideoFieldOrder(pVideoCodecParm->field_order);
 								videoInfo.dwStandardScale = pVideoCodecParm->profile;
 								videoInfo.dwStandardRate = pVideoCodecParm->level;
@@ -1246,8 +1246,8 @@ bool ecCodecFFmpegProtocolDecoder::Release()
 	m_bVideoSeek = false;
 	m_nCurrentAudioSeekPos = 0;
 	m_bAudioSeek = false;
-	av_free(m_pAvIoBuffer);
-	m_pAvIoBuffer = nullptr;
+	//av_free(m_pAvIoBuffer);
+	//m_pAvIoBuffer = nullptr;
 	return true;
 }
 
@@ -1340,7 +1340,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 #endif
 #endif
 			int nEvenCount = 0;
-			int nTimeGapStd = 40;
+			int nTimeGapStd = 120;
 			//将视音频都向标准时间戳上靠，差距在指定时间以内，不予理会，指定时间以外，需要处理
 			int nLoopMax = 500;//每个循环最多走500次
 			while (abs(dVideoTm - dAudioTm) > nTimeGapStd && nLoopMax--)
@@ -1350,14 +1350,14 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 					GetAudioSamples(-1, nSampleNum, pSamplesBuf, pdwRetSampleNum);
 					dAudioTm = m_AudioDecoder.GetCurrentMilSecTimestamp(nANum, nADen, nAStartTm);
 					//dAudioTm += 40;
-					OutputDebugStringA("drop one audio");
+					OutputDebugStringA("drop one audio\n");
 				}
 				else if (dAudioTm - dVideoTm > nTimeGapStd)
 				{
 					GetVideoBuffer(-1, pFrameBuf, &frameInfo);
 					dVideoTm = m_VideoDecoder.GetCurrentMilSecTimestamp(nVNum, nVDen, nVStartTm);
 					//dVideoTm += 40;
-					OutputDebugStringA("drop one video");
+					OutputDebugStringA("drop one video\n");
 				}
 			}
 			char szOutput[256];

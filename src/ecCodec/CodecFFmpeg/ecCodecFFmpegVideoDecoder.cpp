@@ -143,8 +143,26 @@ bool ecCodecFFmpegVideoDecoder::PutVideoFrame(const SD_UINT8 * pFrameBuffer, con
 	avpkt.pts = pFrameInfo->qwPTS;
 	avpkt.duration = pFrameInfo->qwDuration;
 
-	if (avcodec_send_packet(m_pCodecCtx, &avpkt) < 0) {
+	int nRet = avcodec_send_packet(m_pCodecCtx, &avpkt);
+	if (nRet < 0) 
+	{
 		av_packet_unref(&avpkt);
+		if (nRet == AVERROR(EAGAIN))
+		{
+			return false;
+		}
+		else if (nRet == AVERROR(EAGAIN))
+		{
+			return false;
+		}
+		else if (nRet == AVERROR(ENOMEM))
+		{
+			return false;
+		}
+		else if (nRet == AVERROR_EOF)
+		{
+			return false;
+		}
 		return false;
 	}
 	av_packet_unref(&avpkt);
