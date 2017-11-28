@@ -1349,12 +1349,12 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 					GetVideoBuffer(-1, pFrameBuf, &frameInfo);
 					dVideoTm = m_VideoDecoder.GetCurrentMilSecTimestamp(nVNum, nVDen, nVStartTm);
 					//dVideoTm += 40;
-					//OutputDebugStringA("drop one video");
+					OutputDebugStringA("drop one video");
 				}
 			}
-			//char szOutput[256];
-			//sprintf_s(szOutput, 256, "dVideoTm=%f, dAudioTm=%f, gap=%f, startgap=%ld\r\n", dVideoTm, dAudioTm, dVideoTm - dAudioTm, nVStartTm - nAStartTm);
-			//OutputDebugStringA(szOutput);
+			char szOutput[256];
+			sprintf_s(szOutput, 256, "dVideoTm=%f, dAudioTm=%f, gap=%f, startgap=%ld\r\n", dVideoTm, dAudioTm, dVideoTm - dAudioTm, nVStartTm - nAStartTm);
+			OutputDebugStringA(szOutput);
 			return true;
 		}
 	}

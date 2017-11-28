@@ -344,10 +344,6 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 		av_audio_fifo_write(m_pAudioFifo, (void**)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
 	}
 
-	//int nDebug = av_audio_fifo_size(m_pAudioFifo);
-	//char szOutput[256];
-	//sprintf_s(szOutput, 256, "nDebug=%d\r\n", nDebug);
-	//OutputDebugStringA(szOutput);
 	if (av_audio_fifo_size(m_pAudioFifo) >= nSampleNum)
 	{
 		av_audio_fifo_read(m_pAudioFifo, (void **)&lpBuffer, nSampleNum);
@@ -444,14 +440,19 @@ double ecCodecFFmpegAudioDecoder::GetCurrentMilSecTimestamp(int num, int den, ui
 			nPts = AV_NOPTS_VALUE;
 		}
 		//考虑当前缓冲区中音频数
+		double dBufTm = 0.0f;
 		if (m_pAudioFifo)
 		{
 			int nBufSample = av_audio_fifo_size(m_pAudioFifo);
-			dRet = nBufSample * 1.0 / m_nDesSampleRate;
+			dBufTm = nBufSample * 1.0 / m_nDesSampleRate;
+
+			char szOutput[256];
+			sprintf_s(szOutput, 256, "av_audio_fifo_size=%d, dBufTm=%f\r\n", nBufSample, dBufTm);
+			OutputDebugStringA(szOutput);
 		}
 		if (num > 0 && den > 0)
 		{
-			dRet += (nPts + nStartTm) * 1.0f * num / den;
+			dRet = (nPts + nStartTm) * 1.0f * num / den - dBufTm;
 		}
 	}
 	return dRet * 1000;
