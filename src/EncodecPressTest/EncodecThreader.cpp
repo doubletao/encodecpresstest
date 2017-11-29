@@ -55,8 +55,14 @@ bool EncodecThreader::DoEncodec()
 			if (m_vaLoop.Pop(vaTmp))
 			{
 				frameInfoTmp.iSize = vaTmp.m_nVideoSize;// 帧数据大小		4---16
-				m_pEncoder->PutVideoBuffer(vaTmp.m_pVideoBuf, false, &frameInfoTmp);
-				m_pEncoder->PutAudioSamples(vaTmp.m_pAudioBuf, vaTmp.m_nAudioSampleCount);
+				if (!m_pEncoder->PutVideoBuffer(vaTmp.m_pVideoBuf, false, &frameInfoTmp))
+				{
+					OutputDebugString(_T("m_pEncoder->PutVideoBuffer failed\n"));
+				}
+				if (!m_pEncoder->PutAudioSamples(vaTmp.m_pAudioBuf, vaTmp.m_nAudioSampleCount))
+				{
+					OutputDebugString(_T("m_pEncoder->PutAudioSamples failed\n"));
+				}
 			}
 		}
 	}

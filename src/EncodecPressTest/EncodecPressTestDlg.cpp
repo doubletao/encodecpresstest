@@ -382,8 +382,9 @@ void CEncodecPressTestDlg::DoPlay()
 										frameInfoTmp.extradata_size = 0;
 										if (!pEncoder->PutFrameBuffer(pVideoData, frameInfoTmp.iSize, pAudioData, numAudioSample))
 										{
-											//strMsg.Format(_T("encoder %d: lost one frame"), i);
+											strMsg.Format(_T("encoder %d: lost one frame\n"), i);
 											//PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
+											OutputDebugString(strMsg);
 										}
 									}
 								}

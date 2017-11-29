@@ -11,13 +11,36 @@
 #include "CodecFFmpeg\ecCodecFFmpegAudioDecoder.h"
 #include "CodecFFmpeg\ecCodecFFmpegAudioEncoder.h"
 
+#define FFMPEG_DEBUG_LOG_OPEN
+
+#ifdef FFMPEG_DEBUG_LOG_OPEN
+CRITICAL_SECTION g_Log_lock;
+
+void logFF(void *, int level, const char *fmt, va_list ap)
+{
+	EnterCriticalSection(&g_Log_lock);
+	//char log[256];
+	OutputDebugStringA(fmt);
+	LeaveCriticalSection(&g_Log_lock);
+}
+#endif
+
 EASY_CODEC_API_EXPORT	IecCodecFactory * ecCodec_CreateCodecFactory()
 {
+#ifdef FFMPEG_DEBUG_LOG_OPEN
+	InitializeCriticalSection(&g_Log_lock);
+	av_log_set_level(AV_LOG_TRACE);
+	av_log_set_callback(logFF);
+#endif // FFMPEG_DEBUG_LOG_OPEN
 	IecCodecFactory * pCodecFactory = new ecCodecFactory;
 	return pCodecFactory;
 }
 EASY_CODEC_API_EXPORT bool ecCodec_ReleaseCodecFactory(IecCodecFactory *& pCodecFactory)
 {
+#ifdef FFMPEG_DEBUG_LOG_OPEN
+	DeleteCriticalSection(&g_Log_lock);
+#endif // FFMPEG_DEBUG_LOG_OPEN
+
 	delete pCodecFactory;
 	pCodecFactory = nullptr;
 	return true;
