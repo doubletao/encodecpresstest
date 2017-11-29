@@ -93,6 +93,11 @@ LPCTSTR GetPresetMediaInfo(SD_VIDEO_STANDARD emVideoStandard, SD_VIDEO_TYPE emVi
 		streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 25000000;
 		return _T(".mp4");
 	}
+	if (emVideoType == SDVIDEOTYPE_H264_INTEL && emAudioType == SDAUDIOTYPE_AAC)
+	{
+		streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 25000000;
+		return _T(".mp4");
+	}
 	else if (emVideoType == SDVIDEOTYPE_MPEG4 && emAudioType == SDAUDIOTYPE_MP3)
 	{
 		streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 25000000;
