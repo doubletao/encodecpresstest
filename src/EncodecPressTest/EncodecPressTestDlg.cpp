@@ -10,6 +10,7 @@
 #include "afxdialogex.h"
 #include "FFmpegVADecoder.h"
 #include "CpuUsage.h"
+#include <set>
 
 #ifdef _DEBUG
 #	pragma comment(lib, "LibCodecD.lib")
@@ -1402,6 +1403,7 @@ int CEncodecPressTestDlg::GetCodecH264Level(int nIndex)
 
 void CEncodecPressTestDlg::DealCtrlFileName()
 {
+	std::set<CString> setFileName;
 	for (size_t i = 0; i < 8; i++)
 	{
 		if (GetCodecCheck(i))
@@ -1413,7 +1415,15 @@ void CEncodecPressTestDlg::DealCtrlFileName()
 			int nH264Level = GetCodecH264Level(i);
 
 			CString strFileName = GenerateFileInfoName(emVideoStandard, emVideoType, emColorFmt, emAudioType, nH264Level);
-			GetCodecFileNameEdit(i)->SetWindowText(strFileName);
+			CString strTmpName = strFileName;
+			//文件名去重
+			int nTail = 1;
+			while (setFileName.count(strTmpName) > 0)
+			{
+				strTmpName.Format(_T("%s(%d)"), strFileName, nTail++);
+			}
+			setFileName.insert(strTmpName);
+			GetCodecFileNameEdit(i)->SetWindowText(strTmpName);
 
 			SDStreamMediaInfo streamInfo;
 			CString strSuffix = GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, nH264Level, streamInfo);
