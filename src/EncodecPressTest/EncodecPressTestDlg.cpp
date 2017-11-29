@@ -1583,7 +1583,7 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 			{
 				pVideoStandardComb->SetCurSel(nSel1);
 				pVideoTypeComb->SetCurSel(nSel2);
-				pColorFmtComb->SetCurSel(nSel2);
+				pColorFmtComb->SetCurSel(nSel3);
 				pAudioTypeComb->SetCurSel(nSel4);
 				CString strLevel;
 				strLevel.Format(_T("%d"), nSel5);
