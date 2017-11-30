@@ -13,12 +13,6 @@
 #include <set>
 
 #ifdef _DEBUG
-#	pragma comment(lib, "LibCodecD.lib")
-#else
-#	pragma comment(lib, "LibCodecU.lib")
-#endif
-
-#ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
