@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+#include "EncodecThreader.h"
 
 // CTimeCodeImageGeneratorDlg 对话框
 class CTimeCodeImageGeneratorDlg : public CDialogEx
@@ -11,6 +11,7 @@ class CTimeCodeImageGeneratorDlg : public CDialogEx
 // 构造
 public:
 	CTimeCodeImageGeneratorDlg(CWnd* pParent = NULL);	// 标准构造函数
+	~CTimeCodeImageGeneratorDlg();
 
 // 对话框数据
 #ifdef AFX_DESIGN_TIME
@@ -24,6 +25,8 @@ public:
 // 实现
 protected:
 	HICON m_hIcon;
+
+	EncodecThreader * m_pEncoder[8];
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();

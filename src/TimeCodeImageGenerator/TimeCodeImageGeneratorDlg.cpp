@@ -122,6 +122,15 @@ CTimeCodeImageGeneratorDlg::CTimeCodeImageGeneratorDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
+CTimeCodeImageGeneratorDlg::~CTimeCodeImageGeneratorDlg()
+{
+	for (size_t i = 0; i < 8; i++)
+	{
+		delete m_pEncoder[i];
+		m_pEncoder[i] = nullptr;
+	}
+}
+
 void CTimeCodeImageGeneratorDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
@@ -404,8 +413,6 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate()
 
 void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 {
-	IecCodecFactory * ecFacetory = ecCodec_CreateCodecFactory();
-	IecCodecProtocolEncoder* pEncodec = ecFacetory->GetProtocolEncoder();
 	//拿基础参数
 	CString strTmp;
 	GetDlgItem(IDC_EDIT1_FRAME_COUNT)->GetWindowText(strTmp);
@@ -441,34 +448,48 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 	memset(m_pVideoBuf, 0, nVideoBufSize);
 	//配置输出文件信息
 	SDStreamMediaInfo streamInfo;
-	CString strSufix = GetPresetMediaInfo(SDVIDEOSTANDARD_HD1080i_25, SDVIDEOTYPE_H264, SDCOLORFORMAT_YUVP_422, SDAUDIOTYPE_AAC, 1, 48000, streamInfo);
+	CString strSufix = GetPresetMediaInfo(SDVIDEOSTANDARD_HD1080i_25, SDVIDEOTYPE_H264_INTEL, SDCOLORFORMAT_INTEL, SDAUDIOTYPE_AAC, 48000, 5, streamInfo);
 	streamInfo.sVideoMediaInfo.dwGOPSize = 1;
-	bool bRet =	pEncodec->SetSinkFile(&streamInfo, ConverCStringToStdString(strFilePreName + _T("video") + strSufix).c_str());
-	//设置视频画面输入格式
-	SDVideoFrameImageBufInfo imageBufInfo;
-	imageBufInfo.dwXSize = nWidth;
-	imageBufInfo.dwYSize = nHeight;
-	imageBufInfo.dwScanXByteSize = nWidth * 2;
-	imageBufInfo.enumColorFormat = SDCOLORFORMAT_BGRA;
-	imageBufInfo.enumScanMode = SDVIDEOSCANMODE_FirstFieldTop;
-	pEncodec->SetVideoFrameBufInfo(&imageBufInfo, nullptr);
-	//设置音频输入格式
-	SDAudioSamplesBufInfo audioBufInfo;
-	audioBufInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
-	audioBufInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
-	audioBufInfo.dwSamplesPerSec = 48000;
-	audioBufInfo.dwChannels = 2;
-	pEncodec->SetAudioSamplesBufInfo(&audioBufInfo);
-	//视频帧参数
-	SDRFrameInfo frameInfoTmp;
-	frameInfoTmp.emDataType = STREAM_DATATYPE_VIDEO;
-	frameInfoTmp.iVersion = 0;		// 结构版本号。		4---4[序列化占用字节－序列化位置]
-	frameInfoTmp.iSize = nWidth * nHeight * 4;// nWidth * nHeight * 2;			// 帧数据大小		4---16
-	frameInfoTmp.dwFrameNum = 1;		// 视频/音频帧数量	4---32
-	frameInfoTmp.iSamplesOffset = 0;	// 标识RawAudio音频、视频帧中有效采样的偏移数，大于0表示从开始偏移，小于0表示从尾部开始向前偏移		4---36
-	frameInfoTmp.qwDuration = 40;		// 持续时间(90Khz单位)	8---6
-	frameInfoTmp.emFrameType = FRAMETYPE_I;   	// 帧类型 				4---108
-	frameInfoTmp.extradata_size = 0;
+	CString strFileName = strFilePreName + _T("video");
+#if 1
+	for (size_t i = 0; i < 8; i++)
+	{
+		EncodecThreader *& pEncoder = m_pEncoder[i];
+		pEncoder = new EncodecThreader;
+		if (pEncoder)
+		{
+			SDStreamMediaInfo streamInfo;
+
+			GetPresetMediaInfo(SDVIDEOSTANDARD_HD1080i_25, SDVIDEOTYPE_H264_INTEL, SDCOLORFORMAT_INTEL, SDAUDIOTYPE_AAC, 48000, 5, streamInfo);
+			//streamInfo.sVideoMediaInfo.enumColorFormat = SDCOLORFORMAT_INTEL;
+			CString strFileNameN;
+			strFileNameN.AppendFormat(_T("%d"), i);
+			if (pEncoder->SetOutputVAParam(streamInfo, ConverCStringToStdString(strFileNameN + strSufix).c_str()))
+			{
+				//设置视频画面输入格式
+				SDVideoFrameImageBufInfo imageBufInfo;
+				imageBufInfo.dwXSize = nWidth;
+				imageBufInfo.dwYSize = nHeight;
+				imageBufInfo.dwScanXByteSize = nWidth * 2;
+				imageBufInfo.enumColorFormat = SDCOLORFORMAT_BGRA;
+				imageBufInfo.enumScanMode = SDVIDEOSCANMODE_FirstFieldTop;
+				//设置音频输入格式
+				SDAudioSamplesBufInfo audioBufInfo;
+				audioBufInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
+				audioBufInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
+				audioBufInfo.dwSamplesPerSec = 48000;
+				audioBufInfo.dwChannels = 2;
+				//SResamplerPara resamplePara;
+				if (pEncoder->SetInputParam(imageBufInfo, audioBufInfo, false))
+				{
+					pEncoder->Start();
+				}
+			}
+
+		}
+	}
+#endif
+
 	CFile fileDebug;
 	fileDebug.Open(_T("debug.pcm"), CFile::modeCreate | CFile::modeWrite);
 	//循环读图片开始编码
@@ -496,36 +517,62 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 			pPixBuf = nullptr;
 		}
 
-		frameInfoTmp.dwFrameIndex = i;	// 帧数据流顺序		4---28
-		frameInfoTmp.qwDTS = i * 40;			// 解码时间(90Khz单位)	8---44
-		frameInfoTmp.qwPTS = i * 40;			// 展现时间(90Khz单位)	8---52
-		frameInfoTmp.dwShowIndex = i;	// 帧数据显示顺序			4---104
-		pEncodec->PutVideoBuffer(m_pVideoBuf, false, &frameInfoTmp);
+		SD_UINT8 pBufTmp[1920 * 4] = { 0 };
 		if (nAudioReadCursor + 1920 < nAudioSampleWhole)
 		{
-			pEncodec->PutAudioSamples((SD_UINT8 *)(pAudioBufer + nAudioReadCursor), 1920);
+			//pEncodec->PutAudioSamples((SD_UINT8 *)(pAudioBufer + nAudioReadCursor), 1920);
+			memcpy(pBufTmp, (SD_UINT8 *)(pAudioBufer + nAudioReadCursor), 1920 * 4);
 			//fileDebug.Write((SD_UINT8 *)(pAudioBufer + nAudioReadCursor), 1920 * 4);
 			nAudioReadCursor += 1920;
 		}
 		else
 		{
-			SD_UINT8 pBufTmp[1920 * 4] = {0};
 			int nReaded = nAudioSampleWhole - nAudioReadCursor;
 			memcpy(pBufTmp, pAudioBufer + nAudioReadCursor, nReaded * 4);
 			nAudioReadCursor = 0;
 			memcpy(pBufTmp + nReaded * 4, pAudioBufer, (1920 - nReaded) * 4);
 			nAudioReadCursor = 1920 - nReaded;
-			pEncodec->PutAudioSamples(pBufTmp, 1920);
+			//pEncodec->PutAudioSamples(pBufTmp, 1920);
 			//fileDebug.Write(pBufTmp, 1920 * 4);
 		}
+
+#if 1
+		for (size_t i = 0; i < 8; i++)
+		{
+			EncodecThreader *& pEncoder = m_pEncoder[i];
+			if (pEncoder)
+			{
+				SDRFrameInfo frameInfoTmp;
+				frameInfoTmp.emDataType = STREAM_DATATYPE_VIDEO;
+				frameInfoTmp.iVersion = 0;		// 结构版本号。		4---4[序列化占用字节－序列化位置]
+				frameInfoTmp.iSize = nWidth * nHeight * 4;// nWidth * nHeight * 2;			// 帧数据大小		4---16
+				frameInfoTmp.dwFrameNum = 1;		// 视频/音频帧数量	4---32
+				frameInfoTmp.iSamplesOffset = 0;	// 标识RawAudio音频、视频帧中有效采样的偏移数，大于0表示从开始偏移，小于0表示从尾部开始向前偏移		4---36
+				frameInfoTmp.qwDuration = 40;		// 持续时间(90Khz单位)	8---6
+				frameInfoTmp.emFrameType = FRAMETYPE_I;   	// 帧类型 				4---108
+				frameInfoTmp.extradata_size = 0;
+				if (!pEncoder->PutFrameBuffer(m_pVideoBuf, frameInfoTmp.iSize, pBufTmp, 1920))
+				{
+					CString strMsg;
+					strMsg.Format(_T("encoder %d: lost one frame\n"), i);
+					//PostMessage(MSG_PUSHINFO, 0, (LPARAM)strMsg.GetBuffer());
+					OutputDebugString(strMsg);
+				}
+			}
+		}
+#endif
 	}
 	fileDebug.Close();
 	delete[] m_pVideoBuf;
 	m_pVideoBuf = nullptr;
 	delete[] pAudioBufer;
 	pAudioBufer = nullptr;
-	ecFacetory->DeleteProtocolEncoder(pEncodec);
-	ecCodec_ReleaseCodecFactory(ecFacetory);
+
+	for (size_t i = 0; i < 8; i++)
+	{
+		delete m_pEncoder[i];
+		m_pEncoder[i] = nullptr;
+	}
 }
 
 
