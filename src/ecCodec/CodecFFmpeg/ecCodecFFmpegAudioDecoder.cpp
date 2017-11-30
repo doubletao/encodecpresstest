@@ -450,7 +450,8 @@ double ecCodecFFmpegAudioDecoder::GetCurrentMilSecTimestamp(int num, int den, ui
 
 			char szOutput[256];
 			sprintf_s(szOutput, 256, "av_audio_fifo_size=%d, dBufTm=%f\r\n", nBufSample, dBufTm);
-			OutputDebugStringA(szOutput);
+			//OutputDebugStringA(szOutput);
+			av_log(nullptr, AV_LOG_TRACE, szOutput);
 		}
 		if (num > 0 && den > 0)
 		{

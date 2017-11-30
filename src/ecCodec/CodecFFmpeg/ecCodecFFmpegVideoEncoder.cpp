@@ -212,10 +212,10 @@ bool ecCodecFFmpegVideoEncoder::PutFrame(const SD_UINT8 * pFrameBuffer, const SD
 	{
 		char errbuf[128] = { 0 };
 		const char *errbuf_ptr = errbuf;
-		if (av_strerror(ret, errbuf, sizeof(errbuf)) < 0)
+		if (av_strerror(ret, errbuf, sizeof(errbuf)) == 0)
 		{
-			strerror_s(errbuf, AVUNERROR(ret));
-			OutputDebugStringA(errbuf);
+			av_log(nullptr, AV_LOG_ERROR, errbuf);
+			//OutputDebugStringA(errbuf);
 		}
 		return false;
 	}

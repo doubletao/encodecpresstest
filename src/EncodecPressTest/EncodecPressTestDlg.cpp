@@ -771,9 +771,9 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 			switch (i)
 			{
 			case 0:
-				pVideoStandardComb->SetCurSel(0);
-				pVideoTypeComb->SetCurSel(0);
-				pColorFmtComb->SetCurSel(0);
+				pVideoStandardComb->SetCurSel(1);
+				pVideoTypeComb->SetCurSel(3);
+				pColorFmtComb->SetCurSel(2);
 				pAudioTypeComb->SetCurSel(0);
 				break;
 			case 1:

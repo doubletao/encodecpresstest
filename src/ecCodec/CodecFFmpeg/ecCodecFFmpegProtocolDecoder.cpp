@@ -1350,19 +1350,22 @@ bool ecCodecFFmpegProtocolDecoder::GetVABuffer(SD_UINT8* pFrameBuf, SD_UINT8* pS
 					GetAudioSamples(-1, nSampleNum, pSamplesBuf, pdwRetSampleNum);
 					dAudioTm = m_AudioDecoder.GetCurrentMilSecTimestamp(nANum, nADen, nAStartTm);
 					//dAudioTm += 40;
-					OutputDebugStringA("drop one audio\n");
+					//OutputDebugStringA("drop one audio\n");
+					av_log(nullptr, AV_LOG_WARNING, "drop one audio");
 				}
 				else if (dAudioTm - dVideoTm > nTimeGapStd)
 				{
 					GetVideoBuffer(-1, pFrameBuf, &frameInfo);
 					dVideoTm = m_VideoDecoder.GetCurrentMilSecTimestamp(nVNum, nVDen, nVStartTm);
 					//dVideoTm += 40;
-					OutputDebugStringA("drop one video\n");
+					//OutputDebugStringA("drop one video\n");
+					av_log(nullptr, AV_LOG_WARNING, "drop one audio");
 				}
 			}
 			char szOutput[256];
 			sprintf_s(szOutput, 256, "dVideoTm=%f, dAudioTm=%f, gap=%f, startgap=%ld\r\n", dVideoTm, dAudioTm, dVideoTm - dAudioTm, nVStartTm - nAStartTm);
-			OutputDebugStringA(szOutput);
+			//OutputDebugStringA(szOutput);
+			av_log(nullptr, AV_LOG_TRACE, szOutput);
 			return true;
 		}
 	}

@@ -4,6 +4,9 @@
 class ecCodecFactory :
 	public IecCodecFactory
 {
+private:
+	CRITICAL_SECTION m_Log_lock;
+	static void logFF(void *, int level, const char *fmt, va_list ap);
 public:
 	ecCodecFactory();
 	virtual ~ecCodecFactory();
