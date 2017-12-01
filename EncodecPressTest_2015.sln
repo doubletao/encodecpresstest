@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EncodecPressTest", "src\EncodecPressTest\EncodecPressTest.vcxproj", "{F009C5A7-546A-4D81-ABDC-F2CF7BAC1CF9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{338B07D3-5540-4A42-9279-FBA131AF14DB} = {338B07D3-5540-4A42-9279-FBA131AF14DB}
+		{61146BF5-D2EF-4325-9DDB-DF3FF621E356} = {61146BF5-D2EF-4325-9DDB-DF3FF621E356}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDLVideoPlayer", "src\SDLVideoPlayer\SDLVideoPlayer.vcxproj", "{338B07D3-5540-4A42-9279-FBA131AF14DB}"
@@ -13,8 +14,16 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ecCodec", "src\ecCodec\ecCodec.vcxproj", "{61146BF5-D2EF-4325-9DDB-DF3FF621E356}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TimeCodeImageGenerator", "src\TimeCodeImageGenerator\TimeCodeImageGenerator.vcxproj", "{BA8E40AA-7397-477E-9ED6-A96B2D3286AA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{338B07D3-5540-4A42-9279-FBA131AF14DB} = {338B07D3-5540-4A42-9279-FBA131AF14DB}
+		{61146BF5-D2EF-4325-9DDB-DF3FF621E356} = {61146BF5-D2EF-4325-9DDB-DF3FF621E356}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AudioCodeDebuger", "src\AudioCodeDebuger\AudioCodeDebuger.vcxproj", "{13FB9DA9-B3BA-40FD-89BF-D2DC25C6777F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{338B07D3-5540-4A42-9279-FBA131AF14DB} = {338B07D3-5540-4A42-9279-FBA131AF14DB}
+		{61146BF5-D2EF-4325-9DDB-DF3FF621E356} = {61146BF5-D2EF-4325-9DDB-DF3FF621E356}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
