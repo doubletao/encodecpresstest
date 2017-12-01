@@ -304,7 +304,11 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate()
 							SDVideoFrameImageBufInfo videoFrameImageBufInfo;
 							videoFrameImageBufInfo.dwXSize = nWidth;
 							videoFrameImageBufInfo.dwYSize = nHeight;
+#ifdef CODEC_IMAGE_GENER_RGB
 							videoFrameImageBufInfo.enumColorFormat = SDCOLORFORMAT_BGRA;// streamMediaInfoEx.sVideoMediaInfo.enumColorFormat;
+#else
+							videoFrameImageBufInfo.enumColorFormat = SDCOLORFORMAT_YUVP_420;
+#endif
 							bVideoInied = pDecoder->SetVideoFrameBufInfo(&videoFrameImageBufInfo, nullptr);
 						}
 					}
@@ -336,9 +340,20 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate()
 		memset(pAudioData, 0, nAudioBufferSize * sizeof(SD_UINT8));
 	}
 	
+#ifndef CODEC_IMAGE_GENER_RGB
+	CFile fileYUV;
+	if (!fileYUV.Open(strFilePreName + _T(".yuv"), CFile::modeCreate | CFile::modeWrite))
+	{
+		return;
+	}
+#endif
 	for (int i = 0; i < nLength; i++)
 	{
+#ifdef CODEC_IMAGE_GENER_RGB
 		strFileSufix.Format(_T("%d.bmp"), i);
+#else
+		strFileSufix.Format(_T("%d.yuv"), i);
+#endif
 
 		if (bVideoInied && pDecoder)
 		{
@@ -348,13 +363,15 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate()
 				bool bContinue = pDecoder->GetVideoBuffer(nOffset + i, pVideoData, &frameInfo);
 				if (bContinue)
 				{
+#ifdef CODEC_IMAGE_GENER_RGB
 					CBitmap bmp;
 					bmp.CreateBitmap(nWidth, nHeight, 1, 32, pVideoData);
 					CDC dcBmp;
 					dcBmp.CreateCompatibleDC(NULL);
 					CBitmap *pOldBmp = dcBmp.SelectObject(&bmp);
 					dcMem.BitBlt(0, 0, nWidth, nHeight, &dcBmp, 0, 0, SRCCOPY);
-					if (streamMediaInfoEx.dwVideoStreamCount > 0)
+#endif
+					if (streamMediaInfoEx.dwAudioStreamCount > 0)
 					{
 						pDecoder->GetAudioSamples(0, 1920, pAudioData, nullptr);
 					}
@@ -362,7 +379,7 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate()
 				}
 			}
 		}
-								
+#ifdef CODEC_IMAGE_GENER_RGB			
 		if (!bGetFrame)
 		{
 			dcMem.FillRect(CRect(0, 0, nWidth, nHeight), &CBrush(0xFFFFFF / nLength * (i / nFramePerSec)));
@@ -393,7 +410,13 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate()
 			imgTemp.Save(strFilePreName + strFileSufix);
 			imgTemp.Detach();
 		}
+#else
+		fileYUV.Write(pVideoData, nVideoBufferSize);
+#endif
 	}
+#ifndef CODEC_IMAGE_GENER_RGB
+	fileYUV.Close();
+#endif
 	delete[] pVideoData;
 	pVideoData = nullptr;
 	delete[] pAudioData;
@@ -462,7 +485,7 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 
 			GetPresetMediaInfo(SDVIDEOSTANDARD_HD1080i_25, SDVIDEOTYPE_H264_INTEL, SDCOLORFORMAT_INTEL, SDAUDIOTYPE_AAC, 48000, 5, streamInfo);
 			//streamInfo.sVideoMediaInfo.enumColorFormat = SDCOLORFORMAT_INTEL;
-			CString strFileNameN;
+			CString strFileNameN = strFileName;
 			strFileNameN.AppendFormat(_T("%d"), i);
 			if (pEncoder->SetOutputVAParam(streamInfo, ConverCStringToStdString(strFileNameN + strSufix).c_str()))
 			{
