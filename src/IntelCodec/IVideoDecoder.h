@@ -1,7 +1,7 @@
 #ifndef __H__IVIDEODECODER__H__
 #define __H__IVIDEODECODER__H__
 
-#include "..\\Inc\VACommonDefine.h"
+#include "VACommonDefine.h"
 //-----------------------------------------------------------------------------------------------//
 class IVideoDecoder
 {

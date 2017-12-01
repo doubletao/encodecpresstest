@@ -1,5 +1,5 @@
 #pragma once
-#include "..\libcodec\IVideoDecoder.h"
+#include "IVideoDecoder.h"
 class CDecodingPipeline;
 struct sInputParamsDecoding;
 class INTELCODECAPI CIntelVideoDecoder : public IVideoDecoder

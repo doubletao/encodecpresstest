@@ -22,6 +22,9 @@
     <Filter Include="CodecFFmpeg">
       <UniqueIdentifier>{71888f3c-3a71-46a1-ad08-022d030c03dd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="CodecIntel">
+      <UniqueIdentifier>{3208c8cd-424f-4ad9-a5a6-1d9bc1cfbf6c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\ecCodec\IecCodecAudioDecoder.h">
@@ -102,6 +105,9 @@
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegResampler.h">
       <Filter>CodecFFmpeg</Filter>
     </ClInclude>
+    <ClInclude Include="CodecIntel\ecCodecIntelVideoEncoder.h">
+      <Filter>CodecIntel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ecCodecFactory.cpp">
@@ -133,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegResampler.cpp">
       <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\ecCodecIntelVideoEncoder.cpp">
+      <Filter>CodecIntel</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

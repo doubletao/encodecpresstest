@@ -47,26 +47,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>..\..\bin</OutDir>
-    <TargetName>$(ProjectName)D</TargetName>
+    <TargetName>$(ProjectName)xyD</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>..\..\bin</OutDir>
-    <TargetName>$(ProjectName)U</TargetName>
+    <TargetName>$(ProjectName)xyU</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>INTEL_CODEC_API;_WINDOWS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\include\IntelCodec</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\IntelCodec.def</ModuleDefinitionFile>
-      <AdditionalLibraryDirectories>..\..\lib\IntelCodec\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>lib</AdditionalLibraryDirectories>
       <ImportLibrary>..\..\lib\IntelCodec\$(TargetName).lib</ImportLibrary>
     </Link>
     <Midl>
@@ -86,7 +86,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>INTEL_CODEC_API;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\include\IntelCodec</AdditionalIncludeDirectories>
     </ClCompile>
@@ -95,7 +95,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>.\IntelCodec.def</ModuleDefinitionFile>
-      <AdditionalLibraryDirectories>..\..\lib\IntelCodec\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>lib</AdditionalLibraryDirectories>
       <ImportLibrary>..\..\lib\IntelCodec\$(TargetName).lib</ImportLibrary>
     </Link>
     <Midl>
@@ -113,16 +113,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IntelCodec.cpp" />
+    <ClCompile Include="IntelEncoder.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="IntelCodec.h" />
+    <ClInclude Include="..\..\include\IntelCodec\IntelCodec.h" />
+    <ClInclude Include="..\..\include\IntelCodec\IntelDataDef.h" />
+    <ClInclude Include="..\..\include\IntelCodec\IntelEncoder.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TypeDefine.h" />
+    <ClInclude Include="VACommonDefine.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="IntelCodec.def" />

@@ -307,7 +307,7 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnStartGenerate()
 #ifdef CODEC_IMAGE_GENER_RGB
 							videoFrameImageBufInfo.enumColorFormat = SDCOLORFORMAT_BGRA;// streamMediaInfoEx.sVideoMediaInfo.enumColorFormat;
 #else
-							videoFrameImageBufInfo.enumColorFormat = SDCOLORFORMAT_YUVP_420;
+							videoFrameImageBufInfo.enumColorFormat = SDCOLORFORMAT_UYVY;
 #endif
 							bVideoInied = pDecoder->SetVideoFrameBufInfo(&videoFrameImageBufInfo, nullptr);
 						}

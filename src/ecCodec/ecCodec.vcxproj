@@ -36,6 +36,7 @@
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegVideoDecoder.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegVideoEncoder.h" />
     <ClInclude Include="CodecFFmpeg\FFmpegFormatConverter.h" />
+    <ClInclude Include="CodecIntel\ecCodecIntelVideoEncoder.h" />
     <ClInclude Include="ecCodecFactory.h" />
   </ItemGroup>
   <ItemGroup>
@@ -48,6 +49,7 @@
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegVideoDecoder.cpp" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegVideoEncoder.cpp" />
     <ClCompile Include="CodecFFmpeg\FFmpegFormatConverter.cpp" />
+    <ClCompile Include="CodecIntel\ecCodecIntelVideoEncoder.cpp" />
     <ClCompile Include="ecCodecFactory.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -100,12 +102,12 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>EASY_CODEC_API;_DEBUG;_WINDOWS;_USRDLL;ECCODEC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\include\IncFFMpeg;..\..\include\ecCodec;..\..\include\SDDefine</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include\IncFFMpeg;..\..\include\ecCodec;..\..\include\SDDefine;..\..\include\IntelCodec</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\..\Lib\LibFFmpeg</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\Lib\LibFFmpeg;..\..\Lib\IntelCodec</AdditionalLibraryDirectories>
       <ImportLibrary>..\..\Lib\ecCodec\$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
@@ -119,14 +121,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>EASY_CODEC_API;NDEBUG;_WINDOWS;_USRDLL;ECCODEC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\include\IncFFMpeg;..\..\include\ecCodec;..\..\include\SDDefine</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include\IncFFMpeg;..\..\include\ecCodec;..\..\include\SDDefine;..\..\include\IntelCodec</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\..\Lib\LibFFmpeg</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\Lib\LibFFmpeg;..\..\Lib\IntelCodec</AdditionalLibraryDirectories>
       <ImportLibrary>..\..\Lib\ecCodec\$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
