@@ -196,6 +196,10 @@ void CEncodecPressTestDlg::DoPlay()
 				{
 					int nWidth = rectDraw.Width();
 					int nHeight = rectDraw.Height();
+					nWidth = (nWidth + 1) / 2 * 2;
+					nHeight = (nHeight + 1) / 2 * 2;
+					//nWidth = 1920;
+					//nHeight = 1080;
 					SDStreamMediaInfoEx streamMediaInfoEx;
 					SDAudioMediaInfo audioInfo;
 					audioInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM;
@@ -276,6 +280,8 @@ void CEncodecPressTestDlg::DoPlay()
 
 										GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, nH264Level, streamInfo);
 										//streamInfo.sVideoMediaInfo.enumColorFormat = SDCOLORFORMAT_INTEL;
+										//streamInfo.sVideoMediaInfo.dwWidth = nWidth;
+										//streamInfo.sVideoMediaInfo.dwHeight = nHeight;
 										if (pEncoder->SetOutputVAParam(streamInfo, (cstrOutPath + ConverCStringToStdString(strFileName).c_str()).c_str()))
 										{
 											//设置视频编码输入格式
@@ -373,6 +379,19 @@ void CEncodecPressTestDlg::DoPlay()
 										frameInfoTmp.dwShowIndex = m_nDispFrame;	// 帧数据显示顺序			4---104
 										frameInfoTmp.emFrameType = FRAMETYPE_I;   	// 帧类型 				4---108
 										frameInfoTmp.extradata_size = 0;
+
+										if (0)
+										{
+											FILE * file;
+											fopen_s(&file, "h264.yuv", "wb+");
+											if (file)
+											{
+												int nSize = frameInfoTmp.iSize;
+												fwrite(pVideoData, nSize, 1, file);
+												fclose(file);
+											}
+										}
+
 										if (!pEncoder->PutFrameBuffer(pVideoData, frameInfoTmp.iSize, pAudioData, numAudioSample))
 										{
 											strMsg.Format(_T("encoder %d: lost one frame\n"), i);
@@ -720,7 +739,11 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 	{
 		CRect rtPlayer;
 		pPlayerWnd->GetWindowRect(rtPlayer);
+#ifdef PLAYER_USE_SDLPAINT
+		m_player.IntialWnd(SDL_PIXELFORMAT_UYVY, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920);
+#else
 		m_player.IntialWnd(SDL_PIXELFORMAT_UYVY, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920, CallbackGetDrawRect);
+#endif
 	}
 
 	CWnd * pWnd = GetDlgItem(IDC_EDIT_OUT_FILE_PATH);

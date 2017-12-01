@@ -14,7 +14,6 @@ EncodecThreader::EncodecThreader()
 	, m_bForbitLostFrame(false)
 {
 	m_ecfactory = ecCodec_CreateCodecFactory();
-	m_pEncoder = m_ecfactory->GetProtocolEncoder(EMCodec_Intel);
 	m_vaLoop.Clear();
 }
 
@@ -72,6 +71,14 @@ bool EncodecThreader::DoEncodec()
 bool EncodecThreader::SetOutputVAParam(const SDStreamMediaInfo & streamInfo, const std::string & cstrFilePath)
 {
 	Stop();
+	if (streamInfo.sVideoMediaInfo.enumVideoType == SDVIDEOTYPE_H264_INTEL)
+	{
+		m_pEncoder = m_ecfactory->GetProtocolEncoder(EMCodec_Intel);
+	}
+	else
+	{
+		m_pEncoder = m_ecfactory->GetProtocolEncoder(EMCodec_FFmpeg);
+	}
 	return m_pEncoder->SetSinkFile(&streamInfo, cstrFilePath.c_str());
 }
 

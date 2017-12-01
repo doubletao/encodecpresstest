@@ -280,13 +280,14 @@ bool ecCodecFFmpegProtocolEncoder::Release()
 		SD_UINT8* pCompressFrame = nullptr;
 		int nRet = 0;
 		//将编码器中缓存的帧flush掉
+		int nLoopCount = 50;//不大于50次
 		do 
 		{
 			nRet = m_pVideoEncoder->GetCompressFrame(pCompressFrame, &frameInfo);
 			if (nRet == 0)
 			{
 				//flush
-				m_pVideoEncoder->PutFrame(nullptr, &frameInfo, false);
+				m_pVideoEncoder->SetEndofInput();
 			}
 			else if (nRet > 0)
 			{
@@ -301,7 +302,7 @@ bool ecCodecFFmpegProtocolEncoder::Release()
 				//false了也算了
 				break;
 			}
-		} while (true);
+		} while (nLoopCount-- > 0);
 
 		nRet = av_write_trailer(m_pFormatCtx);
 		if (nRet != 0)

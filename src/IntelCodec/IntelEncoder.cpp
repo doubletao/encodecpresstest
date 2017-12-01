@@ -57,6 +57,8 @@ bool IntelEncoder::SetVideoFrameBufInfo(const IntelVideoFrameImageBufInfo * pVid
 	sBuferInfo.dwXSize = pVideoBufInfo->dwXSize;
 	sBuferInfo.dwYSize = pVideoBufInfo->dwYSize;
 	sBuferInfo.dwScanXByteSize = pVideoBufInfo->dwScanXByteSize;
+	sBuferInfo.enumColorFormat = COLORFORMAT_UYVY;
+	sBuferInfo.enumScanMode = VIDEOSCANMODE_FirstFieldTop;
 	return GetIntelPointer(m_pEncoder)->SetVideoFrameBufInfo(&sBuferInfo);
 }
 

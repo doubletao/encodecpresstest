@@ -1,4 +1,5 @@
 #pragma once
+#include "SDLVideoPlayer.h"
 #ifdef PLAYER_USE_SDLPAINT
 #include "SDL2\SDL.h"
 #else

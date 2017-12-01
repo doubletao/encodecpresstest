@@ -225,7 +225,9 @@ bool ecCodecFFmpegVideoEncoder::PutFrame(const SD_UINT8 * pFrameBuffer, const SD
 
 bool ecCodecFFmpegVideoEncoder::SetEndofInput()
 {
-	return true;
+	SDRFrameInfo frameInfo;
+	bool bRet = PutFrame(nullptr, &frameInfo, false);
+	return bRet;
 }
 
 int ecCodecFFmpegVideoEncoder::GetCompressFrame(SD_UINT8 *& pFrameBuffer, SDRFrameInfo * pFrameInfo)
