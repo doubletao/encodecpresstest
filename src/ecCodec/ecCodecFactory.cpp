@@ -10,6 +10,8 @@
 #include "CodecFFmpeg\ecCodecFFmpegVideoEncoder.h"
 #include "CodecFFmpeg\ecCodecFFmpegAudioDecoder.h"
 #include "CodecFFmpeg\ecCodecFFmpegAudioEncoder.h"
+#include "CodecIntel\ecCodecIntelProtocolEncoder.h"
+#include "CodecIntel\ecCodecIntelVideoEncoder.h"
 
 void ecCodecFactory::logFF(void *, int level, const char * fmt, va_list ap)
 {
@@ -62,6 +64,7 @@ IecCodecProtocolEncoder * ecCodecFactory::GetProtocolEncoder(EmCodecProvider emC
 	}
 	break;
 	case EMCodec_Intel:
+		pProtocolEncoder = new ecCodecIntelProtocolEncoder;
 		break;
 	default:
 		break;
@@ -100,6 +103,7 @@ IecCodecVideoEncoder * ecCodecFactory::GetVideoEncoder(EmCodecProvider emCodecPr
 	}
 	break;
 	case EMCodec_Intel:
+		pVideoEncoder = new ecCodecIntelVideoEncoder;
 		break;
 	default:
 		break;

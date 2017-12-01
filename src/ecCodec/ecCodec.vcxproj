@@ -36,6 +36,7 @@
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegVideoDecoder.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegVideoEncoder.h" />
     <ClInclude Include="CodecFFmpeg\FFmpegFormatConverter.h" />
+    <ClInclude Include="CodecIntel\ecCodecIntelProtocolEncoder.h" />
     <ClInclude Include="CodecIntel\ecCodecIntelVideoEncoder.h" />
     <ClInclude Include="ecCodecFactory.h" />
   </ItemGroup>
@@ -49,6 +50,7 @@
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegVideoDecoder.cpp" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegVideoEncoder.cpp" />
     <ClCompile Include="CodecFFmpeg\FFmpegFormatConverter.cpp" />
+    <ClCompile Include="CodecIntel\ecCodecIntelProtocolEncoder.cpp" />
     <ClCompile Include="CodecIntel\ecCodecIntelVideoEncoder.cpp" />
     <ClCompile Include="ecCodecFactory.cpp" />
   </ItemGroup>

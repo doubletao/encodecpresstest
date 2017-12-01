@@ -14,7 +14,7 @@ EncodecThreader::EncodecThreader()
 	, m_bForbitLostFrame(false)
 {
 	m_ecfactory = ecCodec_CreateCodecFactory();
-	m_pEncoder = m_ecfactory->GetProtocolEncoder();
+	m_pEncoder = m_ecfactory->GetProtocolEncoder(EMCodec_Intel);
 	m_vaLoop.Clear();
 }
 

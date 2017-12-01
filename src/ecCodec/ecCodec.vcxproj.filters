@@ -108,6 +108,9 @@
     <ClInclude Include="CodecIntel\ecCodecIntelVideoEncoder.h">
       <Filter>CodecIntel</Filter>
     </ClInclude>
+    <ClInclude Include="CodecIntel\ecCodecIntelProtocolEncoder.h">
+      <Filter>CodecIntel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ecCodecFactory.cpp">
@@ -141,6 +144,9 @@
       <Filter>CodecFFmpeg</Filter>
     </ClCompile>
     <ClCompile Include="CodecIntel\ecCodecIntelVideoEncoder.cpp">
+      <Filter>CodecIntel</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\ecCodecIntelProtocolEncoder.cpp">
       <Filter>CodecIntel</Filter>
     </ClCompile>
   </ItemGroup>

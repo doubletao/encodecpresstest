@@ -35,7 +35,7 @@ public:
 	// pFrameBuffer :压缩帧缓存
 	// pFrameInfo :输出压缩帧信息
 	// 返回值：>0成功，=0需要继续put，<0失败
-	virtual int  GetCompressFrame(unsigned char * &pFrameBuffer, unsigned int & nFramaeSize);
+	virtual int  GetCompressFrame(unsigned char * &pFrameBuffer, IntelFrameInfo * pFrameInfo);
 
 	virtual bool Release();
 };

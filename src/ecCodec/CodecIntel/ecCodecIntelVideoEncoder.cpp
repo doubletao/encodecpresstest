@@ -36,7 +36,11 @@ bool ecCodecIntelVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDesVid
 
 bool ecCodecIntelVideoEncoder::SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo * pVideoBufInfo)
 {
-	if (!m_pEncoder)
+	if (!m_pEncoder || !pVideoBufInfo)
+	{
+		return false;
+	}
+	if (pVideoBufInfo->enumColorFormat != SDCOLORFORMAT_UYVY)
 	{
 		return false;
 	}
@@ -53,7 +57,8 @@ bool ecCodecIntelVideoEncoder::PutFrame(const SD_UINT8 * pFrameBuffer, const SDR
 	{
 		return false;
 	}
-	return m_pEncoder->PutFrame(pFrameBuffer, pFrameInfo->iSize, bForceToKeyFrame);
+	bool bRet = m_pEncoder->PutFrame(pFrameBuffer, pFrameInfo->iSize, bForceToKeyFrame);
+	return bRet;
 }
 
 bool ecCodecIntelVideoEncoder::SetEndofInput()
@@ -71,9 +76,22 @@ int ecCodecIntelVideoEncoder::GetCompressFrame(SD_UINT8 *& pFrameBuffer, SDRFram
 	{
 		return -1;
 	}
-	SDRFrameInfo info;
-	if (m_pEncoder->GetCompressFrame(pFrameBuffer, info.iSize))
+	IntelFrameInfo info;
+	if (m_pEncoder->GetCompressFrame(pFrameBuffer, &info))
 	{
+		if (pFrameInfo)
+		{
+			pFrameInfo->iVersion = info.iVersion;
+			pFrameInfo->iSize = info.iSize;
+			pFrameInfo->dwFrameIndex = info.dwFrameIndex;
+			pFrameInfo->dwFrameNum = info.dwFrameNum;
+			pFrameInfo->iSamplesOffset = info.iSamplesOffset;
+			pFrameInfo->qwDTS = info.qwDTS;
+			pFrameInfo->qwPTS = info.qwPTS;
+			pFrameInfo->qwDuration = info.qwDuration;
+			pFrameInfo->dwShowIndex = info.dwShowIndex;
+			pFrameInfo->extradata_size = info.extradata_size;
+		}
 		return info.iSize;
 	}
 	return 0;

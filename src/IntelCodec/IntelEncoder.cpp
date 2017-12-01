@@ -41,7 +41,10 @@ bool IntelEncoder::InitVideoEncoder(const IntelVideoMediaInfo * pDesVideoInfo)
 	mediaInfo.dwDisplayHeight = pDesVideoInfo->dwDisplayHeight;
 	mediaInfo.dwMaxDataRateInBitsPerSec = pDesVideoInfo->dwMaxDataRateInBitsPerSec;
 	mediaInfo.dwMinDataRateInBitsPerSec = pDesVideoInfo->dwMinDataRateInBitsPerSec;
-	return GetIntelPointer(m_pEncoder)->InitVideoEncoder(&mediaInfo);;
+	mediaInfo.enumVideoType = VIDEOTYPE_H264;
+	mediaInfo.enumColorFormat = COLORFORMAT_YUVP_NV12;
+	bool bRet = GetIntelPointer(m_pEncoder)->InitVideoEncoder(&mediaInfo);
+	return bRet;
 }
 
 bool IntelEncoder::SetVideoFrameBufInfo(const IntelVideoFrameImageBufInfo * pVideoBufInfo)
@@ -65,7 +68,8 @@ bool IntelEncoder::PutFrame(const unsigned char * pFrameBuffer, const unsigned i
 	}
 	SRFrameInfo info;
 	info.iSize = nFramaeSize;
-	return GetIntelPointer(m_pEncoder)->PutFrame(pFrameBuffer, &info);
+	bool bRet = GetIntelPointer(m_pEncoder)->PutFrame(pFrameBuffer, &info);
+	return bRet;
 }
 
 bool IntelEncoder::SetEndofInput()
@@ -77,7 +81,7 @@ bool IntelEncoder::SetEndofInput()
 	return GetIntelPointer(m_pEncoder)->SetEndofInput();
 }
 
-int IntelEncoder::GetCompressFrame(unsigned char *& pFrameBuffer, unsigned int & nFramaeSize)
+int IntelEncoder::GetCompressFrame(unsigned char *& pFrameBuffer, IntelFrameInfo * pFrameInfo)
 {
 	if (!m_pEncoder)
 	{
@@ -86,8 +90,20 @@ int IntelEncoder::GetCompressFrame(unsigned char *& pFrameBuffer, unsigned int &
 	SRFrameInfo info;
 	if (GetIntelPointer(m_pEncoder)->GetCompressFrame(pFrameBuffer, &info))
 	{
-		nFramaeSize = info.iSize;
-		return nFramaeSize;
+		if (pFrameInfo)
+		{
+			pFrameInfo->iVersion = info.iVersion;
+			pFrameInfo->iSize = info.iSize;
+			pFrameInfo->dwFrameIndex = info.dwFrameIndex;
+			pFrameInfo->dwFrameNum = info.dwFrameNum;
+			pFrameInfo->iSamplesOffset = info.iSamplesOffset;
+			pFrameInfo->qwDTS = info.qwDTS;
+			pFrameInfo->qwPTS = info.qwPTS;
+			pFrameInfo->qwDuration = info.qwDuration;
+			pFrameInfo->dwShowIndex = info.dwShowIndex;
+			pFrameInfo->extradata_size = info.extradata_size;
+		}
+		return info.iSize;
 	}
 	return 0;
 }
