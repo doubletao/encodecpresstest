@@ -1,0 +1,36 @@
+#pragma once
+#include "..\libcodec\IVideoEncoder.h"
+struct sInputParams;
+class CEncodingPipeline;
+class INTELCODECAPI CIntelVideoEncoder : public IVideoEncoder
+{
+public:
+	CIntelVideoEncoder();
+	~CIntelVideoEncoder();
+
+	bool InitVideoEncoder(const SVideoMediaInfo *pDesVideoInfo);
+
+	// 设置视频采样系数
+	//pInImageInfo: 输入无压缩帧参数
+    bool SetVideoFrameBufInfo(const SVideoFrameImageBufInfo *pInImageInfo);
+
+	// 输入一帧数据，其颜色格式与大小要与初始化相同
+	bool PutFrame(const uint8_t* pFrameBuffer, const SRFrameInfo* pFrameInfo, bool bForceToKeyFrame = false);
+
+	// 模式1时在输入最后一帧数据后调用，可以保证编码器输出全部输入帧
+	bool SetEndofInput();
+
+	// 获取压缩帧数据
+	bool GetCompressFrame(uint8_t* &pFrameBuffer, SRFrameInfo *pFrameInfo);
+
+	bool Release();
+private:
+	bool VideoMediaInfoToInputParams(const SVideoMediaInfo *pVideoMediaInfo);
+
+    CEncodingPipeline *m_pVideoEncoder;
+
+	sInputParams  *m_Params;
+
+	int   m_nTargetUsage;
+};
+

@@ -25,6 +25,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AudioCodeDebuger", "src\Aud
 		{61146BF5-D2EF-4325-9DDB-DF3FF621E356} = {61146BF5-D2EF-4325-9DDB-DF3FF621E356}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IntelCodec", "src\IntelCodec\IntelCodec.vcxproj", "{AF418F1B-381D-45AE-B6D0-0FC6F72C2135}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +53,10 @@ Global
 		{13FB9DA9-B3BA-40FD-89BF-D2DC25C6777F}.Debug|x64.Build.0 = Debug|x64
 		{13FB9DA9-B3BA-40FD-89BF-D2DC25C6777F}.Release|x64.ActiveCfg = Release|x64
 		{13FB9DA9-B3BA-40FD-89BF-D2DC25C6777F}.Release|x64.Build.0 = Release|x64
+		{AF418F1B-381D-45AE-B6D0-0FC6F72C2135}.Debug|x64.ActiveCfg = Debug|x64
+		{AF418F1B-381D-45AE-B6D0-0FC6F72C2135}.Debug|x64.Build.0 = Debug|x64
+		{AF418F1B-381D-45AE-B6D0-0FC6F72C2135}.Release|x64.ActiveCfg = Release|x64
+		{AF418F1B-381D-45AE-B6D0-0FC6F72C2135}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
