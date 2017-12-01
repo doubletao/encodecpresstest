@@ -5,13 +5,10 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EncodecPressTest", "src\EncodecPressTest\EncodecPressTest.vcxproj", "{F009C5A7-546A-4D81-ABDC-F2CF7BAC1CF9}"
 	ProjectSection(ProjectDependencies) = postProject
-		{128FDE9A-DF0F-44D8-AE9E-3E99C43A9AF1} = {128FDE9A-DF0F-44D8-AE9E-3E99C43A9AF1}
 		{338B07D3-5540-4A42-9279-FBA131AF14DB} = {338B07D3-5540-4A42-9279-FBA131AF14DB}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDLVideoPlayer", "src\SDLVideoPlayer\SDLVideoPlayer.vcxproj", "{338B07D3-5540-4A42-9279-FBA131AF14DB}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FFMpegDecoder", "src\FFMpegDecoder\FFMpegDecoder.vcxproj", "{128FDE9A-DF0F-44D8-AE9E-3E99C43A9AF1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ecCodec", "src\ecCodec\ecCodec.vcxproj", "{61146BF5-D2EF-4325-9DDB-DF3FF621E356}"
 EndProject
@@ -33,10 +30,6 @@ Global
 		{338B07D3-5540-4A42-9279-FBA131AF14DB}.Debug|x64.Build.0 = Debug|x64
 		{338B07D3-5540-4A42-9279-FBA131AF14DB}.Release|x64.ActiveCfg = Release|x64
 		{338B07D3-5540-4A42-9279-FBA131AF14DB}.Release|x64.Build.0 = Release|x64
-		{128FDE9A-DF0F-44D8-AE9E-3E99C43A9AF1}.Debug|x64.ActiveCfg = Debug|x64
-		{128FDE9A-DF0F-44D8-AE9E-3E99C43A9AF1}.Debug|x64.Build.0 = Debug|x64
-		{128FDE9A-DF0F-44D8-AE9E-3E99C43A9AF1}.Release|x64.ActiveCfg = Release|x64
-		{128FDE9A-DF0F-44D8-AE9E-3E99C43A9AF1}.Release|x64.Build.0 = Release|x64
 		{61146BF5-D2EF-4325-9DDB-DF3FF621E356}.Debug|x64.ActiveCfg = Debug|x64
 		{61146BF5-D2EF-4325-9DDB-DF3FF621E356}.Debug|x64.Build.0 = Debug|x64
 		{61146BF5-D2EF-4325-9DDB-DF3FF621E356}.Release|x64.ActiveCfg = Release|x64

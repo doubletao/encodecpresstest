@@ -8,7 +8,6 @@
 #include "EncodecPressTest.h"
 #include "EncodecPressTestDlg.h"
 #include "afxdialogex.h"
-#include "FFmpegVADecoder.h"
 #include "CpuUsage.h"
 #include <set>
 
