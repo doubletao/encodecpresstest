@@ -1,6 +1,11 @@
 #pragma once
 #include "IecCodecVideoEncoder.h"
+//#define EDU_INTEL_CODEC
+#ifdef EDU_INTEL_CODEC
 #include "IntelEncoder.h"
+#else
+#include "Intel\pipeline_encode.h"
+#endif
 
 class ecCodecIntelVideoEncoder :
 	public IecCodecVideoEncoder
@@ -9,7 +14,15 @@ public:
 	ecCodecIntelVideoEncoder();
 	virtual ~ecCodecIntelVideoEncoder();
 private:
+#ifdef EDU_INTEL_CODEC
 	IntelEncoder * m_pEncoder;
+#else
+	CEncodingPipeline * m_pEncodingPipeline;
+	CRITICAL_SECTION m_lock;
+	HANDLE m_hStopEvt;
+	HANDLE m_hEncodeThread;
+	static UINT ThreadEncodec(LPVOID pParam);
+#endif
 public:
 	virtual bool InitVideoEncoder(const SDVideoMediaInfo *pDesVideoInfo);
 	virtual bool SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo *pVideoBufInfo);
@@ -18,4 +31,3 @@ public:
 	virtual int  GetCompressFrame(SD_UINT8* &pFrameBuffer, SDRFrameInfo *pFrameInfo);
 	virtual bool Release();
 };
-

@@ -38,6 +38,54 @@
     <ClInclude Include="CodecFFmpeg\FFmpegFormatConverter.h" />
     <ClInclude Include="CodecIntel\ecCodecIntelProtocolEncoder.h" />
     <ClInclude Include="CodecIntel\ecCodecIntelVideoEncoder.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\abstract_splitter.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\avc_bitstream.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\avc_headers.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\avc_nal_spl.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\avc_spl.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\avc_structures.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\base_allocator.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\current_date.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\d3d11_allocator.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\d3d11_device.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\d3d_allocator.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\d3d_device.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\decode_render.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\general_allocator.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\hw_device.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\intrusive_ptr.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\mfx_buffering.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\mfx_itt_trace.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\mfx_plugin_base.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\mfx_plugin_module.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\mfx_samples_config.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\parameters_dumper.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\plugin_loader.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\plugin_utils.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\sample_defs.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\sample_params.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\sample_types.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\sample_utils.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\shared_ptr.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\surface_auto_lock.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\sysmem_allocator.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\time_statistics.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\v4l2_util.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vaapi_allocator.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vaapi_device.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vaapi_utils.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vaapi_utils_android.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vaapi_utils_drm.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vaapi_utils_x11.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\version.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vm\atomic_defs.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vm\file_defs.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vm\so_defs.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vm\strings_defs.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vm\thread_defs.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vm\time_defs.h" />
+    <ClInclude Include="CodecIntel\Intel\common_include\vpp_ex.h" />
+    <ClInclude Include="CodecIntel\Intel\pipeline_encode.h" />
     <ClInclude Include="ecCodecFactory.h" />
   </ItemGroup>
   <ItemGroup>
@@ -52,6 +100,35 @@
     <ClCompile Include="CodecFFmpeg\FFmpegFormatConverter.cpp" />
     <ClCompile Include="CodecIntel\ecCodecIntelProtocolEncoder.cpp" />
     <ClCompile Include="CodecIntel\ecCodecIntelVideoEncoder.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\avc_bitstream.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\avc_nal_spl.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\avc_spl.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\base_allocator.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\d3d11_allocator.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\d3d11_device.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\d3d_allocator.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\d3d_device.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\decode_render.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\general_allocator.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\mfx_buffering.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\parameters_dumper.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\plugin_utils.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\sample_utils.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\sysmem_allocator.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\v4l2_util.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\vaapi_allocator.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\vaapi_device.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\vaapi_utils.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\vaapi_utils_android.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\vaapi_utils_drm.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\vaapi_utils_x11.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\vm\atomic.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\vm\shared_object.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\vm\thread.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\vm\thread_windows.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\vm\time.cpp" />
+    <ClCompile Include="CodecIntel\Intel\common_src\vpp_ex.cpp" />
+    <ClCompile Include="CodecIntel\Intel\pipeline_encode.cpp" />
     <ClCompile Include="ecCodecFactory.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -102,15 +179,18 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>EASY_CODEC_API;_DEBUG;_WINDOWS;_USRDLL;ECCODEC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>EASY_CODEC_API;WIN64;_DEBUG;_WINDOWS;_USRDLL;ECCODEC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\include\IncFFMpeg;..\..\include\ecCodec;..\..\include\SDDefine;..\..\include\IntelCodec</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include\IncFFMpeg;..\..\include\ecCodec;..\..\include\SDDefine;..\..\include\IntelCodec;$(INTELMEDIASDKROOT)\include;$(INTELMEDIASDKROOT)\igfx_s3dcontrol\include;CodecIntel\Intel\common_include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\..\Lib\LibFFmpeg;..\..\Lib\IntelCodec</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\Lib\LibFFmpeg;..\..\Lib\IntelCodec;$(INTELMEDIASDKROOT)lib\$(Platform);$(WindowsSDK_LibraryPath_x64);$(VC_LibraryPath_x64)</AdditionalLibraryDirectories>
       <ImportLibrary>..\..\Lib\ecCodec\$(TargetName).lib</ImportLibrary>
+      <AdditionalDependencies>libmfx_vs2015.lib;dxva2.lib;d3d9.lib;d3d11.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -121,17 +201,20 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>EASY_CODEC_API;NDEBUG;_WINDOWS;_USRDLL;ECCODEC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>EASY_CODEC_API;WIN64;NDEBUG;_WINDOWS;_USRDLL;ECCODEC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\include\IncFFMpeg;..\..\include\ecCodec;..\..\include\SDDefine;..\..\include\IntelCodec</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include\IncFFMpeg;..\..\include\ecCodec;..\..\include\SDDefine;..\..\include\IntelCodec;$(INTELMEDIASDKROOT)\include;$(INTELMEDIASDKROOT)\igfx_s3dcontrol\include;CodecIntel\Intel\common_include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\..\Lib\LibFFmpeg;..\..\Lib\IntelCodec</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\Lib\LibFFmpeg;..\..\Lib\IntelCodec;$(INTELMEDIASDKROOT)lib\$(Platform);$(WindowsSDK_LibraryPath_x64);$(VC_LibraryPath_x64)</AdditionalLibraryDirectories>
       <ImportLibrary>..\..\Lib\ecCodec\$(TargetName).lib</ImportLibrary>
+      <AdditionalDependencies>libmfx_vs2015.lib;dxva2.lib;d3d9.lib;d3d11.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

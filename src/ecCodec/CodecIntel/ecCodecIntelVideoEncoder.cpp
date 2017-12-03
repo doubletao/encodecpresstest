@@ -1,5 +1,6 @@
 #include "ecCodecIntelVideoEncoder.h"
 
+#ifdef EDU_INTEL_CODEC
 ecCodecIntelVideoEncoder::ecCodecIntelVideoEncoder()
 	: m_pEncoder(nullptr)
 {
@@ -8,6 +9,7 @@ ecCodecIntelVideoEncoder::ecCodecIntelVideoEncoder()
 
 ecCodecIntelVideoEncoder::~ecCodecIntelVideoEncoder()
 {
+	Release();
 	DeleteIntelEncoder(m_pEncoder);
 }
 
@@ -105,3 +107,55 @@ bool ecCodecIntelVideoEncoder::Release()
 	}
 	return m_pEncoder->Release();
 }
+#else
+ecCodecIntelVideoEncoder::ecCodecIntelVideoEncoder()
+	: m_pEncodingPipeline(nullptr)
+{
+}
+
+ecCodecIntelVideoEncoder::~ecCodecIntelVideoEncoder()
+{
+	Release();
+}
+
+bool ecCodecIntelVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDesVideoInfo)
+{
+	bool bRet = false;
+	return bRet;
+}
+
+bool ecCodecIntelVideoEncoder::SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo * pVideoBufInfo)
+{
+	bool bRet = false;
+	return bRet;
+}
+
+bool ecCodecIntelVideoEncoder::PutFrame(const SD_UINT8 * pFrameBuffer, const SDRFrameInfo * pFrameInfo, bool bForceToKeyFrame)
+{
+	bool bRet = false;
+	return bRet;
+}
+
+bool ecCodecIntelVideoEncoder::SetEndofInput()
+{
+	bool bRet = false;
+	return bRet;
+}
+
+int ecCodecIntelVideoEncoder::GetCompressFrame(SD_UINT8 *& pFrameBuffer, SDRFrameInfo * pFrameInfo)
+{
+	int nRet = 0;
+	return nRet;
+}
+
+bool ecCodecIntelVideoEncoder::Release()
+{
+	bool bRet = false;
+	if (m_pEncodingPipeline)
+	{
+		delete m_pEncodingPipeline;
+		m_pEncodingPipeline = nullptr;
+	}
+	return bRet;
+}
+#endif
