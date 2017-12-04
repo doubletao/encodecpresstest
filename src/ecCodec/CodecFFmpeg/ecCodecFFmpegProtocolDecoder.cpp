@@ -551,7 +551,8 @@ bool ecCodecFFmpegProtocolDecoder::Start()
 			uint8_t * pVideoData = new uint8_t[nVideoBufferSize];
 			memset(pVideoData, 0, nVideoBufferSize * sizeof(uint8_t));
 			bRet |= GetVideoBuffer(0, pVideoData, nullptr);
-			deleteC(pVideoData);
+			delete pVideoData;
+			pVideoData = nullptr;
 		}
 		if (m_AudioDecoder.IsInitialized())
 		{
@@ -559,7 +560,8 @@ bool ecCodecFFmpegProtocolDecoder::Start()
 			uint8_t * pAudioData = new uint8_t[nAudioBufferSize];
 			memset(pAudioData, 0, nAudioBufferSize * sizeof(uint8_t));
 			bRet |= GetAudioSamples(0, 1, pAudioData, nullptr);
-			deleteC(pAudioData);
+			delete pAudioData;
+			pAudioData = nullptr;
 		}
 	}
 	return bRet;

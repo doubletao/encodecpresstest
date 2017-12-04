@@ -3,9 +3,9 @@
 *
 * 公共头文件之一,EasyCode科技公司版权所有!
 *
-* 描述:		-仿MFC体系CSDArray类定义并实现的头文件。
+* 描述:		-仿MFC体系CArray类定义并实现的头文件。
 *
-* 目标:		-这个头文件实现了类似于MFC体系CSDArray类的功能,使用方式基本相同,并支持跨操作系统运行环境!
+* 目标:		-这个头文件实现了类似于MFC体系CArray类的功能,使用方式基本相同,并支持跨操作系统运行环境!
 *
 * Ver-0.9
 *
@@ -476,25 +476,5 @@ SD_VOID CSDArray<TYPE, ARG_TYPE>::InsertAt(SD_INT_PTR nStartIndex, CSDArray* pNe
 			SetAt(nStartIndex + i, pNewArray->GetAt(i));
 	}
 };
-
-typedef CSDArray<SD_UINT64, SD_UINT64&> CdwordArray;
-typedef CSDArray<TCHAR, TCHAR>				CTCharArray;
-typedef CSDArray<short, short>				CShortArray;
-typedef CSDArray<int, int>					CIntArray;
-typedef CSDArray<long, long>					CLongArray;
-typedef CSDArray<float, float>				CFloatArray;
-typedef CSDArray<double, double>				CDoubleArray;
-typedef CSDArray<__int64, __int64>			CLongLongArray;
-
-#if 0
-typedef CSDArray<COLORREF, COLORREF>			CCOLORREFArray;
-typedef CSDArray<GUID, GUID&>					CGuidArray;
-typedef CSDArray<HWND, HWND&>					CHWndArray;
-typedef CSDArray<CWnd*, CWnd*&>				CWndPtrArray;
-typedef CSDArray<CPoint, CPoint&>				CPointArray;
-typedef CSDArray<CSize, CSize&>				CSizeArray;
-typedef CSDArray<CRect, CRect&>				CRectArray;
-typedef CSDArray<COleDateTime, COleDateTime&>	COleDateTimeArray;
-#endif
 
 #endif //_SD_CSDARRAY_H_

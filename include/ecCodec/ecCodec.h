@@ -27,7 +27,7 @@
 
 //基础数据结构定义
 #include "SDVADefine.h"
-#include "SDVADefineEx.h"
+//#include "SDVADefineEx.h"
 
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 

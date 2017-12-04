@@ -3,7 +3,7 @@
 
 #include "ecCodec.h"
 #include "SDVADefine.h"
-#include "SDVADefineEx.h"
+//#include "SDVADefineEx.h"
 extern "C"
 {
 #include "libavutil\pixfmt.h"

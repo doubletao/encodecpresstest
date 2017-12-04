@@ -526,8 +526,10 @@ void CEncodecPressTestDlg::DoPlay()
 								}
 							}
 						}
-						deleteC(pAudioData);
-						deleteC(pVideoData);
+						delete pAudioData;
+						pAudioData = nullptr;
+						delete pVideoData;
+						pVideoData = nullptr;
 					}
 				}
 #ifdef DEBUG_AUDIO_OUTFILE

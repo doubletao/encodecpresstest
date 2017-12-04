@@ -621,7 +621,6 @@ typedef CSDArray<SD_GUID, SD_GUID&>				CSDGuidArray;
 typedef CSDArray<CSDString, CSDString&>			CSDStringArray;
 
 #ifdef __AFXCOLL_H__
-#if 0
 SD_INLINE SD_VOID	SDArrayCopyAppend(CSDUINT8Array &arrayDest, SD_CONST CByteArray &arraySrc, SD_BOOL bIsCopy=SD_TRUE)
 {
 	if (bIsCopy)
@@ -654,7 +653,7 @@ SD_INLINE SD_VOID	SDArrayCopyAppend(CWordArray &arrayDest, SD_CONST CSDUINT16Arr
 	for (SD_INT_PTR i=0; i<size; i++)
 		arrayDest.Add(arraySrc.GetAt(i));
 };
-SD_INLINE SD_VOID	SDArrayCopyAppend(CSDUINT32Array &arrayDest, SD_CONST CdwordArray &arraySrc, SD_BOOL bIsCopy=SD_TRUE)
+SD_INLINE SD_VOID	SDArrayCopyAppend(CSDUINT32Array &arrayDest, SD_CONST CDWordArray &arraySrc, SD_BOOL bIsCopy=SD_TRUE)
 {
 	if (bIsCopy)
 		arrayDest.RemoveAll();
@@ -662,7 +661,7 @@ SD_INLINE SD_VOID	SDArrayCopyAppend(CSDUINT32Array &arrayDest, SD_CONST CdwordAr
 	for (SD_INT_PTR i=0; i<size; i++)
 		arrayDest.Add(arraySrc.GetAt(i));
 };
-SD_INLINE SD_VOID	SDArrayCopyAppend(CdwordArray &arrayDest, SD_CONST CSDUINT32Array &arraySrc, SD_BOOL bIsCopy=SD_TRUE)
+SD_INLINE SD_VOID	SDArrayCopyAppend(CDWordArray &arrayDest, SD_CONST CSDUINT32Array &arraySrc, SD_BOOL bIsCopy=SD_TRUE)
 {
 	if (bIsCopy)
 		arrayDest.RemoveAll();
@@ -686,7 +685,7 @@ SD_INLINE SD_VOID	SDArrayCopyAppend(CPtrArray &arrayDest, SD_CONST CSDPtrArray &
 	for (SD_INT_PTR i=0; i<size; i++)
 		arrayDest.Add(arraySrc.GetAt(i));
 };
-SD_INLINE SD_VOID	SDArrayCopyAppend(CSDStringArray &arrayDest, SD_CONST CSDStringArray &arraySrc, SD_BOOL bIsCopy=SD_TRUE)
+SD_INLINE SD_VOID	SDArrayCopyAppend(CSDStringArray &arrayDest, SD_CONST CStringArray &arraySrc, SD_BOOL bIsCopy=SD_TRUE)
 {
 	if (bIsCopy)
 		arrayDest.RemoveAll();
@@ -697,7 +696,7 @@ SD_INLINE SD_VOID	SDArrayCopyAppend(CSDStringArray &arrayDest, SD_CONST CSDStrin
 		arrayDest.Add(str);
 	}
 };
-SD_INLINE SD_VOID	SDArrayCopyAppend(CSDStringArray &arrayDest, SD_CONST CSDStringArray &arraySrc, SD_BOOL bIsCopy=SD_TRUE)
+SD_INLINE SD_VOID	SDArrayCopyAppend(CStringArray &arrayDest, SD_CONST CSDStringArray &arraySrc, SD_BOOL bIsCopy=SD_TRUE)
 {
 	if (bIsCopy)
 		arrayDest.RemoveAll();
@@ -705,7 +704,6 @@ SD_INLINE SD_VOID	SDArrayCopyAppend(CSDStringArray &arrayDest, SD_CONST CSDStrin
 	for (SD_INT_PTR i=0; i<size; i++)
 		arrayDest.Add((SD_LPCTSTR)(arraySrc.GetAt(i)));
 };
-#endif
 #endif	//__AFXCOLL_H__
 //================================================================================================================
 

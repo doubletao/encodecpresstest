@@ -3,7 +3,7 @@
 #include <crtdbg.h>
 #include "ecCodecFactory.h"
 #include "SDVADefine.h"
-#include "SDVADefineEx.h"
+//#include "SDVADefineEx.h"
 #include "CodecFFmpeg\ecCodecFFmpegProtocolDecoder.h"
 #include "CodecFFmpeg\ecCodecFFmpegProtocolEncoder.h"
 #include "CodecFFmpeg\ecCodecFFmpegVideoDecoder.h"

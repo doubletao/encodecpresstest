@@ -3,10 +3,10 @@
 *
 * 公共头文件之一,EasyCode科技公司版权所有!
 *
-* 目标:		-这个头文件实现了类似于MFC体系CSDString类的功能,使用方式基本相同,并支持跨操作系统运行环境!
+* 目标:		-这个头文件实现了类似于MFC体系CString类的功能,使用方式基本相同,并支持跨操作系统运行环境!
 *
 * 描述:		-几个有用的关于字符串处理及转换方面的API函数
-*			-仿MFC体系CSDString类定义并实现。
+*			-仿MFC体系CString类定义并实现。
 *
 * == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == =  =  = 
 SD_INT32 SD_GetStrLen(SD_LPCSTR lpcsz);
@@ -33,7 +33,7 @@ class CSDString
 	CSDString(SD_LPCWSTR lpcwsz);
 	CSDString(SD_LPCTSTR lpctsz, SD_INT32 nLength);
 	CSDString(SD_CONST CSDString& stringSrc);
-	CSDString(SD_CONST CSDString& strSrc);
+	CSDString(SD_CONST CString& strSrc);
 	~CSDString();
 
 	SD_INT32 GetLength() SD_CONST;
@@ -47,22 +47,22 @@ class CSDString
 	SD_UINT32 GetWCharBuffer(SD_LPWSTR pWCharBuf, SD_INT32 nSizeWChar) SD_CONST;
 	SD_LPCTSTR	GetTCharBuffer() SD_CONST;
 	operator	SD_LPCTSTR() SD_CONST;
-	SD_VOID		GetCSDString(CSDString& strDest) SD_CONST;
-	CSDString		GetCSDString() SD_CONST;
+	SD_VOID		GetCString(CString& strDest) SD_CONST;
+	CString		GetCString() SD_CONST;
 
 	SD_CONST CSDString& operator = (SD_CHAR ch);
 	SD_CONST CSDString& operator = (SD_WCHAR wch);
 	SD_CONST CSDString& operator = (SD_LPCSTR lpcsz);
 	SD_CONST CSDString& operator = (SD_LPCWSTR lpcwsz);
 	SD_CONST CSDString& operator = (SD_CONST CSDString& stringSrc);
-	SD_CONST CSDString& operator = (SD_CONST CSDString& strSrc);
+	SD_CONST CSDString& operator = (SD_CONST CString& strSrc);
 
 	SD_CONST CSDString& operator +=  (SD_CHAR ch);
 	SD_CONST CSDString& operator +=  (SD_WCHAR wch);
 	SD_CONST CSDString& operator +=  (SD_LPCSTR lpcsz);
 	SD_CONST CSDString& operator +=  (SD_LPCWSTR lpcwsz);
 	SD_CONST CSDString& operator +=  (SD_CONST CSDString& stringAdd);
-	SD_CONST CSDString& operator +=  (SD_CONST CSDString& strAdd);
+	SD_CONST CSDString& operator +=  (SD_CONST CString& strAdd);
 
 	friend CSDString  operator + (SD_CONST CSDString& string1, SD_CONST CSDString& string2);
 	friend CSDString  operator + (SD_CONST CSDString& stringSrc, SD_CHAR ch);
@@ -73,65 +73,65 @@ class CSDString
 	friend CSDString  operator + (SD_LPCSTR lpcsz, SD_CONST CSDString& stringSrc);
 	friend CSDString  operator + (SD_CONST CSDString& stringSrc, SD_LPCWSTR lpcwsz);
 	friend CSDString  operator + (SD_LPCWSTR lpcwsz, SD_CONST CSDString& stringSrc);
-	friend CSDString  operator + (SD_CONST CSDString& s1, CSDString s2);
-	friend CSDString  operator + (CSDString s1, SD_CONST CSDString& s2);
+	friend CSDString  operator + (SD_CONST CSDString& s1, CString s2);
+	friend CSDString  operator + (CString s1, SD_CONST CSDString& s2);
 
 	friend SD_BOOL  operator == (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
 	friend SD_BOOL  operator == (SD_CONST CSDString& s, SD_LPCSTR lpcsz);
 	friend SD_BOOL  operator == (SD_LPCSTR lpcsz, SD_CONST CSDString& s);
 	friend SD_BOOL  operator == (SD_CONST CSDString& s, SD_LPCWSTR lpcwsz);
 	friend SD_BOOL  operator == (SD_LPCWSTR lpcwsz, SD_CONST CSDString& s);
-	friend SD_BOOL  operator == (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
-	friend SD_BOOL  operator == (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
+	friend SD_BOOL  operator == (SD_CONST CSDString& s1, SD_CONST CString& s2);
+	friend SD_BOOL  operator == (SD_CONST CString& s1, SD_CONST CSDString& s2);
 
 	friend SD_BOOL  operator !=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
 	friend SD_BOOL  operator !=  (SD_CONST CSDString& s, SD_LPCSTR lpcsz);
 	friend SD_BOOL  operator !=  (SD_LPCSTR lpcsz, SD_CONST CSDString& s);
 	friend SD_BOOL  operator !=  (SD_CONST CSDString& s, SD_LPCWSTR lpcwsz);
 	friend SD_BOOL  operator !=  (SD_LPCWSTR lpcwsz, SD_CONST CSDString& s);
-	friend SD_BOOL  operator !=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
-	friend SD_BOOL  operator !=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
+	friend SD_BOOL  operator !=  (SD_CONST CSDString& s1, SD_CONST CString& s2);
+	friend SD_BOOL  operator !=  (SD_CONST CString& s1, SD_CONST CSDString& s2);
 
 	friend SD_BOOL  operator < (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
 	friend SD_BOOL  operator < (SD_CONST CSDString& s, SD_LPCSTR lpcsz);
 	friend SD_BOOL  operator < (SD_LPCSTR lpcsz, SD_CONST CSDString& s);
 	friend SD_BOOL  operator < (SD_CONST CSDString& s, SD_LPCWSTR lpcwsz);
 	friend SD_BOOL  operator < (SD_LPCWSTR lpcwsz, SD_CONST CSDString& s);
-	friend SD_BOOL  operator < (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
-	friend SD_BOOL  operator < (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
+	friend SD_BOOL  operator < (SD_CONST CSDString& s1, SD_CONST CString& s2);
+	friend SD_BOOL  operator < (SD_CONST CString& s1, SD_CONST CSDString& s2);
 
 	friend SD_BOOL  operator > (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
 	friend SD_BOOL  operator > (SD_CONST CSDString& s, SD_LPCSTR lpcsz);
 	friend SD_BOOL  operator > (SD_LPCSTR lpcsz, SD_CONST CSDString& s);
 	friend SD_BOOL  operator > (SD_CONST CSDString& s, SD_LPCWSTR lpcwsz);
 	friend SD_BOOL  operator > (SD_LPCWSTR lpcwsz, SD_CONST CSDString& s);
-	friend SD_BOOL  operator > (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
-	friend SD_BOOL  operator > (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
+	friend SD_BOOL  operator > (SD_CONST CSDString& s1, SD_CONST CString& s2);
+	friend SD_BOOL  operator > (SD_CONST CString& s1, SD_CONST CSDString& s2);
 
 	friend SD_BOOL  operator <=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
 	friend SD_BOOL  operator <=  (SD_CONST CSDString& s, SD_LPCSTR lpcsz);
 	friend SD_BOOL  operator <=  (SD_LPCSTR lpcsz, SD_CONST CSDString& s);
 	friend SD_BOOL  operator <=  (SD_CONST CSDString& s, SD_LPCWSTR lpcwsz);
 	friend SD_BOOL  operator <=  (SD_LPCWSTR lpcwsz, SD_CONST CSDString& s);
-	friend SD_BOOL  operator <=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
-	friend SD_BOOL  operator <=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
+	friend SD_BOOL  operator <=  (SD_CONST CSDString& s1, SD_CONST CString& s2);
+	friend SD_BOOL  operator <=  (SD_CONST CString& s1, SD_CONST CSDString& s2);
 
 	friend SD_BOOL  operator >=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
 	friend SD_BOOL  operator >=  (SD_CONST CSDString& s, SD_LPCSTR lpcsz);
 	friend SD_BOOL  operator >=  (SD_LPCSTR lpcsz, SD_CONST CSDString& s);
 	friend SD_BOOL  operator >=  (SD_CONST CSDString& s, SD_LPCWSTR lpcwsz);
 	friend SD_BOOL  operator >=  (SD_LPCWSTR lpcwsz, SD_CONST CSDString& s);
-	friend SD_BOOL  operator >=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
-	friend SD_BOOL  operator >=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2);
+	friend SD_BOOL  operator >=  (SD_CONST CSDString& s1, SD_CONST CString& s2);
+	friend SD_BOOL  operator >=  (SD_CONST CString& s1, SD_CONST CSDString& s2);
 
 	SD_INT32 Compare(SD_LPCSTR lpcsz) SD_CONST;
 	SD_INT32 Compare(SD_LPCWSTR lpcwsz) SD_CONST;
 	SD_INT32 Compare(CSDString stringCmp) SD_CONST;
-	SD_INT32 Compare(CSDString stringCmp) SD_CONST;
+	SD_INT32 Compare(CString stringCmp) SD_CONST;
 	SD_INT32 CompareNoCase(SD_LPCSTR lpcsz) SD_CONST;
 	SD_INT32 CompareNoCase(SD_LPCWSTR lpcwsz) SD_CONST;
 	SD_INT32 CompareNoCase(CSDString stringCmp) SD_CONST;
-	SD_INT32 CompareNoCase(CSDString stringCmp) SD_CONST;
+	SD_INT32 CompareNoCase(CString stringCmp) SD_CONST;
 
 	CSDString Mid(SD_INT32 nFirst, SD_INT32 nCount) SD_CONST;
 	CSDString Mid(SD_INT32 nFirst) SD_CONST;
@@ -139,10 +139,10 @@ class CSDString
 	CSDString Right(SD_INT32 nCount) SD_CONST;
 	CSDString SpanIncluding(SD_LPCTSTR lpszCharSet) SD_CONST;
 	CSDString SpanIncluding(CSDString strCharSet) SD_CONST;
-	CSDString SpanIncluding(CSDString strCharSet) SD_CONST;
+	CSDString SpanIncluding(CString strCharSet) SD_CONST;
 	CSDString SpanExcluding(SD_LPCTSTR lpszCharSet) SD_CONST;
 	CSDString SpanExcluding(CSDString strCharSet) SD_CONST;
-	CSDString SpanExcluding(CSDString strCharSet) SD_CONST;
+	CSDString SpanExcluding(CString strCharSet) SD_CONST;
 
 	CSDString& MakeUpper();
 	CSDString& MakeLower();
@@ -151,15 +151,15 @@ class CSDString
 	CSDString& TrimRight(SD_TCHAR chTarget = _T(' '));
 	CSDString& TrimRight(SD_LPCTSTR lpszTargets);
 	CSDString& TrimRight(CSDString strTargets);
-	CSDString& TrimRight(CSDString strTargets);
+	CSDString& TrimRight(CString strTargets);
 	CSDString& TrimLeft(SD_TCHAR chTarget = _T(' '));
 	CSDString& TrimLeft(SD_LPCTSTR lpszTargets);
 	CSDString& TrimLeft(CSDString strTargets);
-	CSDString& TrimLeft(CSDString strTargets);
+	CSDString& TrimLeft(CString strTargets);
 	CSDString& Trim(SD_TCHAR chTarget = _T(' '));
 	CSDString& Trim(SD_LPCTSTR pszTargets);
 	CSDString& Trim(CSDString strTargets);
-	CSDString& Trim(CSDString strTargets);
+	CSDString& Trim(CString strTargets);
 
 	SD_INT32 Replace(SD_TCHAR chOld, SD_TCHAR chNew);
 	SD_INT32 Replace(SD_LPCTSTR lpszOld, SD_LPCTSTR lpszNew);
@@ -171,33 +171,33 @@ class CSDString
 	SD_INT32 Append(SD_LPCWSTR lpcwsz);
 	SD_INT32 Append(SD_LPCTSTR lpctsz, SD_INT32 nLength);
 	SD_INT32 Append(SD_CONST CSDString& strSrc);
-	SD_INT32 Append(SD_CONST CSDString& strSrc);
+	SD_INT32 Append(SD_CONST CString& strSrc);
 	SD_INT32 Insert(SD_INT32 nIndex, SD_CHAR ch, SD_INT32 nRepeat = 1);
 	SD_INT32 Insert(SD_INT32 nIndex, SD_WCHAR wch, SD_INT32 nRepeat = 1);
 	SD_INT32 Insert(SD_INT32 nIndex, SD_LPCSTR lpcsz);
 	SD_INT32 Insert(SD_INT32 nIndex, SD_LPCWSTR lpcwsz);
 	SD_INT32 Insert(SD_INT32 nIndex, SD_LPCTSTR lpctsz, SD_INT32 nLength);
 	SD_INT32 Insert(SD_INT32 nIndex, SD_CONST CSDString& strSrc);
-	SD_INT32 Insert(SD_INT32 nIndex, SD_CONST CSDString& strSrc);
+	SD_INT32 Insert(SD_INT32 nIndex, SD_CONST CString& strSrc);
 
 	SD_INT32 Find(SD_TCHAR tch, SD_INT32 nStart = 0) SD_CONST;
 	SD_INT32 ReverseFind(SD_TCHAR tch, SD_INT32 nStart = -1) SD_CONST;
 	SD_INT32 Find(SD_LPCTSTR lpszSub, SD_INT32 nStart = 0) SD_CONST;
 	SD_INT32 Find(CSDString strSub, SD_INT32 nStart = 0) SD_CONST;
-	SD_INT32 Find(CSDString strSub, SD_INT32 nStart = 0) SD_CONST;
+	SD_INT32 Find(CString strSub, SD_INT32 nStart = 0) SD_CONST;
 	SD_INT32 FindOneOf(SD_LPCTSTR lpszCharSet) SD_CONST;
 	SD_INT32 FindOneOf(CSDString strCharSet) SD_CONST;
-	SD_INT32 FindOneOf(CSDString strCharSet) SD_CONST;
+	SD_INT32 FindOneOf(CString strCharSet) SD_CONST;
 	CSDString Tokenize(SD_LPCTSTR pszTokens, SD_INT32& iStart) SD_CONST;
 	CSDString Tokenize(CSDString strTokens, SD_INT32& iStart) SD_CONST;
-	CSDString Tokenize(CSDString strTokens, SD_INT32& iStart) SD_CONST;
+	CSDString Tokenize(CString strTokens, SD_INT32& iStart) SD_CONST;
 
 	SD_VOID Format(SD_LPCTSTR lpszFormat, ...);
 	SD_VOID Format(CSDString strFormat, ...);
-	SD_VOID Format(CSDString strFormat, ...);
+	SD_VOID Format(CString strFormat, ...);
 	SD_VOID	AppendFormat(SD_LPCTSTR lpszFormat, ...);
 	SD_VOID	AppendFormat(CSDString strFormat, ...);
-	SD_VOID	AppendFormat(CSDString strFormat, ...);
+	SD_VOID	AppendFormat(CString strFormat, ...);
 }
 * == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == = == =  =  = 
 *
@@ -2282,10 +2282,10 @@ private:
 	};
 
 #ifdef __AFX_H__
-#if 0
+
 public:
 
-	CSDString(SD_CONST CSDString& strSrc)
+	CSDString(SD_CONST CString& strSrc)
 	{
 		m_lptstr = SD_NULL;
 		SD_INT32 nStrLen = (SD_INT32)(strSrc.GetLength());
@@ -2299,7 +2299,7 @@ public:
 		}
 	};
 
-	SD_CONST CSDString& operator = (SD_CONST CSDString& strSrc)
+	SD_CONST CSDString& operator = (SD_CONST CString& strSrc)
 	{
 		SD_UINT32 dwTCharNum_Src = (SD_UINT32)(strSrc.GetLength());
 		if (dwTCharNum_Src > 0)
@@ -2314,7 +2314,7 @@ public:
 		return (*this);
 	};
 
-	SD_CONST CSDString& operator +=  (SD_CONST CSDString& strAdd)
+	SD_CONST CSDString& operator +=  (SD_CONST CString& strAdd)
 	{
 		SD_UINT32 dwTCharNum_Add = (SD_UINT32)(strAdd.GetLength());
 		if (dwTCharNum_Add > 0)
@@ -2329,142 +2329,142 @@ public:
 		return (*this);
 	};
 
-	friend CSDString  operator + (SD_CONST CSDString& s1, CSDString s2)
+	friend CSDString  operator + (SD_CONST CSDString& s1, CString s2)
 	{
 		CSDString str(s1);
 		str +=  s2;
 		return str;
 	};
 
-	friend CSDString  operator + (CSDString s1, SD_CONST CSDString& s2)
+	friend CSDString  operator + (CString s1, SD_CONST CSDString& s2)
 	{
 		CSDString str(s1);
 		str +=  s2;
 		return str;
 	};
 
-	friend SD_BOOL  operator == (SD_CONST CSDString& s1, SD_CONST CSDString& s2)
+	friend SD_BOOL  operator == (SD_CONST CSDString& s1, SD_CONST CString& s2)
 	{ 
 		return (s1.Compare(s2) == 0); 
 	};
 
-	friend SD_BOOL  operator == (SD_CONST CSDString& s1, SD_CONST CSDString& s2)
+	friend SD_BOOL  operator == (SD_CONST CString& s1, SD_CONST CSDString& s2)
 	{ 
 		return (s2.Compare(s1) == 0); 
 	};
 
-	friend SD_BOOL  operator !=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2)
+	friend SD_BOOL  operator !=  (SD_CONST CSDString& s1, SD_CONST CString& s2)
 	{ 
 		return (s1.Compare(s2) !=  0); 
 	};
 
-	friend SD_BOOL  operator !=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2)
+	friend SD_BOOL  operator !=  (SD_CONST CString& s1, SD_CONST CSDString& s2)
 	{ 
 		return (s2.Compare(s1) !=  0); 
 	};
 
-	friend SD_BOOL  operator < (SD_CONST CSDString& s1, SD_CONST CSDString& s2)
+	friend SD_BOOL  operator < (SD_CONST CSDString& s1, SD_CONST CString& s2)
 	{ 
 		return (s1.Compare(s2) < 0); 
 	};
 
-	friend SD_BOOL  operator < (SD_CONST CSDString& s1, SD_CONST CSDString& s2)
+	friend SD_BOOL  operator < (SD_CONST CString& s1, SD_CONST CSDString& s2)
 	{ 
 		return (s2.Compare(s1) >=  0); 
 	};
 
-	friend SD_BOOL  operator > (SD_CONST CSDString& s1, SD_CONST CSDString& s2)
+	friend SD_BOOL  operator > (SD_CONST CSDString& s1, SD_CONST CString& s2)
 	{ 
 		return (s1.Compare(s2) > 0); 
 	};
 
-	friend SD_BOOL  operator > (SD_CONST CSDString& s1, SD_CONST CSDString& s2)
+	friend SD_BOOL  operator > (SD_CONST CString& s1, SD_CONST CSDString& s2)
 	{ 
 		return (s2.Compare(s1) <=  0); 
 	};
 
-	friend SD_BOOL  operator <=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2)
+	friend SD_BOOL  operator <=  (SD_CONST CSDString& s1, SD_CONST CString& s2)
 	{ 
 		return (s1.Compare(s2) <=  0); 
 	};
 
-	friend SD_BOOL  operator <=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2)
+	friend SD_BOOL  operator <=  (SD_CONST CString& s1, SD_CONST CSDString& s2)
 	{ 
 		return (s2.Compare(s1) > 0); 
 	};
 
-	friend SD_BOOL  operator >=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2)
+	friend SD_BOOL  operator >=  (SD_CONST CSDString& s1, SD_CONST CString& s2)
 	{ 
 		return (s1.Compare(s2) >=  0); 
 	};
 
-	friend SD_BOOL  operator >=  (SD_CONST CSDString& s1, SD_CONST CSDString& s2)
+	friend SD_BOOL  operator >=  (SD_CONST CString& s1, SD_CONST CSDString& s2)
 	{ 
 		return (s2.Compare(s2) < 0); 
 	};
 
 
-	SD_INT32 Compare(CSDString stringCmp) SD_CONST
+	SD_INT32 Compare(CString stringCmp) SD_CONST
 	{
 		return _CompareWith((SD_LPCTSTR)stringCmp, SD_FALSE);
 	};
 
-	SD_INT32 CompareNoCase(CSDString stringCmp) SD_CONST
+	SD_INT32 CompareNoCase(CString stringCmp) SD_CONST
 	{
 		return _CompareWith((SD_LPCTSTR)stringCmp, SD_TRUE);
 	};
 
-	CSDString SpanIncluding(CSDString strCharSet) SD_CONST
+	CSDString SpanIncluding(CString strCharSet) SD_CONST
 	{
 		return SpanIncluding((SD_LPCTSTR)strCharSet);
 	};
 
-	CSDString SpanExcluding(CSDString strCharSet) SD_CONST
+	CSDString SpanExcluding(CString strCharSet) SD_CONST
 	{
 		return SpanExcluding((SD_LPCTSTR)strCharSet);
 	};
 
-	CSDString& TrimRight(CSDString strTargets)
+	CSDString& TrimRight(CString strTargets)
 	{
 		return TrimRight((SD_LPCTSTR)strTargets);
 	};
 
-	CSDString& TrimLeft(CSDString strTargets)
+	CSDString& TrimLeft(CString strTargets)
 	{
 		return TrimLeft((SD_LPCTSTR)strTargets);
 	};
 
-	CSDString& Trim(CSDString strTargets)
+	CSDString& Trim(CString strTargets)
 	{
 		return TrimLeft((SD_LPCTSTR)strTargets);
 	};
 
-	SD_INT32 Append(SD_CONST CSDString& strSrc)
+	SD_INT32 Append(SD_CONST CString& strSrc)
 	{
 		return Insert(0x7fffffff, (SD_LPCTSTR)strSrc);
 	};
 
-	SD_INT32 Insert(SD_INT32 nIndex, SD_CONST CSDString& strSrc)
+	SD_INT32 Insert(SD_INT32 nIndex, SD_CONST CString& strSrc)
 	{
 		return Insert(0x7fffffff, (SD_LPCTSTR)strSrc);
 	};
 
-	SD_INT32 Find(CSDString strSub, SD_INT32 nStart = 0) SD_CONST
+	SD_INT32 Find(CString strSub, SD_INT32 nStart = 0) SD_CONST
 	{
 		return Find((SD_LPCTSTR)strSub, nStart);
 	};
 
-	SD_INT32 FindOneOf(CSDString strCharSet) SD_CONST
+	SD_INT32 FindOneOf(CString strCharSet) SD_CONST
 	{
 		return FindOneOf((SD_LPCTSTR)strCharSet);
 	};
 
-	CSDString Tokenize(CSDString strTokens, SD_INT32& iStart) SD_CONST
+	CSDString Tokenize(CString strTokens, SD_INT32& iStart) SD_CONST
 	{
 		return Tokenize((SD_LPCTSTR)strTokens, iStart);
 	};
 
-	SD_VOID Format(CSDString strFormat, ...)
+	SD_VOID Format(CString strFormat, ...)
 	{
 		va_list argList;
 		va_start(argList, strFormat);
@@ -2474,7 +2474,7 @@ public:
 		va_end(argList);
 	};
 
-	SD_VOID	AppendFormat(CSDString strFormat, ...)
+	SD_VOID	AppendFormat(CString strFormat, ...)
 	{
 		va_list argList;
 		va_start(argList, strFormat);
@@ -2484,17 +2484,17 @@ public:
 		va_end(argList);
 	};
 
-	SD_VOID GetCSDString(CSDString& strDest) SD_CONST
+	SD_VOID GetCString(CString& strDest) SD_CONST
 	{
-		strDest = CSDString(m_lptstr);
+		strDest = CString(m_lptstr);
 	};
 
-	CSDString GetCSDString() SD_CONST
+	CString GetCString() SD_CONST
 	{
-		CSDString	strRet = CSDString(m_lptstr);
+		CString	strRet = CString(m_lptstr);
 		return strRet;
 	};
-#endif
+
 #endif	//__AFX_H__
 
 };
