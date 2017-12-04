@@ -40,5 +40,11 @@ public:
 	virtual bool Release();
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 INTEL_CODEC_API_EXPORT IntelEncoder * CreateIntelEncoder();
 INTEL_CODEC_API_EXPORT bool DeleteIntelEncoder(IntelEncoder *& pEncoder);
+#ifdef __cplusplus
+}
+#endif
