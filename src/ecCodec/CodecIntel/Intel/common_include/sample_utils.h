@@ -24,6 +24,7 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include <string>
 #include <sstream>
 #include <vector>
+#include <queue>
 
 #include "mfxstructures.h"
 #include "mfxvideo.h"
@@ -100,6 +101,55 @@ enum
 bool IsDecodeCodecSupported(mfxU32 codecFormat);
 bool IsEncodeCodecSupported(mfxU32 codecFormat);
 bool IsPluginCodecSupported(mfxU32 codecFormat);
+
+//USER ADDED
+#if 1
+//改造Intel原来的文件读写为内存队列
+typedef std::pair<unsigned char *, unsigned int> sized_buffer;
+class CSmplBitstreamMemWriter
+{
+public:
+	CSmplBitstreamMemWriter();
+	virtual ~CSmplBitstreamMemWriter();
+
+	virtual mfxStatus Init(unsigned int nMaxBufferCount);
+	virtual mfxStatus WriteNextFrame(mfxBitstream *pMfxBitstream, bool isPrint = false);
+	virtual bool GetNextResBuffer(sized_buffer & sizedBuf);//get到的指针注意在外部释放
+	virtual mfxStatus Reset();
+	virtual void Close();
+	mfxU32 m_nProcessedFramesNum;
+	void Lock();
+	void UnLock();
+protected:
+	unsigned int m_nMaxBufferCount;
+	std::queue<sized_buffer> m_queBufer;
+	bool        m_bInited;
+	CRITICAL_SECTION m_lock;
+};
+
+class CSmplYUVMemReader
+{
+public:
+	typedef std::list<msdk_string>::iterator ls_iterator;
+	CSmplYUVMemReader();
+	virtual ~CSmplYUVMemReader();
+
+	virtual void Close();
+	virtual mfxStatus Init(unsigned int nMaxBufferCount, mfxU32 ColorFormat, bool shouldShiftP010 = false);
+	virtual mfxStatus LoadNextFrame(mfxFrameSurface1* pSurface);
+	virtual bool PutOneSrcBuffer(sized_buffer sizedBuf);//put进来的指针请勿在外部释放
+	virtual void Reset();
+	mfxU32 m_ColorFormat; // color format of input YUV data, YUV420 or NV12
+	void Lock();
+	void UnLock();
+protected:
+	unsigned int m_nMaxBufferCount;
+	std::queue<sized_buffer> m_queBufer;
+	bool shouldShiftP010High;
+	bool m_bInited;
+	CRITICAL_SECTION m_lock;
+};
+#endif
 
 class CSmplYUVReader
 {

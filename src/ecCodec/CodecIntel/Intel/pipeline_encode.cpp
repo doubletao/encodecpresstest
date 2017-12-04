@@ -44,6 +44,9 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #endif
 
 #include "version.h"
+#include <assert.h>
+
+const int nMemBuferCount = 10;
 
 /* obtain the clock tick of an uninterrupted master clock */
 msdk_tick time_get_tick(void)
@@ -82,7 +85,7 @@ CEncTaskPool::~CEncTaskPool()
     Close();
 }
 
-mfxStatus CEncTaskPool::Init(MFXVideoSession* pmfxSession, CSmplBitstreamWriter* pWriter, mfxU32 nPoolSize, mfxU32 nBufferSize, CSmplBitstreamWriter *pOtherWriter)
+mfxStatus CEncTaskPool::Init(MFXVideoSession* pmfxSession, CSmplBitstreamMemWriter* pWriter, mfxU32 nPoolSize, mfxU32 nBufferSize, CSmplBitstreamMemWriter *pOtherWriter)
 {
     MSDK_CHECK_POINTER(pmfxSession, MFX_ERR_NULL_PTR);
 
@@ -103,6 +106,7 @@ mfxStatus CEncTaskPool::Init(MFXVideoSession* pmfxSession, CSmplBitstreamWriter*
 
     if (pOtherWriter) // 2 bitstreams on output
     {
+		assert(false);
         for (mfxU32 i = 0; i < m_nPoolSize; i+=2)
         {
             sts = m_pTasks[i+0].Init(nBufferSize, pWriter);
@@ -249,7 +253,7 @@ sTask::sTask()
     MSDK_ZERO_MEMORY(mfxBS);
 }
 
-mfxStatus sTask::Init(mfxU32 nBufferSize, CSmplBitstreamWriter *pwriter)
+mfxStatus sTask::Init(mfxU32 nBufferSize, CSmplBitstreamMemWriter *pwriter)
 {
     Close();
 
@@ -639,6 +643,49 @@ mfxStatus CEncodingPipeline::ResetDevice()
     return MFX_ERR_NONE;
 }
 
+UINT CEncodingPipeline::ThreadEncodec(LPVOID pParam)
+{
+	CEncodingPipeline * pThis = (CEncodingPipeline *)pParam;
+	if (pThis)
+	{
+		HANDLE h[2] = { pThis->m_hStopEvt, pThis->m_hDataEvt };
+		do
+		{
+			DWORD dwResult = WaitForMultipleObjects(2, h, FALSE, INFINITE);
+			if (dwResult == WAIT_OBJECT_0)
+			{
+				break;
+			}
+			else
+			{
+			}
+			mfxStatus sts = pThis->Run();
+			if (sts == MFX_ERR_NONE)
+			{
+				continue;
+			}
+			else if (sts == MFX_ERR_NOT_ENOUGH_BUFFER)
+			{
+
+			}
+			else if (sts == MFX_ERR_MORE_DATA)
+			{
+			}
+			else
+			{
+				break;
+			}
+		} while (true);
+	}
+	return 0;
+}
+
+void CEncodingPipeline::Start()
+{
+	Stop();
+	m_hEncodeThread = (HANDLE)::_beginthreadex(NULL, 0, ThreadEncodec, this, 0, NULL);
+}
+
 mfxStatus CEncodingPipeline::AllocFrames()
 {
     MSDK_CHECK_POINTER(GetFirstEncoder(), MFX_ERR_NOT_INITIALIZED);
@@ -948,8 +995,6 @@ CEncodingPipeline::CEncodingPipeline()
     m_MVCflags = MVC_DISABLED;
     m_nNumView = 0;
 
-    m_FileWriters.first = m_FileWriters.second = NULL;
-
     MSDK_ZERO_MEMORY(m_MVCSeqDesc);
     m_MVCSeqDesc.Header.BufferId = MFX_EXTBUFF_MVC_SEQ_DESC;
     m_MVCSeqDesc.Header.BufferSz = sizeof(m_MVCSeqDesc);
@@ -994,21 +1039,29 @@ CEncodingPipeline::CEncodingPipeline()
     m_bCutOutput = false;
     m_bTimeOutExceed = false;
     m_bInsertIDR = false;
+
+	m_hStopEvt = CreateEvent(NULL, TRUE, FALSE, NULL);
+	m_hDataEvt = CreateEvent(NULL, FALSE, FALSE, NULL);
 }
 
 CEncodingPipeline::~CEncodingPipeline()
 {
     Close();
+	if (m_hStopEvt)
+	{
+		::CloseHandle(m_hStopEvt);
+		m_hStopEvt = nullptr;
+	}
+	if (m_hDataEvt)
+	{
+		::CloseHandle(m_hDataEvt);
+		m_hDataEvt = nullptr;
+	}
 }
 
-mfxStatus CEncodingPipeline::InitFileWriter(CSmplBitstreamWriter **ppWriter, const msdk_char *filename)
+mfxStatus CEncodingPipeline::InitFileWriter(CSmplBitstreamMemWriter & Writer, const msdk_char *filename)
 {
-    MSDK_CHECK_ERROR(ppWriter, NULL, MFX_ERR_NULL_PTR);
-
-    MSDK_SAFE_DELETE(*ppWriter);
-    *ppWriter = new CSmplBitstreamWriter;
-    MSDK_CHECK_POINTER(*ppWriter, MFX_ERR_MEMORY_ALLOC);
-    mfxStatus sts = (*ppWriter)->Init(filename);
+    mfxStatus sts = Writer.Init(nMemBuferCount);
     MSDK_CHECK_STATUS(sts, " failed");
 
     return sts;
@@ -1029,47 +1082,42 @@ mfxStatus CEncodingPipeline::InitFileWriters(sInputParams *pParams)
     // ViewOutput mode: output in single bitstream
     if ( (MVC_VIEWOUTPUT & pParams->MVC_flags) && (pParams->dstFileBuff.size() <= 1))
     {
-        sts = InitFileWriter(&m_FileWriters.first, pParams->dstFileBuff[0]);
+        sts = InitFileWriter(m_FileWriters, pParams->dstFileBuff[0]);
         MSDK_CHECK_STATUS(sts, "InitFileWriter failed");
-
-        m_FileWriters.second = m_FileWriters.first;
     }
     // ViewOutput mode: 2 bitstreams in separate files
     else if ( (MVC_VIEWOUTPUT & pParams->MVC_flags) && (pParams->dstFileBuff.size() <= 2))
     {
-        sts = InitFileWriter(&m_FileWriters.first, pParams->dstFileBuff[0]);
-        MSDK_CHECK_STATUS(sts, "InitFileWriter failed");
-
-        sts = InitFileWriter(&m_FileWriters.second, pParams->dstFileBuff[1]);
+        sts = InitFileWriter(m_FileWriters, pParams->dstFileBuff[0]);
         MSDK_CHECK_STATUS(sts, "InitFileWriter failed");
     }
     // ViewOutput mode: 3 bitstreams - 2 separate & 1 merged
     else if ( (MVC_VIEWOUTPUT & pParams->MVC_flags) && (pParams->dstFileBuff.size() <= 3))
     {
-        std::auto_ptr<CSmplBitstreamDuplicateWriter> first(new CSmplBitstreamDuplicateWriter);
+        //std::auto_ptr<CSmplBitstreamDuplicateWriter> first(new CSmplBitstreamDuplicateWriter);
 
-        // init first duplicate writer
-        MSDK_CHECK_POINTER(first.get(), MFX_ERR_MEMORY_ALLOC);
-        sts = first->Init(pParams->dstFileBuff[0]);
-        MSDK_CHECK_STATUS(sts, "first->Init failed");
-        sts = first->InitDuplicate(pParams->dstFileBuff[2]);
-        MSDK_CHECK_STATUS(sts, "first->InitDuplicate failed");
+        //// init first duplicate writer
+        //MSDK_CHECK_POINTER(first.get(), MFX_ERR_MEMORY_ALLOC);
+        //sts = first->Init(pParams->dstFileBuff[0]);
+        //MSDK_CHECK_STATUS(sts, "first->Init failed");
+        //sts = first->InitDuplicate(pParams->dstFileBuff[2]);
+        //MSDK_CHECK_STATUS(sts, "first->InitDuplicate failed");
 
-        // init second duplicate writer
-        std::auto_ptr<CSmplBitstreamDuplicateWriter> second(new CSmplBitstreamDuplicateWriter);
-        MSDK_CHECK_POINTER(second.get(), MFX_ERR_MEMORY_ALLOC);
-        sts = second->Init(pParams->dstFileBuff[1]);
-        MSDK_CHECK_STATUS(sts, "second->Init failed");
-        sts = second->JoinDuplicate(first.get());
-        MSDK_CHECK_STATUS(sts, "second->JoinDuplicate failed");
+        //// init second duplicate writer
+        //std::auto_ptr<CSmplBitstreamDuplicateWriter> second(new CSmplBitstreamDuplicateWriter);
+        //MSDK_CHECK_POINTER(second.get(), MFX_ERR_MEMORY_ALLOC);
+        //sts = second->Init(pParams->dstFileBuff[1]);
+        //MSDK_CHECK_STATUS(sts, "second->Init failed");
+        //sts = second->JoinDuplicate(first.get());
+        //MSDK_CHECK_STATUS(sts, "second->JoinDuplicate failed");
 
-        m_FileWriters.first = first.release();
-        m_FileWriters.second = second.release();
+        //m_FileWriters.first = first.release();
+        //m_FileWriters.second = second.release();
     }
     // not ViewOutput mode
     else
     {
-        sts = InitFileWriter(&m_FileWriters.first, pParams->dstFileBuff[0]);
+        sts = InitFileWriter(m_FileWriters, pParams->dstFileBuff[0]);
         MSDK_CHECK_STATUS(sts, "InitFileWriter failed");
     }
 
@@ -1226,7 +1274,7 @@ mfxStatus CEncodingPipeline::Init(sInputParams *pParams)
     if (!isV4L2InputEnabled)
     {
         // prepare input file reader
-        sts = m_FileReader.Init(pParams->InputFiles,
+        sts = m_FileReader.Init(nMemBuferCount,
             pParams->FileInputFourCC,readerShift);
         MSDK_CHECK_STATUS(sts, "m_FileReader.Init failed");
     }
@@ -1346,16 +1394,28 @@ void CEncodingPipeline::InsertIDR(bool bIsNextFrameIDR)
     }
 }
 
+bool CEncodingPipeline::PutVideoBuffer(sized_buffer buf)
+{
+	return m_FileReader.PutOneSrcBuffer(buf);
+}
+
+bool CEncodingPipeline::GetCompressedFrame(sized_buffer & buf)
+{
+	return m_FileWriters.GetNextResBuffer(buf);
+}
+
 void CEncodingPipeline::Close()
 {
-    if (m_FileWriters.first)
+    if (m_FileWriters.m_nProcessedFramesNum)
     {
-        msdk_printf(MSDK_STRING("Frame number: %u\r\n"), m_FileWriters.first->m_nProcessedFramesNum);
+        msdk_printf(MSDK_STRING("Frame number: %u\r\n"), m_FileWriters.m_nProcessedFramesNum);
 #ifdef TIME_STATS
         mfxF64 ProcDeltaTime = m_statOverall.GetDeltaTime() - m_statFile.GetDeltaTime() - m_TaskPool.GetFileStatistics().GetDeltaTime();
         msdk_printf(MSDK_STRING("Encoding fps: %.0f\n"), m_FileWriters.first->m_nProcessedFramesNum / ProcDeltaTime);
 #endif
     }
+
+	Stop();
 
     MSDK_SAFE_DELETE(m_pmfxENC);
     MSDK_SAFE_DELETE(m_pmfxVPP);
@@ -1379,18 +1439,7 @@ void CEncodingPipeline::Close()
 
 void CEncodingPipeline::FreeFileWriters()
 {
-    if (m_FileWriters.second == m_FileWriters.first)
-    {
-        m_FileWriters.second = NULL; // second do not own the writer - just forget pointer
-    }
-
-    if (m_FileWriters.first)
-        m_FileWriters.first->Close();
-    MSDK_SAFE_DELETE(m_FileWriters.first);
-
-    if (m_FileWriters.second)
-        m_FileWriters.second->Close();
-    MSDK_SAFE_DELETE(m_FileWriters.second);
+	m_FileWriters.Close();
 }
 
 mfxStatus CEncodingPipeline::FillBuffers()
@@ -1462,7 +1511,7 @@ mfxStatus CEncodingPipeline::ResetMFXComponents(sInputParams* pParams)
     }
 
     mfxU32 nEncodedDataBufferSize = m_mfxEncParams.mfx.FrameInfo.Width * m_mfxEncParams.mfx.FrameInfo.Height * 4;
-    sts = m_TaskPool.Init(&m_mfxSession, m_FileWriters.first, m_mfxEncParams.AsyncDepth, nEncodedDataBufferSize, m_FileWriters.second);
+    sts = m_TaskPool.Init(&m_mfxSession, &m_FileWriters, m_mfxEncParams.AsyncDepth, nEncodedDataBufferSize, &m_FileWriters);
     MSDK_CHECK_STATUS(sts, "m_TaskPool.Init failed");
 
     sts = FillBuffers();
@@ -1496,16 +1545,7 @@ mfxStatus CEncodingPipeline::GetFreeTask(sTask **ppTask)
 
     if (m_bFileWriterReset)
     {
-        if (m_FileWriters.first)
-        {
-            sts = m_FileWriters.first->Reset();
-            MSDK_CHECK_STATUS(sts, "m_FileWriters.first->Reset failed");
-        }
-        if (m_FileWriters.second)
-        {
-            sts = m_FileWriters.second->Reset();
-            MSDK_CHECK_STATUS(sts, "m_FileWriters.second->Reset failed");
-        }
+        sts = m_FileWriters.Reset();
         m_bFileWriterReset = false;
     }
 
@@ -1573,6 +1613,12 @@ mfxStatus CEncodingPipeline::Run()
         sts = GetFreeTask(&pCurrentTask);
         MSDK_BREAK_ON_ERROR(sts);
 
+		//buffer不够，需要等待取出后才继续编
+		if (sts == MFX_ERR_NOT_ENOUGH_BUFFER)
+		{
+			return sts;
+		}
+
         // find free surface for encoder input
         if (m_nMemBuffer && !m_pmfxVPP)
         {
@@ -1617,8 +1663,9 @@ mfxStatus CEncodingPipeline::Run()
             sts = LoadNextFrame(pSurf);
             m_statFile.StopTimeMeasurement();
 
-            if ( (MFX_ERR_MORE_DATA == sts) && !m_bTimeOutExceed)
-                continue;
+			//数据不足，需要等待数据put后才继续
+			if ((MFX_ERR_MORE_DATA == sts) && !m_bTimeOutExceed)
+				return sts;
 
             MSDK_BREAK_ON_ERROR(sts);
 
@@ -1865,6 +1912,17 @@ mfxStatus CEncodingPipeline::Run()
     return sts;
 }
 
+void CEncodingPipeline::Stop()
+{
+	::SetEvent(m_hStopEvt);
+	if (m_hEncodeThread)
+	{
+		WaitForSingleObject(m_hEncodeThread, INFINITE);
+		::CloseHandle(m_hEncodeThread);
+		m_hEncodeThread = nullptr;
+	}
+}
+
 mfxStatus CEncodingPipeline::LoadNextFrame(mfxFrameSurface1* pSurf)
 {
     mfxStatus sts = MFX_ERR_NONE;
@@ -1909,10 +1967,11 @@ mfxStatus CEncodingPipeline::LoadNextFrame(mfxFrameSurface1* pSurf)
 
         if ( (MFX_ERR_MORE_DATA == sts) && !m_bTimeOutExceed )
         {
-            m_FileReader.Reset();
-            m_bFileWriterReset = m_bCutOutput;
+            //m_FileReader.Reset();
+            //m_bFileWriterReset = m_bCutOutput;
             // forcedly insert idr frame to make output file readable
-            m_bInsertIDR = m_bCutOutput;
+            //m_bInsertIDR = m_bCutOutput;
+			//数据不够，说明此时没有数据被push进来，应当要求线程等待
             return sts;
         }
     }

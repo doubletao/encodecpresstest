@@ -155,12 +155,12 @@ struct sTask
     mfxBitstream mfxBS;
     mfxSyncPoint EncSyncP;
     std::list<mfxSyncPoint> DependentVppTasks;
-    CSmplBitstreamWriter *pWriter;
+    CSmplBitstreamMemWriter *pWriter;
 
     sTask();
     mfxStatus WriteBitstream();
     mfxStatus Reset();
-    mfxStatus Init(mfxU32 nBufferSize, CSmplBitstreamWriter *pWriter = NULL);
+    mfxStatus Init(mfxU32 nBufferSize, CSmplBitstreamMemWriter *pWriter = NULL);
     mfxStatus Close();
 };
 
@@ -170,7 +170,7 @@ public:
     CEncTaskPool();
     virtual ~CEncTaskPool();
 
-    virtual mfxStatus Init(MFXVideoSession* pmfxSession, CSmplBitstreamWriter* pWriter, mfxU32 nPoolSize, mfxU32 nBufferSize, CSmplBitstreamWriter *pOtherWriter = NULL);
+    virtual mfxStatus Init(MFXVideoSession* pmfxSession, CSmplBitstreamMemWriter* pWriter, mfxU32 nPoolSize, mfxU32 nBufferSize, CSmplBitstreamMemWriter *pOtherWriter = NULL);
     virtual mfxStatus GetFreeTask(sTask **ppTask);
     virtual mfxStatus SynchronizeFirstTask();
 
@@ -192,16 +192,24 @@ protected:
 /* This class implements a pipeline with 2 mfx components: vpp (video preprocessing) and encode */
 class CEncodingPipeline
 {
+private:
+	CRITICAL_SECTION m_lock;
+	HANDLE m_hStopEvt;
+	HANDLE m_hDataEvt;
+	HANDLE m_hEncodeThread;
+	static UINT ThreadEncodec(LPVOID pParam);
 public:
     CEncodingPipeline();
     virtual ~CEncodingPipeline();
 
     virtual mfxStatus Init(sInputParams *pParams);
     virtual mfxStatus Run();
+	virtual void Stop();
     virtual void Close();
     virtual mfxStatus ResetMFXComponents(sInputParams* pParams);
     virtual mfxStatus ResetDevice();
 
+	void Start();
     void SetNumView(mfxU32 numViews) { m_nNumView = numViews; }
     virtual void  PrintInfo();
 
@@ -211,14 +219,17 @@ public:
 
     void InsertIDR(bool bIsNextFrameIDR);
 
+	bool PutVideoBuffer(sized_buffer buf);
+	bool GetCompressedFrame(sized_buffer & buf);
+
 #if defined (ENABLE_V4L2_SUPPORT)
     v4l2Device v4l2Pipeline;
     pthread_t m_PollThread;
 #endif
 
 protected:
-    std::pair<CSmplBitstreamWriter *,CSmplBitstreamWriter *> m_FileWriters;
-    CSmplYUVReader m_FileReader;
+    CSmplBitstreamMemWriter m_FileWriters;
+    CSmplYUVMemReader m_FileReader;
     CEncTaskPool m_TaskPool;
 
     MFXVideoSession m_mfxSession;
@@ -288,7 +299,7 @@ protected:
 
     virtual mfxStatus InitFileWriters(sInputParams *pParams);
     virtual void FreeFileWriters();
-    virtual mfxStatus InitFileWriter(CSmplBitstreamWriter **ppWriter, const msdk_char *filename);
+    virtual mfxStatus InitFileWriter(CSmplBitstreamMemWriter & Writer, const msdk_char *filename);
 
     virtual mfxStatus AllocAndInitVppDoNotUse();
     virtual void FreeVppDoNotUse();

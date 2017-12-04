@@ -1,6 +1,6 @@
 #pragma once
 #include "IecCodecVideoEncoder.h"
-//#define EDU_INTEL_CODEC
+#define EDU_INTEL_CODEC
 #ifdef EDU_INTEL_CODEC
 #include "IntelEncoder.h"
 #else
@@ -18,10 +18,6 @@ private:
 	IntelEncoder * m_pEncoder;
 #else
 	CEncodingPipeline * m_pEncodingPipeline;
-	CRITICAL_SECTION m_lock;
-	HANDLE m_hStopEvt;
-	HANDLE m_hEncodeThread;
-	static UINT ThreadEncodec(LPVOID pParam);
 #endif
 public:
 	virtual bool InitVideoEncoder(const SDVideoMediaInfo *pDesVideoInfo);
