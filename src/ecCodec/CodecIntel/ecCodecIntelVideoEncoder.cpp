@@ -121,6 +121,28 @@ ecCodecIntelVideoEncoder::~ecCodecIntelVideoEncoder()
 bool ecCodecIntelVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDesVideoInfo)
 {
 	bool bRet = false;
+	if (pDesVideoInfo)
+	{
+		sInputParams Params = {};
+		Params.CodecId = MFX_CODEC_AVC;//编码格式写死为h264
+		Params.nWidth = pDesVideoInfo->dwWidth;
+		Params.nHeight = pDesVideoInfo->dwHeight;
+		Params.nDstWidth = Params.nWidth;
+		Params.nDstWidth = Params.nWidth;
+		Params.nTargetUsage = pDesVideoInfo->dwH264EncoderLevel;
+		Params.bUseHWLib = true;
+		Params.isV4L2InputEnabled = false;
+		Params.nNumFrames = 0;
+		Params.FileInputFourCC = MFX_FOURCC_I420;
+		Params.EncodeFourCC = MFX_FOURCC_NV12;
+		Params.numViews = 1;
+		Params.dFrameRate = 25;//帧率暂时写死到25
+		Params.nBitRate = CalculateDefaultBitrate(Params.CodecId, Params.nTargetUsage, Params.nDstWidth, Params.nDstHeight, Params.dFrameRate);
+		Params.nPicStruct = MFX_PICSTRUCT_PROGRESSIVE;//暂时写为帧方式
+		Params.nAsyncDepth = 4;
+		Params.nRateControlMethod = MFX_RATECONTROL_CBR;
+
+	}
 	return bRet;
 }
 

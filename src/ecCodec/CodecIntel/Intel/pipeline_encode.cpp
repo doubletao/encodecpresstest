@@ -1396,12 +1396,18 @@ void CEncodingPipeline::InsertIDR(bool bIsNextFrameIDR)
 
 bool CEncodingPipeline::PutVideoBuffer(sized_buffer buf)
 {
-	return m_FileReader.PutOneSrcBuffer(buf);
+	bool bRet = false;
+	bRet = m_FileReader.PutOneSrcBuffer(buf);
+	::SetEvent(m_hDataEvt);
+	return bRet;
 }
 
 bool CEncodingPipeline::GetCompressedFrame(sized_buffer & buf)
 {
-	return m_FileWriters.GetNextResBuffer(buf);
+	bool bRet = false;
+	bRet = m_FileWriters.GetNextResBuffer(buf);
+	::SetEvent(m_hDataEvt);
+	return bRet;
 }
 
 void CEncodingPipeline::Close()
