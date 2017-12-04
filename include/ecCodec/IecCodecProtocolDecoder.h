@@ -4,7 +4,7 @@
 typedef int(*PCALLBACKREADPACKET)(void *,unsigned char *,int);
 typedef int(*PCALLBACKINTERRUPT)(PVOID pM);
 
-class EASY_CODEC_API_EXPORT IecCodecProtocolDecoder
+class IecCodecProtocolDecoder
 {
 public:
 	// …Ë÷√ ‰»Î¬∑æ∂

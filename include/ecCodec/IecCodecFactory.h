@@ -1,5 +1,4 @@
 #pragma once
-#include "ecCodec.h"
 #include "IecCodecProtocolDecoder.h"
 #include "IecCodecProtocolEncoder.h"
 #include "IecCodecVideoDecoder.h"
@@ -14,7 +13,7 @@ enum EmCodecProvider
 	EMCodec_Intel,
 };
 
-class EASY_CODEC_API_EXPORT IecCodecFactory
+class IecCodecFactory
 {
 public:
 	virtual IecCodecProtocolDecoder * GetProtocolDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
@@ -31,7 +30,12 @@ public:
 	virtual bool DeleteAudioEncoder(IecCodecAudioEncoder *& pObj) = 0;
 };
 
-EASY_CODEC_API_EXPORT	IecCodecFactory * ecCodec_CreateCodecFactory();
-EASY_CODEC_API_EXPORT	bool	ecCodec_ReleaseCodecFactory(IecCodecFactory *& pCodecFactory);
-
-EASY_CODEC_API_EXPORT LPCTSTR GetPresetMediaInfo(SD_VIDEO_STANDARD emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, DWORD dwSamplePerSec, int nH264Level, OUT SDStreamMediaInfo & streamInfo);
+#ifdef __cplusplus
+extern "C" {
+#endif
+	EASY_CODEC_API_EXPORT	IecCodecFactory * ecCodec_CreateCodecFactory();
+	EASY_CODEC_API_EXPORT	bool	ecCodec_ReleaseCodecFactory(IecCodecFactory *& pCodecFactory);
+	EASY_CODEC_API_EXPORT LPCTSTR GetPresetMediaInfo(SD_VIDEO_STANDARD emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, DWORD dwSamplePerSec, int nH264Level, OUT SDStreamMediaInfo & streamInfo);
+#ifdef __cplusplus
+}
+#endif

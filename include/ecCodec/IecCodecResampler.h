@@ -1,6 +1,6 @@
 #pragma once
 #include "ecCodec.h"
-class EASY_CODEC_API_EXPORT IecCodecResampler
+class IecCodecResampler
 {
 public:
 	// 初始化重采样

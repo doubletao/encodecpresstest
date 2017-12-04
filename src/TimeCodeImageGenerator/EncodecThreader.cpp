@@ -1,4 +1,3 @@
-#define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
 #include "stdafx.h"
@@ -44,7 +43,7 @@ bool EncodecThreader::DoEncodec()
 	size_t tmClock = clock();
 	while (true)
 	{
-		int nWait = 3 - (clock() - tmClock);
+		size_t nWait = 3 - (clock() - tmClock);
 		if (WaitForSingleObject(m_evtStop, nWait > 0 ? 3 : 0) == WAIT_OBJECT_0)
 		{
 			break;
@@ -54,12 +53,12 @@ bool EncodecThreader::DoEncodec()
 			tmClock = clock();
 			if (m_vaLoop.Pop(vaTmp))
 			{
-				frameInfoTmp.iSize = vaTmp.m_nVideoSize;// 帧数据大小		4---16
+				frameInfoTmp.iSize = (SD_UINT32)vaTmp.m_nVideoSize;// 帧数据大小		4---16
 				if (!m_pEncoder->PutVideoBuffer(vaTmp.m_pVideoBuf, false, &frameInfoTmp))
 				{
 					OutputDebugString(_T("m_pEncoder->PutVideoBuffer failed\n"));
 				}
-				if (!m_pEncoder->PutAudioSamples(vaTmp.m_pAudioBuf, vaTmp.m_nAudioSampleCount))
+				if (!m_pEncoder->PutAudioSamples(vaTmp.m_pAudioBuf, (SD_UINT32)vaTmp.m_nAudioSampleCount))
 				{
 					OutputDebugString(_T("m_pEncoder->PutAudioSamples failed\n"));
 				}

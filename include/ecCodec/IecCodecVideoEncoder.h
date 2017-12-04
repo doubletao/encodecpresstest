@@ -1,6 +1,6 @@
 #pragma once
 #include "ecCodec.h"
-class EASY_CODEC_API_EXPORT IecCodecVideoEncoder
+class IecCodecVideoEncoder
 {
 public:
 	// ³õÊ¼»¯±àÂëÆ÷
