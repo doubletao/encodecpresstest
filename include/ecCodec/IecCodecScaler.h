@@ -3,6 +3,8 @@
 class IecCodecScaler
 {
 public:
+	virtual ~IecCodecScaler() {}
+
 	// 初始化格式转换
 	// pSrcVideoInfo: 视频源格式描述
 	virtual bool InitScaler(SD_UINT32 nSrcWidth, SD_UINT32 nSrcHeight, SD_COLOR_FORMAT emSrcColorFormat, SD_UINT32 nDesWidth, SD_UINT32 nDesHeight, SD_COLOR_FORMAT emDesColorFormat) = 0;

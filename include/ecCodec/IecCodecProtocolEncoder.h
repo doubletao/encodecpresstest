@@ -3,6 +3,8 @@
 class IecCodecProtocolEncoder
 {
 public:
+	virtual ~IecCodecProtocolEncoder() {}
+
 	//-----------------------------------------------------------------------------------------------//	
 	// 设置扩展模式的编码目标信息
 	// pStreamMediaInfo:  目标格式扩展描述信息

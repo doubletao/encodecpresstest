@@ -3,6 +3,8 @@
 class IecCodecVideoDecoder
 {
 public:
+	virtual ~IecCodecVideoDecoder() {}
+
 	// 初始化解码器
 	// pSrcVideoInfo: 视频源格式描述
 	virtual bool InitVideoDecoder(const SDVideoMediaInfo & pSrcVideoInfo) = 0;

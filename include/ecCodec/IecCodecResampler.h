@@ -3,6 +3,8 @@
 class IecCodecResampler
 {
 public:
+	virtual ~IecCodecResampler() {}
+
 	// 初始化重采样
 	virtual bool InitResampler(SD_UINT64 nDesChannelLayout, SD_CHANNELSAMPLE_FORMAT emDesSampleFormat, SD_INT32 nDesSampleRate,
 		SD_UINT64 nSrcChannelLayout, SD_CHANNELSAMPLE_FORMAT emSrcSampleFormat, SD_INT32 nSrcSampleRate, SD_INT32 nChannelCount = 2, SD_INT32 nSamplesPerFrame = 0) = 0;

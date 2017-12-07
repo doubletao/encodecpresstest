@@ -3,6 +3,8 @@
 class IecCodecAudioDecoder
 {
 public:
+	virtual ~IecCodecAudioDecoder() {}
+
 	// 初始化解码器
 	// 返回值：1 成功、0 错误
 	// sAudioInfo	// 压缩音频信息

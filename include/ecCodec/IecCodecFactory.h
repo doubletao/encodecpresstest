@@ -16,6 +16,7 @@ enum EmCodecProvider
 class IecCodecFactory
 {
 public:
+	virtual ~IecCodecFactory() {}
 	virtual IecCodecProtocolDecoder * GetProtocolDecoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
 	virtual bool DeleteProtocolDecoder(IecCodecProtocolDecoder *& pObj) = 0;
 	virtual IecCodecProtocolEncoder * GetProtocolEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;

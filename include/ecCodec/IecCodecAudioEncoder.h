@@ -3,6 +3,8 @@
 class IecCodecAudioEncoder
 {
 public:
+	virtual ~IecCodecAudioEncoder() {}
+
 	// 初始化编码器
 	// 返回值：1 成功、0 错误
 	//sAudioInfo:目标音频信息

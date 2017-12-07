@@ -3,6 +3,8 @@
 class IecCodecVideoEncoder
 {
 public:
+	virtual ~IecCodecVideoEncoder() {}
+
 	// 初始化编码器
 	// pDesVideoInfo:编码格式描述
 	virtual bool InitVideoEncoder(const SDVideoMediaInfo *pDesVideoInfo) = 0;
