@@ -77,8 +77,8 @@ copy %DIR_PATH%\bin\TimeCodeImageGeneratorU.exe %OUT_DIR_PATH%\bin\
 copy %DIR_PATH%\bin\TimeCodeImageGeneratorU.iobj %OUT_DIR_PATH%\bin\
 copy %DIR_PATH%\bin\TimeCodeImageGeneratorU.ipdb %OUT_DIR_PATH%\bin\
 copy %DIR_PATH%\bin\TimeCodeImageGeneratorU.pdb %OUT_DIR_PATH%\bin\
-copy %DIR_PATH%\bin\IntelCodecU.dll %OUT_DIR_PATH%\bin\
-copy %DIR_PATH%\bin\IntelCodecU.ini %OUT_DIR_PATH%\bin\
+copy %DIR_PATH%\bin\CPUCodecU.dll %OUT_DIR_PATH%\bin\
+copy %DIR_PATH%\bin\CPUCodecU.ini %OUT_DIR_PATH%\bin\
 copy %DIR_PATH%\bin\IntelCodecxyD.dll %OUT_DIR_PATH%\bin\
 copy %DIR_PATH%\bin\IntelCodecxyD.ilk %OUT_DIR_PATH%\bin\
 copy %DIR_PATH%\bin\IntelCodecxyD.pdb %OUT_DIR_PATH%\bin\
