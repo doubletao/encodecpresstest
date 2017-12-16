@@ -618,10 +618,10 @@ std::string CEncodecPressTestDlg::ConverCStringToStdString(CString & cstrValue)
 {
 	std::string strRet;
 	strRet.clear();
-	int nSize = ::WideCharToMultiByte(CP_UTF8, 0, cstrValue.GetBuffer(), -1, NULL, 0, NULL, NULL);
+	int nSize = ::WideCharToMultiByte(CP_ACP, 0, cstrValue.GetBuffer(), -1, NULL, 0, NULL, NULL);
 	char * szcSrc = new char[nSize];
 	memset(szcSrc, 0, sizeof(char) * nSize);
-	::WideCharToMultiByte(CP_UTF8, 0, cstrValue.GetBuffer(), -1, szcSrc, nSize, NULL, NULL);
+	::WideCharToMultiByte(CP_ACP, 0, cstrValue.GetBuffer(), -1, szcSrc, nSize, NULL, NULL);
 	strRet = szcSrc;
 	delete[] szcSrc;
 	szcSrc = NULL;
@@ -632,9 +632,9 @@ CString CEncodecPressTestDlg::ConvertStdStringToCString(const std::string & strV
 {
 	CString cstrRet;
 	cstrRet.Empty();
-	int nLength = ::MultiByteToWideChar(CP_UTF8, 0, strValue.c_str(), -1, NULL, 0);
+	int nLength = ::MultiByteToWideChar(CP_ACP, 0, strValue.c_str(), -1, NULL, 0);
 	TCHAR * szText1 = new TCHAR[nLength + 1];
-	::MultiByteToWideChar(CP_UTF8, 0, strValue.c_str(), -1, szText1, nLength + 1);
+	::MultiByteToWideChar(CP_ACP, 0, strValue.c_str(), -1, szText1, nLength + 1);
 	cstrRet = szText1;
 	delete[] szText1;
 	szText1 = NULL;

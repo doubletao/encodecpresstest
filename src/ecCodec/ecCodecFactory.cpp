@@ -25,7 +25,7 @@ ecCodecFactory::ecCodecFactory()
 {
 	InitializeCriticalSection(&m_Log_lock);
 	av_log_set_level(AV_LOG_ERROR);
-	av_log_set_callback(ecCodecFactory::logFF);
+	//av_log_set_callback(ecCodecFactory::logFF);
 }
 
 ecCodecFactory::~ecCodecFactory()
