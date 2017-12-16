@@ -68,6 +68,17 @@ bool ecCodecFFmpegAudioDecoder::InitAudioDecoder(const SDAudioMediaInfo & sAudio
 
 					m_nDesChannelLayout = m_pCodecCtx->channel_layout;
 					m_emDesSampleFormat = m_pCodecCtx->sample_fmt;
+					if (av_sample_fmt_is_planar(m_emDesSampleFormat))
+					{
+						//目标格式不能是平面格式，遇到平面格式，先设定到s16
+						m_emDesSampleFormat = AV_SAMPLE_FMT_S32;
+
+						//遇到这种情况，需要设定一下重采样
+						SDAudioMediaInfo sResAudioInfo = sAudioInfo;
+						sResAudioInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive_32bit;
+						SetAudioMediaInfo(&sResAudioInfo);
+					}
+
 					m_nDesSampleRate = m_pCodecCtx->sample_rate;
 					m_nDesChannelCount = m_pCodecCtx->channels;
 					
@@ -118,14 +129,16 @@ bool ecCodecFFmpegAudioDecoder::SetAudioMediaInfo(const SDAudioMediaInfo * pAudi
 	}
 
 	m_nDesChannelLayout = FFmpegFormatCovert::ConvertChannelLayout(pAudioInfo->enumAudioCFG);
-	m_emDesSampleFormat = FFmpegFormatCovert::ConvertSamplesFormat(pAudioInfo->enumChannelSamplesFormat);
+	AVSampleFormat emDesSampleFormat = FFmpegFormatCovert::ConvertSamplesFormat(pAudioInfo->enumChannelSamplesFormat);
 	m_nDesSampleRate = pAudioInfo->dwSamplesPerSec;
 	m_nDesChannelCount = pAudioInfo->dwChannels;
 
-	if (av_sample_fmt_is_planar(m_emDesSampleFormat))
+	if (av_sample_fmt_is_planar(emDesSampleFormat))
 	{
 		return false;
 	}
+
+	m_emDesSampleFormat = emDesSampleFormat;
 
 	AVSampleFormat format = FFmpegFormatCovert::ConvertSamplesFormat(pAudioInfo->enumChannelSamplesFormat);
 

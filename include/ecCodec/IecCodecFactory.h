@@ -1,4 +1,5 @@
 #pragma once
+#include "ecCodec.h"
 #include "IecCodecProtocolDecoder.h"
 #include "IecCodecProtocolEncoder.h"
 #include "IecCodecVideoDecoder.h"

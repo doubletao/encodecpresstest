@@ -7,7 +7,7 @@ typedef int(*PCALLBACKINTERRUPT)(PVOID pM);
 class IecCodecProtocolDecoder
 {
 public:
-	virtual ~IecCodecProtocolDecoder() {}
+	virtual ~IecCodecProtocolDecoder() {};
 
 	// 设置输入路径
 	// 说明：必须先调用该函数并调用成功，才能继续调用其它函数

@@ -4,7 +4,7 @@
 #else
 #define INTEL_CODEC_API_EXPORT __declspec(dllimport)
 #ifdef _DEBUG
-#	pragma comment(lib, "IntelCodecxyD.lib")
+#	pragma comment(lib, "IntelCodecxyUD.lib")
 #else
 #	pragma comment(lib, "IntelCodecxyU.lib")
 #endif

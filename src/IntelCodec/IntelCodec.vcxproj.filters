@@ -44,13 +44,16 @@
     <ClInclude Include="VACommonDefine.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\IntelCodec\IntelDataDef.h">
+    <ClInclude Include="IntelCodecAPI.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\IntelCodec\IntelEncoder.h">
+    <ClInclude Include="IntelVideoDecoder.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\IntelCodec\IntelCodec.h">
+    <ClInclude Include="IntelVideoEncoder.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IVideoEncoder.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

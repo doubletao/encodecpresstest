@@ -48,7 +48,7 @@ bool ecCodecFFmpegScaler::InitScaler(SD_UINT32 nSrcWidth, SD_UINT32 nSrcHeight, 
 			m_pScaleCtx = nullptr;
 		}
 		m_pScaleCtx = sws_getContext(m_nSrcWidth, m_nSrcHeight, m_emSrcPixFmt,
-			m_nDesWidth, m_nDesHeight, m_emDesPixFmt, SWS_SINC, nullptr, nullptr, nullptr);
+			m_nDesWidth, m_nDesHeight, m_emDesPixFmt, SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
 		if (!m_pScaleCtx)
 		{
 			printf("sws_getContext failed\n");

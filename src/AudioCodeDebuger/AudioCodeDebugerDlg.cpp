@@ -6,6 +6,7 @@
 #include "AudioCodeDebuger.h"
 #include "AudioCodeDebugerDlg.h"
 #include "afxdialogex.h"
+#include "ecCodec.h"
 #include "IecCodecFactory.h"
 
 #ifdef _DEBUG

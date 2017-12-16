@@ -3,15 +3,15 @@
 #include "IntelCodecAPI.h"
 #include "IntelVideoEncoder.h"
 
-CIntelVideoEncoder * GetIntelPointer(void * pEncoder)
+CIntelVideoEncoderCPUHW * GetIntelPointer(void * pEncoder)
 {
-	return static_cast<CIntelVideoEncoder *>(pEncoder);
+	return static_cast<CIntelVideoEncoderCPUHW *>(pEncoder);
 }
 
 IntelEncoder::IntelEncoder()
 	: m_pEncoder(nullptr)
 {
-	m_pEncoder = new CIntelVideoEncoder;
+	m_pEncoder = new CIntelVideoEncoderCPUHW;
 }
 
 
@@ -43,7 +43,7 @@ bool IntelEncoder::InitVideoEncoder(const IntelVideoMediaInfo * pDesVideoInfo)
 	mediaInfo.dwMinDataRateInBitsPerSec = pDesVideoInfo->dwMinDataRateInBitsPerSec;
 	mediaInfo.enumVideoType = VIDEOTYPE_H264;
 	mediaInfo.enumColorFormat = COLORFORMAT_YUVP_NV12;
-	bool bRet = GetIntelPointer(m_pEncoder)->InitVideoEncoder(&mediaInfo);
+	bool bRet = GetIntelPointer(m_pEncoder)->Init(&mediaInfo);
 	return bRet;
 }
 
@@ -59,7 +59,7 @@ bool IntelEncoder::SetVideoFrameBufInfo(const IntelVideoFrameImageBufInfo * pVid
 	sBuferInfo.dwScanXByteSize = pVideoBufInfo->dwScanXByteSize;
 	sBuferInfo.enumColorFormat = COLORFORMAT_UYVY;
 	sBuferInfo.enumScanMode = VIDEOSCANMODE_FirstFieldTop;
-	return GetIntelPointer(m_pEncoder)->SetVideoFrameBufInfo(&sBuferInfo);
+	return GetIntelPointer(m_pEncoder)->SetInfo(&sBuferInfo);
 }
 
 bool IntelEncoder::PutFrame(const unsigned char * pFrameBuffer, const unsigned int nFramaeSize, bool bForceToKeyFrame)
@@ -80,7 +80,7 @@ bool IntelEncoder::SetEndofInput()
 	{
 		return false;
 	}
-	return GetIntelPointer(m_pEncoder)->SetEndofInput();
+	return false;
 }
 
 int IntelEncoder::GetCompressFrame(unsigned char *& pFrameBuffer, IntelFrameInfo * pFrameInfo)
@@ -90,7 +90,7 @@ int IntelEncoder::GetCompressFrame(unsigned char *& pFrameBuffer, IntelFrameInfo
 		return -1;
 	}
 	SRFrameInfo info;
-	if (GetIntelPointer(m_pEncoder)->GetCompressFrame(pFrameBuffer, &info))
+	if (GetIntelPointer(m_pEncoder)->GetFrame(pFrameBuffer, &info))
 	{
 		if (pFrameInfo)
 		{
