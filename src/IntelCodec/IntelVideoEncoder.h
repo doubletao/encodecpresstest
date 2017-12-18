@@ -1,5 +1,5 @@
 #pragma once
-#include "..\libcodec\IVideoEncoder.h"
+#include "IVideoEncoder.h"
 struct sInputParams;
 class CEncodingPipeline;
 class INTELCODECAPI CIntelVideoEncoderCPUHW : public IVideoEncoder
@@ -34,5 +34,8 @@ private:
 	sInputParams  *m_Params;
 
 	int   m_nTargetUsage;
+
+	char m_pFrameBuffer[720*576*2];
+	int  nframe;
 };
 

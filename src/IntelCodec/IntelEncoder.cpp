@@ -68,6 +68,16 @@ bool IntelEncoder::PutFrame(const unsigned char * pFrameBuffer, const unsigned i
 	{
 		return false;
 	}
+	if (true)
+	{
+		FILE * file;
+		fopen_s(&file, "scaled.yuv", "wb");
+		if (file)
+		{
+			fwrite(pFrameBuffer, 1, nFramaeSize, file);  //V
+			fclose(file);
+		}
+	}
 	SRFrameInfo info;
 	info.iSize = nFramaeSize;
 	bool bRet = GetIntelPointer(m_pEncoder)->PutFrame(pFrameBuffer, &info);
