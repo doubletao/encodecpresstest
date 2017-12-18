@@ -12,7 +12,7 @@
 #include "IntelVideoDecoder.h"
 
 #ifdef _DEBUG
-#pragma comment (lib,"CPUCodecU.lib")
+#pragma comment (lib,"CPUCodecUD.lib")
 #else
 #pragma comment (lib,"CPUCodecU.lib")
 #endif  

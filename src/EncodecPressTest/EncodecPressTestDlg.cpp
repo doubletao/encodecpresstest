@@ -198,8 +198,8 @@ void CEncodecPressTestDlg::DoPlay()
 					int nHeight = rectDraw.Height();
 					nWidth = (nWidth + 1) / 2 * 2;
 					nHeight = (nHeight + 1) / 2 * 2;
-					//nWidth = 1920;
-					//nHeight = 1080;
+					nWidth = 720;
+					nHeight = 576;
 					SDStreamMediaInfoEx streamMediaInfoEx;
 					SDAudioMediaInfo audioInfo;
 					audioInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM;
