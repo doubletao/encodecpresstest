@@ -10,7 +10,7 @@
 #endif
 #endif // SDL_VIDEO_PLAYER_API
 
-//#define PLAYER_USE_SDLPAINT
+#define PLAYER_USE_SDLPAINT
 //typedef RECT(* CallbackGetDrawRect)(HWND hWnd);
 
 class SDL_VIDEO_PLAYER_EXPORT SDLVideoPlayer
