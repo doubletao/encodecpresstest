@@ -93,6 +93,7 @@ int ecCodecIntelVideoEncoder::GetCompressFrame(SD_UINT8 *& pFrameBuffer, SDRFram
 			pFrameInfo->qwDuration = info.qwDuration;
 			pFrameInfo->dwShowIndex = info.dwShowIndex;
 			pFrameInfo->extradata_size = info.extradata_size;
+			pFrameInfo->emFrameType = (FRAME_COMPRESS_TYPE)info.nFrameType;
 		}
 		return info.iSize;
 	}

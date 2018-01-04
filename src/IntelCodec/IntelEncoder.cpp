@@ -43,6 +43,8 @@ bool IntelEncoder::InitVideoEncoder(const IntelVideoMediaInfo * pDesVideoInfo)
 	mediaInfo.dwMinDataRateInBitsPerSec = pDesVideoInfo->dwMinDataRateInBitsPerSec;
 	mediaInfo.enumVideoType = VIDEOTYPE_H264;
 	mediaInfo.enumColorFormat = COLORFORMAT_YUVP_NV12;
+	mediaInfo.enumScanMode = VIDEOSCANMODE_Progressive;
+	mediaInfo.enumRateControlMethod = RATECONTROL_CBR;
 	bool bRet = GetIntelPointer(m_pEncoder)->Init(&mediaInfo);
 	return bRet;
 }

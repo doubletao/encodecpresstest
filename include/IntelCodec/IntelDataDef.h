@@ -62,6 +62,7 @@ struct IntelFrameInfo
 	unsigned long long				qwDuration;		// 持续时间(90Khz单位)	8---6
 	unsigned int				dwShowIndex;	// 帧数据显示顺序			4---104
 	int						extradata_size;
+	int						nFrameType;
 
 	IntelFrameInfo()
 	{

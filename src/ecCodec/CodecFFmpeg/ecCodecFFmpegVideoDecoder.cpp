@@ -11,6 +11,8 @@ ecCodecFFmpegVideoDecoder::ecCodecFFmpegVideoDecoder()
 	: m_pCodecCtx(nullptr)
 	, m_bIsInitialized(false)
 	, m_pFrame(nullptr)
+	, m_nSrcWidth(0)
+	, m_nSrcHeight(0)
 	, m_nDesWidth(0)
 	, m_nDesHeight(0)
 	, m_emDesColorFormat(SDCOLORFORMAT_UNKNOW)
@@ -38,6 +40,8 @@ bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(const SDVideoMediaInfo & pSrcVi
 			m_pCodecCtx->pix_fmt = FFmpegFormatCovert::ConvertPixelFormat(pSrcVideoInfo.enumColorFormat);
 			m_pCodecCtx->width = pSrcVideoInfo.dwWidth;
 			m_pCodecCtx->height = pSrcVideoInfo.dwHeight;
+			m_nSrcWidth = pSrcVideoInfo.dwWidth;
+			m_nSrcHeight = pSrcVideoInfo.dwHeight;
 			m_pCodecCtx->bit_rate = pSrcVideoInfo.dwDataRateInBitsPerSec;
 			m_pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
 			m_pCodecCtx->extradata = pSrcVideoInfo.extradata;
@@ -94,6 +98,8 @@ bool ecCodecFFmpegVideoDecoder::InitVideoDecoder(AVCodecContext * pCodecCtx, AVC
 		m_pFrame = av_frame_alloc();
 		if (m_pFrame)
 		{
+			m_nSrcWidth = m_pCodecCtx->width;
+			m_nSrcHeight = m_pCodecCtx->height;
 			m_nDesWidth = m_pCodecCtx->width;
 			m_nDesHeight = m_pCodecCtx->height;
 			m_emDesColorFormat = FFmpegFormatCovert::ConvertColorFormat(m_pCodecCtx->pix_fmt);
@@ -116,17 +122,17 @@ bool ecCodecFFmpegVideoDecoder::SetVideoFrameBufInfo(const SDVideoFrameImageBufI
 	SDVideoMediaInfo mediaInfo;
 	if (GetVideoMediaInfo(&mediaInfo))
 	{
-		int nSrcWidth = mediaInfo.dwWidth;
-		int nSrcHeight = mediaInfo.dwHeight;
+		m_nSrcWidth = mediaInfo.dwWidth;
+		m_nSrcHeight = mediaInfo.dwHeight;
 		SD_COLOR_FORMAT emSrcColorFormat = mediaInfo.enumColorFormat;
 		m_nDesWidth = pOutBufInfo->dwXSize;
 		m_nDesHeight = pOutBufInfo->dwYSize;
 		m_emDesColorFormat = pOutBufInfo->enumColorFormat;
-		if (nSrcWidth != m_nDesWidth
-			|| nSrcHeight != m_nDesHeight
+		if (m_nSrcWidth != m_nDesWidth
+			|| m_nSrcHeight != m_nDesHeight
 			|| emSrcColorFormat != m_emDesColorFormat)
 		{
-			return m_VideoScaler.InitScaler(nSrcWidth, nSrcHeight, emSrcColorFormat, m_nDesWidth, m_nDesHeight, m_emDesColorFormat);
+			return m_VideoScaler.InitScaler(m_nSrcWidth, m_nSrcHeight, emSrcColorFormat, m_nDesWidth, m_nDesHeight, m_emDesColorFormat);
 		}
 		return true;
 	}
@@ -202,6 +208,13 @@ int ecCodecFFmpegVideoDecoder::GetUnCompressFrame(SD_UINT8 *& lpFrameBuffer, SDR
 	if (m_pFrame)
 	{
 		pFrameInfo->emFrameType = FFmpegFormatCovert::ConvertCompressType(m_pFrame->pict_type);
+		if (m_pFrame->width != m_nSrcWidth
+			&& m_pFrame->height != m_nSrcHeight)
+		{
+			m_nSrcWidth = m_pFrame->width;
+			m_nSrcHeight = m_pFrame->height;
+			m_VideoScaler.ResetScalerSrcWH(m_nSrcWidth, m_nSrcHeight);
+		}
 		if (m_VideoScaler.IsInitialized())
 		{
 			uint8_t ** pScaledData = nullptr;
@@ -301,6 +314,10 @@ bool ecCodecFFmpegVideoDecoder::GetVideoMediaInfo(SDVideoMediaInfo * mediaInfo)
 		mediaInfo->dwMaxDataRateInBitsPerSec = (SD_UINT32)m_pCodecCtx->rc_max_rate;//不确定
 		mediaInfo->dwMinDataRateInBitsPerSec = (SD_UINT32)m_pCodecCtx->rc_min_rate;//不确定
 		mediaInfo->dwStruSize = sizeof(SDVideoMediaInfo);
+		if (SDCOLORFORMAT_UNKNOW == mediaInfo->enumColorFormat)
+		{
+			return false;
+		}
 		return true;
 	}
 	return false;
@@ -336,6 +353,8 @@ bool ecCodecFFmpegVideoDecoder::Release()
 	{
 		av_frame_free(&m_pFrame);
 	}
+	m_nSrcWidth = 0;
+	m_nSrcHeight = 0;
 	m_nDesWidth = 0;
 	m_nDesHeight = 0;
 	m_emDesColorFormat = SDCOLORFORMAT_UNKNOW;

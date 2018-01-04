@@ -13,6 +13,7 @@ ecCodecIntelProtocolEncoder::ecCodecIntelProtocolEncoder()
 	, m_pVideoStream(nullptr)
 	, m_pAudioStream(nullptr)
 	, m_bWritable(false)
+	, m_nPts(0)
 {
 }
 
@@ -156,7 +157,7 @@ bool ecCodecIntelProtocolEncoder::PutVideoBuffer(const SD_UINT8 * pFrameBuf, boo
 
 	SDRFrameInfo frameInfo = *pFrameInfo;
 	SD_UINT8* pCompressFrame = nullptr;
-	while (m_pVideoEncoder->GetCompressFrame(pCompressFrame, &frameInfo) > 0) 
+	if (m_pVideoEncoder->GetCompressFrame(pCompressFrame, &frameInfo) > 0) 
 	{
 		if (!PutVideoFrame(pCompressFrame, &frameInfo))
 		{
@@ -193,7 +194,7 @@ bool ecCodecIntelProtocolEncoder::PutVideoFrame(const SD_UINT8 * pFrameBuf, cons
 	if (0)
 	{
 		FILE * file;
-		fopen_s(&file, "d.yuv", "wb+");
+		fopen_s(&file, "d.h264", "ab");
 		if (file)
 		{
 			fwrite(avpkt.data, 1, avpkt.size, file);    //Y 
@@ -316,6 +317,7 @@ bool ecCodecIntelProtocolEncoder::Release()
 			}
 		} while (nLoopCount-- > 0);
 
+		m_nPts = 0;
 		nRet = av_write_trailer(m_pFormatCtx);
 		if (nRet != 0)
 		{
@@ -358,10 +360,19 @@ bool ecCodecIntelProtocolEncoder::CreateVideoStream(const SDVideoMediaInfo & vid
 	m_pVideoStream->codecpar->codec_id = AV_CODEC_ID_H264;
 	m_pVideoStream->codecpar->codec_tag = videoInfo.dwVideoSubType;
 	m_pVideoStream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-	m_pVideoStream->codecpar->color_primaries;
-	m_pVideoStream->codecpar->color_range;
-	m_pVideoStream->codecpar->color_space;
-	m_pVideoStream->codecpar->field_order = FFmpegFormatCovert::ConvertVideoFieldOrder(videoInfo.enumScanMode);
+	if (videoInfo.dwWidth > 800)
+	{
+		m_pVideoStream->codecpar->color_primaries = AVCOL_PRI_BT709;
+		m_pVideoStream->codecpar->color_range = AVCOL_RANGE_MPEG;
+		m_pVideoStream->codecpar->color_space = AVCOL_SPC_BT709;
+	}
+	else
+	{
+		m_pVideoStream->codecpar->color_primaries = AVCOL_PRI_BT470M;
+		m_pVideoStream->codecpar->color_range = AVCOL_RANGE_MPEG;
+		m_pVideoStream->codecpar->color_space = AVCOL_SPC_BT470BG;
+	}
+	m_pVideoStream->codecpar->field_order = AV_FIELD_PROGRESSIVE;
 	m_pVideoStream->codecpar->format = FFmpegFormatCovert::ConvertPixelFormat(videoInfo.enumColorFormat);
 	m_pVideoStream->codecpar->width = videoInfo.dwWidth;
 	m_pVideoStream->codecpar->height = videoInfo.dwHeight;

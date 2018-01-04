@@ -119,7 +119,7 @@ bool ecCodecFFmpegAudioDecoder::GetAudioMediaInfo(SDAudioMediaInfo * pAudioInfo)
 	pAudioInfo->enumAudioCFG = FFmpegFormatCovert::ConvertChannelLayout(m_pCodecCtx->channel_layout);		//声道属性
 	pAudioInfo->enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Unknow;	//音频声道采样数据格式
 	pAudioInfo->dwStruSize = sizeof(SDAudioMediaInfo);			// 结构大小
-	return false;
+	return true;
 }
 
 bool ecCodecFFmpegAudioDecoder::SetAudioMediaInfo(const SDAudioMediaInfo * pAudioInfo)

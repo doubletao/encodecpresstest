@@ -3,10 +3,12 @@
 //
 
 #include "stdafx.h"
+//基础数据结构定义
+#include "SDVADefine.h"
+#include "ecCodec.h"
 #include "AudioCodeDebuger.h"
 #include "AudioCodeDebugerDlg.h"
 #include "afxdialogex.h"
-#include "ecCodec.h"
 #include "IecCodecFactory.h"
 
 #ifdef _DEBUG

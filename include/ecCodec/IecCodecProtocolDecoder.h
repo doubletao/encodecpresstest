@@ -4,6 +4,13 @@
 typedef int(*PCALLBACKREADPACKET)(void *,unsigned char *,int);
 typedef int(*PCALLBACKINTERRUPT)(PVOID pM);
 
+enum EM_VAType_Stream
+{
+	EM_VAType_NULL	= 0x00000000,
+	EM_VAType_Video = 0x00000001,
+	EM_VAType_Audio = 0x00000002,
+};
+
 class IecCodecProtocolDecoder
 {
 public:
@@ -115,7 +122,7 @@ public:
 	virtual SD_UINT32 GetAudioBufferSize() = 0;
 
 	// 顺解方式取出下一帧画面及一帧画面对应的音频
-	virtual bool GetVABuffer(SD_UINT8* pFrameBuf,
+	virtual EM_VAType_Stream GetVABuffer(SD_UINT8* pFrameBuf,
 		SD_UINT8* pSamplesBuf,
 		SD_UINT32* pdwRetSampleNum) = 0;
 

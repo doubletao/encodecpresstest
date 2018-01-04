@@ -90,6 +90,75 @@ bool ecCodecFFmpegScaler::InitScaler(SD_UINT32 nSrcWidth, SD_UINT32 nSrcHeight, 
 	return true;
 }
 
+bool ecCodecFFmpegScaler::ResetScalerSrcWH(SD_UINT32 nSrcWidth, SD_UINT32 nSrcHeight)
+{
+	SD_COLOR_FORMAT emSrcColorFormat = FFmpegFormatCovert::ConvertColorFormat(m_emSrcPixFmt);
+	SD_UINT32 nDesWidth = m_nDesWidth;
+	SD_UINT32 nDesHeight = m_nDesHeight;
+	SD_COLOR_FORMAT emDesColorFormat = FFmpegFormatCovert::ConvertColorFormat(m_emDesPixFmt);
+	Release();
+	m_emSrcPixFmt = FFmpegFormatCovert::ConvertPixelFormat(emSrcColorFormat);
+	m_nDesWidth = nDesWidth;
+	m_nDesHeight = nDesHeight;
+	m_emDesPixFmt = FFmpegFormatCovert::ConvertPixelFormat(emDesColorFormat);
+	m_nSrcWidth = nSrcWidth;
+	m_nSrcHeight = nSrcHeight;
+	if (m_emSrcPixFmt == AV_PIX_FMT_NONE || m_emDesPixFmt == AV_PIX_FMT_NONE)
+	{
+		return false;
+	}
+	if (nSrcWidth != m_nDesWidth
+		|| nSrcHeight != m_nDesHeight
+		|| m_emSrcPixFmt != m_emDesPixFmt)
+	{
+		if (m_pScaleCtx)
+		{
+			sws_freeContext(m_pScaleCtx);
+			m_pScaleCtx = nullptr;
+		}
+		m_pScaleCtx = sws_getContext(m_nSrcWidth, m_nSrcHeight, m_emSrcPixFmt,
+			m_nDesWidth, m_nDesHeight, m_emDesPixFmt, SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
+		if (!m_pScaleCtx)
+		{
+			printf("sws_getContext failed\n");
+			return false;
+		}
+
+		if (m_pScaleFrame)
+		{
+			av_frame_free(&m_pScaleFrame);
+			m_pScaleFrame = nullptr;
+		}
+		m_pScaleFrame = av_frame_alloc();
+		m_pScaleFrame->width = m_nDesWidth;
+		m_pScaleFrame->height = m_nDesHeight;
+		m_pScaleFrame->format = m_emDesPixFmt;
+		int nRet = av_image_alloc(m_pScaleFrame->data, m_pScaleFrame->linesize, m_nDesWidth, m_nDesHeight, m_emDesPixFmt, sizeof(SD_UINT8));
+		if (nRet < 0)
+		{
+			printf("av_image_alloc failed\n");
+			return false;
+		}
+
+		AVFrame * pFrame = av_frame_alloc();
+		pFrame->width = m_nSrcWidth;
+		pFrame->height = m_nSrcHeight;
+		pFrame->format = m_emSrcPixFmt;
+		nRet = av_image_alloc(pFrame->data, pFrame->linesize, m_nSrcWidth, m_nSrcHeight, m_emSrcPixFmt, sizeof(SD_UINT8));
+		if (nRet < 0)
+		{
+			printf("av_image_alloc failed\n");
+			return false;
+		}
+		if (pFrame)
+		{
+			av_frame_free(&pFrame);
+		}
+		m_bInitialized = true;
+	}
+	return true;
+}
+
 bool ecCodecFFmpegScaler::Scale(SD_UINT8 * pInBuf, SD_UINT8 * pOutBuf)
 {
 	if (m_bInitialized)

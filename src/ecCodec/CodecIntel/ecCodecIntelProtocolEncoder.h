@@ -15,6 +15,7 @@ class ecCodecIntelProtocolEncoder :
 	public IecCodecProtocolEncoder
 {
 private:
+	int m_nPts;
 	AVFormatContext* m_pFormatCtx;
 	AVStream* m_pVideoStream;
 	AVStream* m_pAudioStream;

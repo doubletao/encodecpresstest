@@ -17,6 +17,8 @@ private:
 	AVCodecContext * m_pCodecCtx;
 	ecCodecFFmpegScaler m_VideoScaler;
 	AVFrame	* m_pFrame;
+	int m_nSrcWidth;
+	int m_nSrcHeight;
 	int m_nDesWidth;
 	int m_nDesHeight;
 	SD_COLOR_FORMAT m_emDesColorFormat;

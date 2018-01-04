@@ -13,8 +13,6 @@
 *
 ****************************************************************************/
 #pragma once
-//基础数据结构定义
-#include "SDVADefine.h"
 #ifdef EASY_CODEC_API
 #define EASY_CODEC_API_EXPORT __declspec(dllexport)
 #else
@@ -28,6 +26,9 @@
 #endif
 #include "IecCodecFactory.h"
 #endif // EASY_CODEC_API
+
+//基础数据结构定义
+#include "SDVADefine.h"
 
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 
