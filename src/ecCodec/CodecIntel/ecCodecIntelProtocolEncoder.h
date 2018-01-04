@@ -2,6 +2,7 @@
 #include "IecCodecProtocolEncoder.h"
 #include "ecCodecIntelVideoEncoder.h"
 #include "..\CodecFFmpeg\ecCodecFFmpegAudioEncoder.h"
+#include "..\CodecFFmpeg\ecCodecFFmpegVideoEncoder.h"
 #include <memory>
 
 extern "C"
@@ -20,6 +21,7 @@ private:
 	AVStream* m_pVideoStream;
 	AVStream* m_pAudioStream;
 	bool	  m_bWritable;
+	std::unique_ptr<ecCodecFFmpegVideoEncoder> m_pFakeVideoEncoder;
 	std::unique_ptr<ecCodecIntelVideoEncoder> m_pVideoEncoder;
 	std::unique_ptr<ecCodecFFmpegAudioEncoder> m_pAudioEncoder;
 public:

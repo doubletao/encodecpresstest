@@ -73,6 +73,9 @@ bool ecCodecFFmpegAudioEncoder::InitAudioEncoder(const SDAudioMediaInfo & sAudio
 	m_pCodecCtx->sample_rate = sAudioInfo.dwSamplesPerSec;												// 48000;
 	m_pCodecCtx->channels = sAudioInfo.dwChannels;	       												// av_get_channel_layout_nb_channels(m_pCodecCtx->channel_layout);
 	m_pCodecCtx->channel_layout = FFmpegFormatCovert::ConvertChannelLayout(sAudioInfo.enumAudioCFG);	// AV_CH_LAYOUT_STEREO;
+	m_pCodecCtx->rc_min_rate = sAudioInfo.dwAvgBitsPerSec;
+	m_pCodecCtx->rc_max_rate = sAudioInfo.dwAvgBitsPerSec;
+	m_pCodecCtx->bit_rate_tolerance = 1;
 	m_pCodecCtx->bit_rate = sAudioInfo.dwAvgBitsPerSec;
 	m_pCodecCtx->time_base.num = 1;
 	m_pCodecCtx->time_base.den = m_pCodecCtx->sample_rate;

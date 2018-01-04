@@ -10,6 +10,7 @@
 
 ecCodecIntelProtocolEncoder::ecCodecIntelProtocolEncoder()
 	: m_pFormatCtx(nullptr)
+	, m_pFakeVideoEncoder(nullptr)
 	, m_pVideoStream(nullptr)
 	, m_pAudioStream(nullptr)
 	, m_bWritable(false)
@@ -355,27 +356,13 @@ bool ecCodecIntelProtocolEncoder::CreateVideoStream(const SDVideoMediaInfo & vid
 		return false;
 	}
 
-	m_pVideoStream->codecpar->bit_rate = videoInfo.dwDataRateInBitsPerSec;
-	m_pVideoStream->codecpar->block_align = 1;
-	m_pVideoStream->codecpar->codec_id = AV_CODEC_ID_H264;
-	m_pVideoStream->codecpar->codec_tag = videoInfo.dwVideoSubType;
-	m_pVideoStream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-	if (videoInfo.dwWidth > 800)
-	{
-		m_pVideoStream->codecpar->color_primaries = AVCOL_PRI_BT709;
-		m_pVideoStream->codecpar->color_range = AVCOL_RANGE_MPEG;
-		m_pVideoStream->codecpar->color_space = AVCOL_SPC_BT709;
+	m_pFakeVideoEncoder.reset(new ecCodecFFmpegVideoEncoder());
+	if (!m_pFakeVideoEncoder->InitVideoEncoder(&videoInfo)) {
+		return false;
 	}
-	else
-	{
-		m_pVideoStream->codecpar->color_primaries = AVCOL_PRI_BT470M;
-		m_pVideoStream->codecpar->color_range = AVCOL_RANGE_MPEG;
-		m_pVideoStream->codecpar->color_space = AVCOL_SPC_BT470BG;
-	}
-	m_pVideoStream->codecpar->field_order = AV_FIELD_PROGRESSIVE;
-	m_pVideoStream->codecpar->format = FFmpegFormatCovert::ConvertPixelFormat(videoInfo.enumColorFormat);
-	m_pVideoStream->codecpar->width = videoInfo.dwWidth;
-	m_pVideoStream->codecpar->height = videoInfo.dwHeight;
+
+	AVCodecContext *pCodecContext = m_pFakeVideoEncoder->GetCodecContext();
+	avcodec_parameters_from_context(m_pVideoStream->codecpar, pCodecContext);
 
 	return true;
 }
