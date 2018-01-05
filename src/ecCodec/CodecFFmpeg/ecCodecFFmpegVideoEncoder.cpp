@@ -83,6 +83,14 @@ bool ecCodecFFmpegVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDestV
 		//av_opt_set(m_pCodecCtx->priv_data, "tune", "zerolatency", 0);
 		//av_opt_set(m_pCodecCtx->priv_data, "profile", "baseline", 0);
 	}
+	if (codecId == AV_CODEC_ID_MPEG2VIDEO)
+	{
+		m_pCodecCtx->gop_size = pDestVideoInfo->dwGOPSize;
+		m_pCodecCtx->max_b_frames = 3;
+		//限制输出文件的profile。这个参数将覆盖其它所有值，此选项能保证输出profile兼容的视频流。如果使用了这个选项，将不能进行无损压缩（qp 0 or crf 0）。
+		m_pCodecCtx->profile = FF_PROFILE_MPEG2_HIGH;
+		m_pCodecCtx->codec_tag = MKTAG('M', 'M', 'E', 'S');
+	}
 
 	int ret = avcodec_open2(m_pCodecCtx, pVideoEncoder, nullptr);
 	if (ret < 0) 
