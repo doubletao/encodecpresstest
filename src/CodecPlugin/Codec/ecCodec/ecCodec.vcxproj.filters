@@ -1,0 +1,240 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Interface">
+      <UniqueIdentifier>{13d2f5e2-ca90-486f-af3c-84260758c206}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CodecFFmpeg">
+      <UniqueIdentifier>{71888f3c-3a71-46a1-ad08-022d030c03dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CodecIntel">
+      <UniqueIdentifier>{3208c8cd-424f-4ad9-a5a6-1d9bc1cfbf6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CodecIntel\IntelSample">
+      <UniqueIdentifier>{1ce8fe23-42d4-4d60-ae37-58c2752447cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CodecIntel\IntelSample\vm">
+      <UniqueIdentifier>{2e6bba31-3176-4cdc-8adf-cb6dcc256392}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ecCodecFactory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegAudioDecoder.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegAudioEncoder.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegProtocolDecoder.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegProtocolEncoder.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegVideoDecoder.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegVideoEncoder.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\FFmpegFormatConverter.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegScaler.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecFFmpeg\ecCodecFFmpegResampler.h">
+      <Filter>CodecFFmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\ecCodecIntelVideoEncoder.h">
+      <Filter>CodecIntel</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\ecCodecIntelProtocolEncoder.h">
+      <Filter>CodecIntel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\ecCodec\ecCodec.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecAudioDecoder.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecAudioEncoder.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecFactory.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecProtocolDecoder.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecProtocolEncoder.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecResampler.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecScaler.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecVideoDecoder.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecVideoEncoder.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\DecodeRender.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\PipelineDecode.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\PipelineEncode.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\sample_defs.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\sample_utils.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\vm\atomic_defs.h">
+      <Filter>CodecIntel\IntelSample\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\vm\file_defs.h">
+      <Filter>CodecIntel\IntelSample\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\vm\so_defs.h">
+      <Filter>CodecIntel\IntelSample\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\vm\strings_defs.h">
+      <Filter>CodecIntel\IntelSample\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\vm\thread_defs.h">
+      <Filter>CodecIntel\IntelSample\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\vm\time_defs.h">
+      <Filter>CodecIntel\IntelSample\vm</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\igfx_s3dcontrol.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\base_allocator.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\current_date.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\d3d_allocator.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\d3d_device.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\d3d11_allocator.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\d3d11_device.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\hw_device.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\sysmem_allocator.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecIntel\IntelSample\vpp_ex.h">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ecCodecFactory.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegAudioDecoder.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegAudioEncoder.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegProtocolDecoder.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegProtocolEncoder.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegVideoDecoder.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegVideoEncoder.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\FFmpegFormatConverter.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegScaler.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecFFmpeg\ecCodecFFmpegResampler.cpp">
+      <Filter>CodecFFmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\ecCodecIntelVideoEncoder.cpp">
+      <Filter>CodecIntel</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\ecCodecIntelProtocolEncoder.cpp">
+      <Filter>CodecIntel</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\PipelineDecode.cpp">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\PipelineEncode.cpp">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\vm\atomic.cpp">
+      <Filter>CodecIntel\IntelSample\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\vm\shared_object.cpp">
+      <Filter>CodecIntel\IntelSample\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\vm\thread.cpp">
+      <Filter>CodecIntel\IntelSample\vm</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\base_allocator.cpp">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\d3d_allocator.cpp">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\d3d_device.cpp">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\d3d11_allocator.cpp">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\d3d11_device.cpp">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\sample_utils.cpp">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\sysmem_allocator.cpp">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecIntel\IntelSample\vpp_ex.cpp">
+      <Filter>CodecIntel\IntelSample</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -19,7 +19,7 @@
 #define EASY_CODEC_API_EXPORT __declspec(dllimport)
 #ifdef _USE_CODEC_LIB
 #ifdef _DEBUG
-#	pragma comment(lib, "ecCodecD.lib")
+#	pragma comment(lib, "ecCodecUD.lib")
 #else
 #	pragma comment(lib, "ecCodecU.lib")
 #endif

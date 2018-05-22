@@ -1,16 +1,3 @@
-/***************************************************************************
-* SDType.H
-*
-* 公共头文件之一,EasyCode科技公司版权所有!
-*
-* 描述:		-跨平台编程环境下的数据类型定义头文件。
-*
-* 目标:		-这个头文件支持Window和Linux编程环境中的32位和64位编程。其依据C和C++的最基础数据类型定义。使用时请注意定义预定义变量。
-*            建议在更高级的结构、类、函数等输入输出定义中仅使用这些数据类型定义,内部也仅可使用这些数据定义或最基础数据类型定义。
-*
-* Ver-0.9
-*
-****************************************************************************/
 #ifndef _SD_TYPES_H_
 #define _SD_TYPES_H_
 
@@ -32,30 +19,8 @@
 	#endif
 #endif
 
-#if (defined(_LINUX_VER_) || defined(LINUX_VER) || defined(_LINUX_VER) || defined(__LINUX_VER__))
-#ifndef _LINUX_VER
-#define _LINUX_VER
-#endif
-#endif
-
-#if (defined(_LINUX32_) || defined(LINUX32) || defined(_LINUX32) || defined(__LINUX32__))
-	#ifndef _LINUX32
-		#define _LINUX32
-	#endif
-#endif
-
-#if (defined(_LINUX64_) || defined(LINUX64) || defined(_LINUX64) || defined(__LINUX64__))
-	#ifndef _LINUX64
-		#define _LINUX64
-	#endif
-#endif
-
 #if ((!defined(_MSC_VER)) && (defined(_WIN32) || defined(_WIN64)))
 #define _MSC_VER
-#endif
-
-#if ((!defined(_LINUX_VER)) && (defined(_LINUX32) || defined(_LINUX64)))
-	#define _LINUX_VER
 #endif
 
 #if ((!defined(_MSC_VER)) && (!defined(_LINUX_VER)))
@@ -68,69 +33,6 @@
 
 #if (defined(_MSC_VER) && ((!defined(_WIN32)) && (!defined(_WIN64))))
 	#define _WIN32
-#endif
-
-#if (defined(_LINUX_VER) && ((!defined(_LINUX32)) && (!defined(_LINUX64))))
-	#define _LINUX64
-#endif
-
-#if (defined(_LINUX32) && defined(_LINUX64))
-	#undef _LINUX64
-#endif
-
-//Add Mac os x platform
-#if (defined(MAC_OSX) || defined(_MAC_OSX) || defined(_MAC_OSX_32) || defined(MAC_OSX_32) || defined(_MAC_OSX_32_))
-	#ifndef _MAC_OSX_32
-		#define _MAC_OSX_32
-	#endif
-#endif
-
-#if (defined(_MAC_OSX_64) || defined(MAC_OSX_64) || defined(_MAC_OSX_64_))
-	#ifdef _MAC_OSX_32
-		#undef _MAC_OSX_32
-	#endif
-	#ifndef _MAC_OSX_64
-		#define _MAC_OSX_64
-	#endif
-#endif
-
-//Add Apple Iphone plat form
-#if (defined(_APPLE_IOS) || defined(_APPLE__IOS_) || defined(APPLE_IOS))
-	#ifndef _APPLE_IOS
-		#define _APPLE_IOS
-	#endif
-	#ifdef _MAC_OSX_32
-		#undef _MAC_OSX_32
-	#endif
-	#ifdef _MAC_OSX_64
-		#undef _MAC_OSX_64
-	#endif
-	#define _IOS_VER
-#endif
-
-//
-#if (defined(_MAC_OSX_32) || defined(_MAC_OSX_64) || defined(_APPLE_IOS))
-	#ifndef _MAC_OSX_VER
-		#define _MAC_OSX_VER
-	#endif
-	#ifdef _LINUX_VER
-		#undef _LINUX_VER
-	#endif
-	#ifdef _LINUX64
-		#undef _LINUX64
-	#endif
-	#ifdef _LINUX32
-		#undef _LINUX32
-	#endif
-	#ifdef _MSC_VER
-		#undef _MSC_VER
-	#endif
-	#ifdef _WIN64
-		#undef _WIN64
-	#endif
-	#ifdef _WIN32
-		#undef _WIN32
-	#endif
 #endif
 
 #if (defined(_UNICODE_) || defined(UNICODE) || defined(_UNICODE) || defined(__UNICODE__))
