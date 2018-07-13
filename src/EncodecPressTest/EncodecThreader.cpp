@@ -9,7 +9,7 @@ static const int SAMPLE_SIZE = 4;
 EncodecThreader::EncodecThreader()
 	: m_pEncoder(nullptr)
 	, m_ecfactory(nullptr)
-	, m_pThread(nullptr)
+	, m_pPlayThread(nullptr)
 	, m_evtStop(FALSE, TRUE, nullptr, nullptr)
 	, m_bForbitLostFrame(false)
 {
@@ -118,17 +118,17 @@ bool EncodecThreader::Start()
 {
 	Stop();
 	m_evtStop.ResetEvent();
-	m_pThread = AfxBeginThread(ThreadEncodec, this);
+	m_pPlayThread = AfxBeginThread(ThreadEncodec, this);
 	return true;
 }
 
 bool EncodecThreader::Stop()
 {
 	m_evtStop.SetEvent();
-	if (m_pThread)
+	if (m_pPlayThread)
 	{
-		WaitForSingleObject(m_pThread->m_hThread, INFINITE);
-		m_pThread = nullptr;
+		WaitForSingleObject(m_pPlayThread->m_hThread, INFINITE);
+		m_pPlayThread = nullptr;
 	}
 	return true;
 }

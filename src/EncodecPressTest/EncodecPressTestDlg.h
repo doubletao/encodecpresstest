@@ -26,8 +26,11 @@ private:
 
 	CStdioFile m_fileLog;
 	bool m_bLogOpened;
+
+	VABuffer m_vaBuf;
+	VALoop m_vaLoop;//播放逻辑buffer
 private:
-	CWinThread * m_pThread;
+	CWinThread * m_pPlayThread;
 	CEvent m_evtPlayStop;
 	CEvent m_evtPlayPause;
 	static UINT ThreadPlay(LPVOID pParam);
@@ -36,6 +39,14 @@ private:
 	void PausePlay();
 	void StopPlay();
 	void DoPlay();
+
+	CWinThread * m_pDisplayThread;
+	CEvent m_evtDisplayStop;
+	static UINT ThreadDisplay(LPVOID pParam);
+
+	void StartDisplay();
+	void StopDisplay();
+	void DoDisplay();
 // 构造
 public:
 	CEncodecPressTestDlg(CWnd* pParent = NULL);	// 标准构造函数

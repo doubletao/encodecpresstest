@@ -83,11 +83,11 @@ UINT CEncodecPressTestDlg::ThreadPlay(LPVOID pParam)
 
 void CEncodecPressTestDlg::StopPlay()
 {
-	if (m_pThread)
+	if (m_pPlayThread)
 	{
 		m_evtPlayStop.SetEvent();
-		WaitForSingleObject(m_pThread->m_hThread, INFINITE);
-		m_pThread = NULL;
+		WaitForSingleObject(m_pPlayThread->m_hThread, INFINITE);
+		m_pPlayThread = NULL;
 	}
 }
 
@@ -96,7 +96,7 @@ void CEncodecPressTestDlg::StartPlay()
 	StopPlay();
 	m_evtPlayStop.ResetEvent();
 	m_evtPlayPause.ResetEvent();
-	m_pThread = AfxBeginThread(ThreadPlay, this);
+	m_pPlayThread = AfxBeginThread(ThreadPlay, this);
 }
 
 void CEncodecPressTestDlg::PausePlay()
@@ -183,7 +183,7 @@ void CEncodecPressTestDlg::DoPlay()
 		FILE * pAudioFile = nullptr;
 		fopen_s(&pAudioFile, "output.pcm", "wb");
 #endif
-
+		StartDisplay();
 		CString strPath;
 		pWnd->GetWindowText(strPath);
 		std::string cstrPath = ConverCStringToStdString(strPath);
@@ -241,6 +241,9 @@ void CEncodecPressTestDlg::DoPlay()
 						uint8_t * pAudioData = new uint8_t[nAudioBufferSize];
 						memset(pAudioData, 0, nAudioBufferSize * sizeof(uint8_t));
 						SD_UINT32 numAudioSample = 0;
+
+						m_vaBuf.Reset(nVideoBufferSize, SamplePerFrame);
+						m_vaLoop.Reset(20, nVideoBufferSize, SamplePerFrame);
 						
 						bool bFirst = false;
 						m_ctrSlider.SetRange(0, streamMediaInfoEx.dwVideoFrameNum);
@@ -448,22 +451,16 @@ void CEncodecPressTestDlg::DoPlay()
 									}
 								}
 
-								if (videoFrameImageBufInfo.enumColorFormat == SDCOLORFORMAT_YUVP_420)
+								while (!m_vaLoop.Push(pVideoData, nVideoBufferSize, pAudioData, numAudioSample))
 								{
-									m_player.PushFrame(pVideoData, nWidth);
+									//push不进去就等5个毫秒再说
+									if (WaitForSingleObject(m_evtPlayStop, 5) == WAIT_OBJECT_0)
+									{
+										break;
+									}
 								}
-								else if (videoFrameImageBufInfo.enumColorFormat == SDCOLORFORMAT_UYVY)
-								{
-									m_player.PushFrame(pVideoData, nWidth * 2);
-								}
-								m_player.PushAudioSample(pAudioData, numAudioSample * 4);
-								int nStay = 40 - (clock() - nClock);
-								if (nStay < 0)
-								{
-									nStay = 0;
-									//PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("lost frame"));
-								}
-								if (WaitForSingleObject(m_evtPlayStop, nStay) == WAIT_OBJECT_0)
+								
+								if (WaitForSingleObject(m_evtPlayStop, 0) == WAIT_OBJECT_0)
 								{
 									break;
 								}
@@ -514,8 +511,14 @@ void CEncodecPressTestDlg::DoPlay()
 										}
 									}
 
-									m_player.PushFrame(pVideoData, nWidth);
-									m_player.PushAudioSample(pAudioData, numAudioSample * 4);
+									while (!m_vaLoop.Push(pVideoData, nVideoBufferSize, pAudioData, numAudioSample))
+									{
+										//push不进去就等5个毫秒再说
+										if (WaitForSingleObject(m_evtPlayStop, 5) == WAIT_OBJECT_0)
+										{
+											break;
+										}
+									}
 									m_nDispFrame = m_nFrame;
 									nAudioPos = m_nFrame * SamplePerFrame;
 								}
@@ -548,6 +551,7 @@ void CEncodecPressTestDlg::DoPlay()
 			}
 		}
 	}
+	StopDisplay();
 	PostMessage(MSG_PUSHINFO, 0, (LPARAM)_T("Stoped"));
 	if (m_bLogOpened)
 	{
@@ -561,15 +565,59 @@ void CEncodecPressTestDlg::DoPlay()
 	}
 }
 
+UINT CEncodecPressTestDlg::ThreadDisplay(LPVOID pParam)
+{
+	CEncodecPressTestDlg * pThis = (CEncodecPressTestDlg *)pParam;
+	if (pThis)
+	{
+		pThis->DoDisplay();
+	}
+	return 0;
+}
+
+void CEncodecPressTestDlg::StartDisplay()
+{
+	StopDisplay();
+	assert(m_pDisplayThread == nullptr);
+	m_evtDisplayStop.ResetEvent();
+	m_pDisplayThread = AfxBeginThread(ThreadDisplay, this);
+}
+
+void CEncodecPressTestDlg::StopDisplay()
+{
+	if (m_pDisplayThread)
+	{
+		m_evtDisplayStop.SetEvent();
+		WaitForSingleObject(m_pDisplayThread->m_hThread, INFINITE);
+		m_pDisplayThread = nullptr;
+	}
+}
+
+void CEncodecPressTestDlg::DoDisplay()
+{
+	while (true)
+	{
+		//每40ms从队列里拿一帧出来
+		if (WaitForSingleObject(m_pDisplayThread->m_hThread, 40) == WAIT_OBJECT_0)
+		{
+			break;
+		}
+		m_vaLoop.Pop(m_vaBuf);
+		m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
+	}
+}
+
 CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_ENCODECPRESSTEST_DIALOG, pParent)
-	, m_pThread(nullptr)
+	, m_pPlayThread(nullptr)
 	, m_evtPlayStop(FALSE, TRUE, NULL, NULL)
 	, m_evtPlayPause(FALSE, TRUE, NULL, NULL)
 	, m_nFrame(0)
 	, m_nDispFrame(0)
 	, m_ecfactory(nullptr)
 	, m_bLogOpened(false)
+	, m_pDisplayThread(nullptr)
+	, m_evtDisplayStop(FALSE, TRUE, NULL, NULL)
 {
 	m_ecfactory = ecCodec_CreateCodecFactory();
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -688,6 +736,7 @@ END_MESSAGE_MAP()
 void CEncodecPressTestDlg::OnDestroy()
 {
 	StopPlay();
+	StopDisplay();
 	CDialogEx::OnDestroy();
 }
 

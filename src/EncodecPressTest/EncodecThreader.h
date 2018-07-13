@@ -50,7 +50,7 @@ public:
 	~EncodecThreader();
 protected:
 	CEvent m_evtStop;
-	CWinThread * m_pThread;
+	CWinThread * m_pPlayThread;
 
 	static UINT ThreadEncodec(LPVOID pParam);
 	bool DoEncodec();
