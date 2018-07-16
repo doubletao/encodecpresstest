@@ -303,3 +303,12 @@ bool VALoop::Pop(VABuffer & va)
 	Unlock();
 	return bRet;
 }
+
+size_t VALoop::Size()
+{
+	size_t nRet = 0;
+	Lock();
+	nRet = m_queUnused.size();
+	Unlock();
+	return nRet;
+}

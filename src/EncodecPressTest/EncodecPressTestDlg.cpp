@@ -243,7 +243,7 @@ void CEncodecPressTestDlg::DoPlay()
 						SD_UINT32 numAudioSample = 0;
 
 						m_vaBuf.Reset(nVideoBufferSize, SamplePerFrame);
-						m_vaLoop.Reset(20, nVideoBufferSize, SamplePerFrame);
+						m_vaLoop.Reset(100, nVideoBufferSize, SamplePerFrame);
 						
 						bool bFirst = false;
 						m_ctrSlider.SetRange(0, streamMediaInfoEx.dwVideoFrameNum);
@@ -610,6 +610,7 @@ void CEncodecPressTestDlg::DoDisplay()
 			{
 				break;
 			}
+			TRACE(_T("m_vaLoop.Size()=%d\n"), m_vaLoop.Size());
 			tmLastPush = clock();
 			m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
 			m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);

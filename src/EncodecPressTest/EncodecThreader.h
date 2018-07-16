@@ -35,6 +35,7 @@ struct VALoop
 	bool Push(const SD_UINT8* pFrameBuf, SD_UINT32 dwVideoBufSize, const SD_UINT8* pSamplesBuf, SD_UINT32 dwSampleNum);
 	bool Push(const VABuffer & va);
 	bool Pop(VABuffer & va);
+	size_t Size();
 };
 
 class EncodecThreader
