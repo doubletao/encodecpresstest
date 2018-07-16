@@ -595,15 +595,33 @@ void CEncodecPressTestDlg::StopDisplay()
 
 void CEncodecPressTestDlg::DoDisplay()
 {
+	time_t tmLastPush = 0;
 	while (true)
 	{
-		//每40ms从队列里拿一帧出来
-		if (WaitForSingleObject(m_pDisplayThread->m_hThread, 40) == WAIT_OBJECT_0)
+		if (m_vaLoop.Pop(m_vaBuf))
 		{
-			break;
+			//每40ms从队列里拿一帧出来
+			time_t nWait = 40 - (clock() - tmLastPush);
+			if (nWait < 1)
+			{
+				nWait = 1;
+			}
+			if (WaitForSingleObject(m_evtDisplayStop, nWait) == WAIT_OBJECT_0)
+			{
+				break;
+			}
+			tmLastPush = clock();
+			m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
+			m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
 		}
-		m_vaLoop.Pop(m_vaBuf);
-		m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
+		else
+		{
+			//没取到则等3ms
+			if (WaitForSingleObject(m_evtDisplayStop, 3) == WAIT_OBJECT_0)
+			{
+				break;
+			}
+		}
 	}
 }
 
