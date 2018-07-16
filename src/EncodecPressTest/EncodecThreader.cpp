@@ -304,7 +304,7 @@ bool VALoop::Pop(VABuffer & va)
 	return bRet;
 }
 
-size_t VALoop::Size()
+size_t VALoop::UnusedSize()
 {
 	size_t nRet = 0;
 	Lock();

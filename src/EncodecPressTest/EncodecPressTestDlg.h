@@ -29,6 +29,10 @@ private:
 
 	VABuffer m_vaBuf;
 	VALoop m_vaLoop;//播放逻辑buffer
+
+	//快慢放参数
+	bool m_bSlow;
+	int m_nRepeatTime;
 private:
 	CWinThread * m_pPlayThread;
 	CEvent m_evtPlayStop;

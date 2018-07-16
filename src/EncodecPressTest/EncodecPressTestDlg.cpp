@@ -171,6 +171,22 @@ void CEncodecPressTestDlg::DoPlay()
 		bForcePtsAlign = pBtn->GetCheck();
 	}
 
+	CComboBox * pSpeedMode = (CComboBox *)GetDlgItem(IDC_COMBO_SPEED_MODE);
+	CComboBox * pSpeedRatio = (CComboBox *)GetDlgItem(IDC_COMBO_SPEED_RATIO);
+	if (pSpeedMode && ::IsWindow(pSpeedMode->GetSafeHwnd())
+		&& pSpeedRatio && ::IsWindow(pSpeedRatio->GetSafeHwnd()))
+	{
+		if (pSpeedMode->GetCurSel() == 0)
+		{
+			m_bSlow = false;
+		}
+		else
+		{
+			m_bSlow = true;
+		}
+		m_nRepeatTime = pSpeedRatio->GetCurSel() + 1;
+	}
+
 	m_nDispFrame = 0;
 	Lock();
 	m_nFrame = 0;
@@ -596,31 +612,96 @@ void CEncodecPressTestDlg::StopDisplay()
 void CEncodecPressTestDlg::DoDisplay()
 {
 	time_t tmLastPush = 0;
+	bool bSlow = m_bSlow;
+	int nRepeatTime = m_nRepeatTime;
+	int nUsedCount = 0;
 	while (true)
 	{
-		if (m_vaLoop.Pop(m_vaBuf))
+		if (bSlow)
 		{
-			//每40ms从队列里拿一帧出来
-			time_t nWait = 40 - (clock() - tmLastPush);
-			if (nWait < 1)
+			if (nUsedCount < nRepeatTime - 1)
 			{
-				nWait = 1;
+				//每40ms从队列里拿一帧出来
+				time_t nWait = 40 - (clock() - tmLastPush);
+				if (nWait < 1)
+				{
+					nWait = 1;
+				}
+				if (WaitForSingleObject(m_evtDisplayStop, nWait) == WAIT_OBJECT_0)
+				{
+					break;
+				}
+				TRACE(_T("m_vaLoop.UnusedSize()=%d\n"), m_vaLoop.UnusedSize());
+				tmLastPush = clock();
+				m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
+				m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
+				nUsedCount++;
 			}
-			if (WaitForSingleObject(m_evtDisplayStop, nWait) == WAIT_OBJECT_0)
+			else
 			{
-				break;
+				if (m_vaLoop.Pop(m_vaBuf))
+				{
+					//每40ms从队列里拿一帧出来
+					time_t nWait = 40 - (clock() - tmLastPush);
+					if (nWait < 1)
+					{
+						nWait = 1;
+					}
+					if (WaitForSingleObject(m_evtDisplayStop, nWait) == WAIT_OBJECT_0)
+					{
+						break;
+					}
+					TRACE(_T("m_vaLoop.UnusedSize()=%d\n"), m_vaLoop.UnusedSize());
+					tmLastPush = clock();
+					m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
+					m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
+					nUsedCount = 0;
+				}
+				else
+				{
+					//没取到则等3ms
+					if (WaitForSingleObject(m_evtDisplayStop, 3) == WAIT_OBJECT_0)
+					{
+						break;
+					}
+				}
 			}
-			TRACE(_T("m_vaLoop.Size()=%d\n"), m_vaLoop.Size());
-			tmLastPush = clock();
-			m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
-			m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
 		}
 		else
 		{
-			//没取到则等3ms
-			if (WaitForSingleObject(m_evtDisplayStop, 3) == WAIT_OBJECT_0)
+			if (nUsedCount < nRepeatTime)
 			{
-				break;
+				//次数不够就pop
+				if (m_vaLoop.Pop(m_vaBuf))
+				{
+					nUsedCount++;
+				}
+				else
+				{
+					//没取到则等3ms
+					if (WaitForSingleObject(m_evtDisplayStop, 3) == WAIT_OBJECT_0)
+					{
+						break;
+					}
+				}
+			}
+			else
+			{
+				//每40msPush一帧
+				time_t nWait = 40 - (clock() - tmLastPush);
+				if (nWait < 1)
+				{
+					nWait = 1;
+				}
+				if (WaitForSingleObject(m_evtDisplayStop, nWait) == WAIT_OBJECT_0)
+				{
+					break;
+				}
+				TRACE(_T("m_vaLoop.UnusedSize()=%d\n"), m_vaLoop.UnusedSize());
+				tmLastPush = clock();
+				m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
+				m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
+				nUsedCount = 0;
 			}
 		}
 	}
@@ -637,6 +718,8 @@ CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
 	, m_bLogOpened(false)
 	, m_pDisplayThread(nullptr)
 	, m_evtDisplayStop(FALSE, TRUE, NULL, NULL)
+	, m_bSlow(false)
+	, m_nRepeatTime(1)
 {
 	m_ecfactory = ecCodec_CreateCodecFactory();
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -919,6 +1002,15 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 	if (!m_bLogOpened && m_fileLog.Open(strFileName, CFile::modeCreate | CFile::modeWrite))
 	{
 		m_bLogOpened = true;
+	}
+
+	CComboBox * pSpeedMode = (CComboBox *)GetDlgItem(IDC_COMBO_SPEED_MODE);
+	CComboBox * pSpeedRatio = (CComboBox *)GetDlgItem(IDC_COMBO_SPEED_RATIO);
+	if (pSpeedMode && ::IsWindow(pSpeedMode->GetSafeHwnd())
+		&& pSpeedRatio && ::IsWindow(pSpeedRatio->GetSafeHwnd()))
+	{
+		pSpeedMode->SetCurSel(0);
+		pSpeedRatio->SetCurSel(0);
 	}
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
