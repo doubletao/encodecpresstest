@@ -225,6 +225,18 @@ LPCTSTR GetPresetMediaInfo(SD_VIDEO_STANDARD emVideoStandard, SD_VIDEO_TYPE emVi
 		streamInfo.sVideoMediaInfo.enumColorMatrix = SDCOLORMATRIX_ITU_R470_2BG;			// 颜色空间变换系数(ISO13818-2)
 		streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 50000000;
 		break;
+	case SDVIDEOSTANDARD_HD720p_50:
+		streamInfo.sVideoMediaInfo.dwWidth = 1280;////////////////////////////////////////////////////////////////////////////
+		streamInfo.sVideoMediaInfo.dwHeight = 720;////////////////////////////////////////////////////////////////////////////
+		streamInfo.sVideoMediaInfo.dwStandardRate = 50;////////////////////////////////////////////////////////////////////////////
+		streamInfo.sVideoMediaInfo.dwStandardScale = 1;////////////////////////////////////////////////////////////////////////////
+		streamInfo.sVideoMediaInfo.dwDisplayWidth = 4;////////////////////////////////////////////////////////////////////////////
+		streamInfo.sVideoMediaInfo.dwDisplayHeight = 3;////////////////////////////////////////////////////////////////////////////
+		streamInfo.sVideoMediaInfo.enumColorPrimaries = SDCOLORPRIMARIES_ITU_R470_2BG;			// 源基色的色度坐标(ISO13818-2)
+		streamInfo.sVideoMediaInfo.enumColorTransfer = SDCOLORTRANSFER_ITU_R470_2BG;			// 光电转换特性(ISO13818-2)
+		streamInfo.sVideoMediaInfo.enumColorMatrix = SDCOLORMATRIX_ITU_R470_2BG;			// 颜色空间变换系数(ISO13818-2)
+		streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 50000000;
+		break;
 	case SDVIDEOSTANDARD_HD1080i_25:
 		streamInfo.sVideoMediaInfo.dwWidth = 1920;////////////////////////////////////////////////////////////////////////////
 		streamInfo.sVideoMediaInfo.dwHeight = 1080;////////////////////////////////////////////////////////////////////////////

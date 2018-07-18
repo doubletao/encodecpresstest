@@ -245,8 +245,15 @@ bool ecCodecFFmpegAudioDecoder::PutFrame(const SD_UINT8 * pData, const SDRFrameI
 
 int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSampleNum)
 {
+	int data_size = av_get_bytes_per_sample(m_emDesSampleFormat);
+
 	if (!m_pCodecCtx || !m_pSrcFrame) {
 		return -2;
+	}
+
+	if (nullptr == m_pAudioResBuf)
+	{
+		m_pAudioResBuf = new SD_UINT8[AVCODEC_MAX_AUDIO_FRAME_SIZE];
 	}
 
 	int ret = avcodec_receive_frame(m_pCodecCtx, m_pSrcFrame);
@@ -255,7 +262,8 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 		//解码器里没东西了检查下fifo缓冲里还有没
 		if (m_pAudioFifo && av_audio_fifo_size(m_pAudioFifo) >= nSampleNum)
 		{
-			av_audio_fifo_read(m_pAudioFifo, (void **)&lpBuffer, nSampleNum);
+			av_audio_fifo_read(m_pAudioFifo, (void **)&m_pAudioResBuf, nSampleNum);
+			memcpy(lpBuffer, m_pAudioResBuf, nSampleNum * m_nDesChannelCount * data_size);
 			return nSampleNum;
 		}
 		return 0;
@@ -265,7 +273,8 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 		//解码器里没东西了检查下fifo缓冲里还有没
 		if (m_pAudioFifo && av_audio_fifo_size(m_pAudioFifo) >= nSampleNum)
 		{
-			av_audio_fifo_read(m_pAudioFifo, (void **)&lpBuffer, nSampleNum);
+			av_audio_fifo_read(m_pAudioFifo, (void **)&m_pAudioResBuf, nSampleNum);
+			memcpy(lpBuffer, m_pAudioResBuf, nSampleNum * m_nDesChannelCount * data_size);
 			return nSampleNum;
 		}
 		return -1;
@@ -345,10 +354,6 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 			fwrite(m_pSrcFrame->data[0], 1, m_pSrcFrame->linesize[0], fp_debug);
 			fclose(fp_debug);
 		}
-		if (nullptr == m_pAudioResBuf)
-		{
-			m_pAudioResBuf = new SD_UINT8[AVCODEC_MAX_AUDIO_FRAME_SIZE];
-		}
 		int swr_size = m_AudioResampler.Resample(&m_pAudioResBuf, AVCODEC_MAX_AUDIO_FRAME_SIZE,
 			(const uint8_t **)m_pSrcFrame->data, m_pSrcFrame->nb_samples);
 #endif
@@ -392,7 +397,8 @@ int ecCodecFFmpegAudioDecoder::GetSample(SD_UINT8 *& lpBuffer, SD_UINT32 nSample
 
 	if (av_audio_fifo_size(m_pAudioFifo) >= nSampleNum)
 	{
-		av_audio_fifo_read(m_pAudioFifo, (void **)&lpBuffer, nSampleNum);
+		av_audio_fifo_read(m_pAudioFifo, (void **)&m_pAudioResBuf, nSampleNum);
+		memcpy(lpBuffer, m_pAudioResBuf, nSampleNum * m_nDesChannelCount * data_size);
 		return nSampleNum;
 	}
 

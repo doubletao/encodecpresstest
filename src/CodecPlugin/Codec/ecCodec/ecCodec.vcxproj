@@ -121,13 +121,13 @@
     <OutDir>..\..\..\..\bin\unicode_debug\</OutDir>
     <TargetName>$(ProjectName)UD</TargetName>
     <IncludePath>$(IncludePath)</IncludePath>
-    <IntDir>..\..\..\interdir\unicode_debug\$(TargetName)\</IntDir>
+    <IntDir>..\..\..\..\interdir\unicode_debug\$(TargetName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Unicode_Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>..\..\..\..\bin\unicode_release\</OutDir>
     <TargetName>$(ProjectName)U</TargetName>
-    <IntDir>..\..\..\interdir\unicode_release\$(TargetName)\</IntDir>
+    <IntDir>..\..\..\..\interdir\unicode_release\$(TargetName)\</IntDir>
     <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode_Debug|x64'">
