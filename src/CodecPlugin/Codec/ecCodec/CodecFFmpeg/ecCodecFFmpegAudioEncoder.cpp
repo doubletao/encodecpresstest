@@ -83,12 +83,19 @@ bool ecCodecFFmpegAudioEncoder::InitAudioEncoder(const SDAudioMediaInfo & sAudio
 	m_pCodecCtx->thread_count = 1;
 	m_pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
-	if (m_pCodecCtx->codec_id == AV_CODEC_ID_AAC) {
+	if (m_pCodecCtx->codec_id == AV_CODEC_ID_AAC) 
+	{
 		m_pCodecCtx->profile = FF_PROFILE_AAC_LOW;
 		m_pCodecCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
 	}
+	else if (m_pCodecCtx->codec_id == AV_CODEC_ID_MP2)
+	{
+		//这个数字是从ffmpeg里边抄出来的数，原来的数会导致open失败
+		m_pCodecCtx->bit_rate = 64000;
+	}
 
-	if (avcodec_open2(m_pCodecCtx, pAudioCodec, nullptr) < 0) {
+	int nRet = avcodec_open2(m_pCodecCtx, pAudioCodec, nullptr);
+	if (nRet < 0) {
 		return false;
 	}
 

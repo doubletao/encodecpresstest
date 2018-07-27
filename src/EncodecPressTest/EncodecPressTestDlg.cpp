@@ -939,15 +939,13 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 			&& pFileSuffixNameComb
 			)
 		{
-			pVideoTypeComb->AddString(_T("WMV3"));
-			pAudioTypeComb->AddString(_T("WMA"));
 			switch (i)
 			{
 			case 0:
 				pVideoStandardComb->SetCurSel(1);
 				pVideoTypeComb->SetCurSel(2);
 				pColorFmtComb->SetCurSel(0);
-				pAudioTypeComb->SetCurSel(2);
+				pAudioTypeComb->SetCurSel(4);
 				break;
 			case 1:
 				pVideoStandardComb->SetCurSel(0);
@@ -995,7 +993,7 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 				break;
 			}
 			CString strName = _T("encodec");
-			pFileSuffixNameComb->SetCurSel(4);
+			pFileSuffixNameComb->SetCurSel(6);
 			pFileNameEdit->SetWindowText(strName);
 			pH264LevelEdit->SetWindowText(_T("5"));
 		}
@@ -1612,6 +1610,10 @@ SD_AUDIO_TYPE CEncodecPressTestDlg::GetCodecAudioType(int nIndex)
 		else if (nSel == 3)
 		{
 			emRet = SDAUDIOTYPE_WINDOWS_MEDIA;
+		}
+		else if (nSel == 4)
+		{
+			emRet = SDAUDIOTYPE_MP2;
 		}
 	}
 	return emRet;
