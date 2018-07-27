@@ -287,8 +287,9 @@ void CEncodecPressTestDlg::DoPlay()
 										CString strTmp;
 										GetCodecFileNameEdit(i)->GetWindowText(strTmp);
 										strFileName.Append(strTmp);
-										GetCodecFileSurfixEdit(i)->GetWindowText(strTmp);
-										strFileName.Append(strTmp);
+										CString strSuffix;
+										GetCodecFileSurfixEdit(i)->GetWindowText(strSuffix);
+										strFileName.Append(strSuffix);
 
 										if (m_bLogOpened)
 										{
@@ -298,6 +299,11 @@ void CEncodecPressTestDlg::DoPlay()
 										}
 
 										GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, nH264Level, streamInfo);
+										//对于avi格式，视为mpeg2_i帧，将gop设为1
+										if (strSuffix == _T(".avi"))
+										{
+											streamInfo.sVideoMediaInfo.dwGOPSize = 1;
+										}
 										//streamInfo.sVideoMediaInfo.enumColorFormat = SDCOLORFORMAT_INTEL;
 										//streamInfo.sVideoMediaInfo.dwWidth = nWidth;
 										//streamInfo.sVideoMediaInfo.dwHeight = nHeight;
@@ -1663,8 +1669,6 @@ void CEncodecPressTestDlg::DealCtrlFileName()
 			setFileName.insert(strTmpName);
 			GetCodecFileNameEdit(i)->SetWindowText(strTmpName);
 
-			SDStreamMediaInfo streamInfo;
-			GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, nH264Level, streamInfo);
 			CString strSuffix = GetCodecFileSuffixName(i);
 			GetCodecFileSurfixEdit(i)->SetWindowText(strSuffix);
 
@@ -1717,6 +1721,9 @@ CString CEncodecPressTestDlg::GenerateFileInfoName(SD_VIDEO_STANDARD emVideoStan
 		strFileName.AppendFormat(_T("_Intel264"));
 		strFileName.AppendFormat(_T("_%d"), nH264Level);
 		break;
+	case SDVIDEOTYPE_WINDOWS_MEDIA:
+		strFileName.AppendFormat(_T("_wmv"));
+		break;
 	default:
 		break;
 	}
@@ -1744,6 +1751,12 @@ CString CEncodecPressTestDlg::GenerateFileInfoName(SD_VIDEO_STANDARD emVideoStan
 		break;
 	case SDAUDIOTYPE_AAC:
 		strFileName.AppendFormat(_T("_aac"));
+		break;
+	case SDAUDIOTYPE_WINDOWS_MEDIA:
+		strFileName.AppendFormat(_T("_wma"));
+		break;
+	case SDAUDIOTYPE_MP2:
+		strFileName.AppendFormat(_T("_mp2"));
 		break;
 	default:
 		break;
