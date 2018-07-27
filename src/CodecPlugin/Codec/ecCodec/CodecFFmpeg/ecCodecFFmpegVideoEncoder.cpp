@@ -30,6 +30,7 @@ bool ecCodecFFmpegVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDestV
 		return false;
 
 	AVCodecID codecId = FFmpegFormatCovert::ConvertCodecId(pDestVideoInfo->enumVideoType);
+
 	AVCodec* pVideoEncoder = nullptr;
 	if (AV_CODEC_ID_H264 == codecId && SDCOLORFORMAT_INTEL == pDestVideoInfo->enumColorFormat)
 	{
@@ -53,9 +54,13 @@ bool ecCodecFFmpegVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDestV
 	m_pCodecCtx->pix_fmt = FFmpegFormatCovert::ConvertPixelFormat(pDestVideoInfo->enumColorFormat);
 	m_pCodecCtx->width = pDestVideoInfo->dwWidth;
 	m_pCodecCtx->height = pDestVideoInfo->dwHeight;
-	m_pCodecCtx->bit_rate = pDestVideoInfo->dwDataRateInBitsPerSec;
-	m_pCodecCtx->rc_min_rate = pDestVideoInfo->dwDataRateInBitsPerSec;
-	m_pCodecCtx->rc_max_rate = pDestVideoInfo->dwDataRateInBitsPerSec;
+	//ffmpeg的wmv编码对码率的要求比较高，不要自己设
+	if (codecId != AV_CODEC_ID_WMV2)
+	{
+		m_pCodecCtx->bit_rate = pDestVideoInfo->dwDataRateInBitsPerSec;
+		m_pCodecCtx->rc_min_rate = pDestVideoInfo->dwDataRateInBitsPerSec;
+		m_pCodecCtx->rc_max_rate = pDestVideoInfo->dwDataRateInBitsPerSec;
+	}
 	m_pCodecCtx->time_base.den = pDestVideoInfo->dwStandardRate;
 	m_pCodecCtx->time_base.num = 1;
 	m_pCodecCtx->framerate.den = 1;
@@ -88,7 +93,7 @@ bool ecCodecFFmpegVideoEncoder::InitVideoEncoder(const SDVideoMediaInfo * pDestV
 		m_pCodecCtx->gop_size = pDestVideoInfo->dwGOPSize;
 		m_pCodecCtx->max_b_frames = 3;
 		//限制输出文件的profile。这个参数将覆盖其它所有值，此选项能保证输出profile兼容的视频流。如果使用了这个选项，将不能进行无损压缩（qp 0 or crf 0）。
-		m_pCodecCtx->profile = FF_PROFILE_MPEG2_HIGH;
+		//m_pCodecCtx->profile = FF_PROFILE_MPEG2_HIGH;
 		m_pCodecCtx->codec_tag = MKTAG('M', 'M', 'E', 'S');
 	}
 

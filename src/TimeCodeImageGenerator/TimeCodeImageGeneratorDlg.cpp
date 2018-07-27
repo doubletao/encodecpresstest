@@ -471,7 +471,8 @@ void CTimeCodeImageGeneratorDlg::OnBnClickedBtnOutputCodec()
 	memset(m_pVideoBuf, 0, nVideoBufSize);
 	//配置输出文件信息
 	SDStreamMediaInfo streamInfo;
-	CString strSufix = GetPresetMediaInfo(SDVIDEOSTANDARD_HD1080i_25, SDVIDEOTYPE_H264_INTEL, SDCOLORFORMAT_INTEL, SDAUDIOTYPE_AAC, 48000, 5, streamInfo);
+	GetPresetMediaInfo(SDVIDEOSTANDARD_HD1080i_25, SDVIDEOTYPE_H264_INTEL, SDCOLORFORMAT_INTEL, SDAUDIOTYPE_AAC, 48000, 5, streamInfo);
+	CString strSufix = _T(".mp4");
 	streamInfo.sVideoMediaInfo.dwGOPSize = 1;
 	CString strFileName = strFilePreName + _T("video");
 #if 1

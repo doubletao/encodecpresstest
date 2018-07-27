@@ -37,7 +37,7 @@ extern "C" {
 #endif
 	EASY_CODEC_API_EXPORT	IecCodecFactory * ecCodec_CreateCodecFactory();
 	EASY_CODEC_API_EXPORT	bool	ecCodec_ReleaseCodecFactory(IecCodecFactory *& pCodecFactory);
-	EASY_CODEC_API_EXPORT LPCTSTR GetPresetMediaInfo(SD_VIDEO_STANDARD emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, DWORD dwSamplePerSec, int nH264Level, OUT SDStreamMediaInfo & streamInfo);
+	EASY_CODEC_API_EXPORT void GetPresetMediaInfo(SD_VIDEO_STANDARD emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, DWORD dwSamplePerSec, int nH264Level, OUT SDStreamMediaInfo & streamInfo);
 #ifdef __cplusplus
 }
 #endif

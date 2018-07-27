@@ -929,21 +929,25 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 		CComboBox * pAudioTypeComb = GetCodecAudioTypeCombo(i);
 		CEdit *		pFileNameEdit = GetCodecFileNameEdit(i);
 		CEdit *		pH264LevelEdit = GetCodecH264LevelEdit(i);
+		CComboBox * pFileSuffixNameComb = GetCodecFileSuffixNameCombo(i);
 		if (pVideoStandardComb
 			&& pVideoTypeComb
 			&& pColorFmtComb
 			&& pAudioTypeComb
 			&& pFileNameEdit
 			&& pH264LevelEdit
+			&& pFileSuffixNameComb
 			)
 		{
+			pVideoTypeComb->AddString(_T("WMV3"));
+			pAudioTypeComb->AddString(_T("WMA"));
 			switch (i)
 			{
 			case 0:
 				pVideoStandardComb->SetCurSel(1);
-				pVideoTypeComb->SetCurSel(3);
-				pColorFmtComb->SetCurSel(2);
-				pAudioTypeComb->SetCurSel(0);
+				pVideoTypeComb->SetCurSel(2);
+				pColorFmtComb->SetCurSel(0);
+				pAudioTypeComb->SetCurSel(2);
 				break;
 			case 1:
 				pVideoStandardComb->SetCurSel(0);
@@ -991,6 +995,7 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 				break;
 			}
 			CString strName = _T("encodec");
+			pFileSuffixNameComb->SetCurSel(4);
 			pFileNameEdit->SetWindowText(strName);
 			pH264LevelEdit->SetWindowText(_T("5"));
 		}
@@ -1324,6 +1329,43 @@ CComboBox * CEncodecPressTestDlg::GetCodecAudioTypeCombo(int nCodecIndex)
 	return nullptr;
 }
 
+CComboBox * CEncodecPressTestDlg::GetCodecFileSuffixNameCombo(int nCodecIndex)
+{
+	CWnd * pWnd = nullptr;
+	switch (nCodecIndex)
+	{
+	case 0:
+		pWnd = GetDlgItem(IDC_COMBO_FILE_SUFFIX_NAME_CODEC1);
+		break;
+	case 1:
+		pWnd = GetDlgItem(IDC_COMBO_FILE_SUFFIX_NAME_CODEC2);
+		break;
+	case 2:
+		pWnd = GetDlgItem(IDC_COMBO_FILE_SUFFIX_NAME_CODEC3);
+		break;
+	case 3:
+		pWnd = GetDlgItem(IDC_COMBO_FILE_SUFFIX_NAME_CODEC4);
+		break;
+	case 4:
+		pWnd = GetDlgItem(IDC_COMBO_FILE_SUFFIX_NAME_CODEC5);
+		break;
+	case 5:
+		pWnd = GetDlgItem(IDC_COMBO_FILE_SUFFIX_NAME_CODEC6);
+		break;
+	case 6:
+		pWnd = GetDlgItem(IDC_COMBO_FILE_SUFFIX_NAME_CODEC7);
+		break;
+	default:
+		pWnd = GetDlgItem(IDC_COMBO_FILE_SUFFIX_NAME_CODEC8);
+		break;
+	}
+	if (pWnd && ::IsWindow(pWnd->GetSafeHwnd()))
+	{
+		return (CComboBox *)pWnd;
+	}
+	return nullptr;
+}
+
 CEdit * CEncodecPressTestDlg::GetCodecH264LevelEdit(int nCodecIndex)
 {
 	CWnd * pWnd = nullptr;
@@ -1517,6 +1559,10 @@ SD_VIDEO_TYPE CEncodecPressTestDlg::GetCodecVideoType(int nIndex)
 		{
 			emRet = SDVIDEOTYPE_H264_INTEL;
 		}
+		else if (nSel == 4)
+		{
+			emRet = SDVIDEOTYPE_WINDOWS_MEDIA;
+		}
 	}
 	return emRet;
 }
@@ -1559,12 +1605,23 @@ SD_AUDIO_TYPE CEncodecPressTestDlg::GetCodecAudioType(int nIndex)
 		{
 			emRet = SDAUDIOTYPE_MP3;
 		}
-		else
+		else if (nSel == 2)
 		{
 			emRet = SDAUDIOTYPE_WAVE_PCM;
 		}
+		else if (nSel == 3)
+		{
+			emRet = SDAUDIOTYPE_WINDOWS_MEDIA;
+		}
 	}
 	return emRet;
+}
+
+CString CEncodecPressTestDlg::GetCodecFileSuffixName(int nIndex)
+{
+	CString strSuffix;
+	GetCodecFileSuffixNameCombo(nIndex)->GetWindowText(strSuffix);
+	return strSuffix;
 }
 
 int CEncodecPressTestDlg::GetCodecH264Level(int nIndex)
@@ -1605,7 +1662,8 @@ void CEncodecPressTestDlg::DealCtrlFileName()
 			GetCodecFileNameEdit(i)->SetWindowText(strTmpName);
 
 			SDStreamMediaInfo streamInfo;
-			CString strSuffix = GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, nH264Level, streamInfo);
+			GetPresetMediaInfo(emVideoStandard, emVideoType, emColorFmt, emAudioType, 48000, nH264Level, streamInfo);
+			CString strSuffix = GetCodecFileSuffixName(i);
 			GetCodecFileSurfixEdit(i)->SetWindowText(strSuffix);
 
 			GetCodecVideoStandardCombo(i)->EnableWindow(false);

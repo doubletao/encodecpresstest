@@ -62,7 +62,7 @@ AVCodecID FFmpegFormatCovert::ConvertCodecId(SD_VIDEO_TYPE emVideoType)
 	case SDVIDEOTYPE_REAL_MEDIA:
 		break;
 	case SDVIDEOTYPE_WINDOWS_MEDIA:
-		codecId = AV_CODEC_ID_WMAV1;
+		codecId = AV_CODEC_ID_WMV2;
 		break;
 	case SDVIDEOTYPE_QUICKTIME_MOV:
 		break;
@@ -104,6 +104,30 @@ AVCodecID FFmpegFormatCovert::ConvertCodecId(SD_VIDEO_TYPE emVideoType)
 	}
 
 	return codecId;
+}
+
+SD_VIDEO_TYPE FFmpegFormatCovert::ConvertVideoCodecType(AVCodecID codecID)
+{
+	SD_VIDEO_TYPE videoType = SDVIDEOTYPE_UNKNOW;
+	switch (codecID)
+	{
+	case AV_CODEC_ID_H264:
+		videoType = SDVIDEOTYPE_H264;
+		break;
+	case AV_CODEC_ID_MPEG2VIDEO:
+		videoType = SDVIDEOTYPE_MPEG2_IFRAME;
+		break;
+	case AV_CODEC_ID_MPEG4:
+		videoType = SDVIDEOTYPE_MPEG4;
+		break;
+	case AV_CODEC_ID_WMV2:
+		videoType = SDVIDEOTYPE_WINDOWS_MEDIA;
+		break;
+	default:
+		videoType = (SD_VIDEO_TYPE)codecID;
+		break;
+	}
+	return videoType;
 }
 
 AVCodecID FFmpegFormatCovert::ConvertCodecId(SD_AUDIO_TYPE emAudioType)
@@ -150,7 +174,7 @@ AVCodecID FFmpegFormatCovert::ConvertCodecId(SD_AUDIO_TYPE emAudioType)
 	case SDAUDIOTYPE_REAL_MEDIA:
 		break;
 	case SDAUDIOTYPE_WINDOWS_MEDIA:
-		codecId = AV_CODEC_ID_WMAV1;
+		codecId = AV_CODEC_ID_WMAV2;
 		break;
 	case SDAUDIOTYPE_QUICKTIME_MOV:
 		break;
@@ -208,7 +232,7 @@ SD_AUDIO_TYPE FFmpegFormatCovert::ConvertAudioType(AVCodecID emCodecID)
 	case AV_CODEC_ID_AVS:
 		emAudioType = SDAUDIOTYPE_AVS;
 		break;
-	case AV_CODEC_ID_WMAV1:
+	case AV_CODEC_ID_WMAV2:
 		emAudioType = SDAUDIOTYPE_WINDOWS_MEDIA;
 		break;
 	case SDAUDIOTYPE_QUICKTIME_MOV:
@@ -491,27 +515,6 @@ SD_AUDIO_CHANNELCONFIGURATION FFmpegFormatCovert::ConvertChannelLayout(SD_UINT64
 	}
 
 	return nChannelLayout;
-}
-
-SD_VIDEO_TYPE FFmpegFormatCovert::ConvertVideoCodecType(AVCodecID codecID)
-{
-	SD_VIDEO_TYPE videoType = SDVIDEOTYPE_UNKNOW;
-	switch (codecID)
-	{
-	case AV_CODEC_ID_H264:
-		videoType = SDVIDEOTYPE_H264;
-		break;
-	case AV_CODEC_ID_MPEG2VIDEO:
-		videoType = SDVIDEOTYPE_MPEG2_IFRAME;
-		break;
-	case AV_CODEC_ID_MPEG4:
-		videoType = SDVIDEOTYPE_MPEG4;
-		break;
-	default:
-		videoType = (SD_VIDEO_TYPE)codecID;
-		break;
-	}
-	return videoType;
 }
 
 SD_UINT32 FFmpegFormatCovert::ConvertVideoCodecSubType(SD_UINT32 codecTag)

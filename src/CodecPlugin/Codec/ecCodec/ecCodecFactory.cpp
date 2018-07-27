@@ -209,7 +209,7 @@ EASY_CODEC_API_EXPORT bool ecCodec_ReleaseCodecFactory(IecCodecFactory *& pCodec
 	return true;
 }
 
-LPCTSTR GetPresetMediaInfo(SD_VIDEO_STANDARD emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, DWORD dwSamplePerSec, int nH264Level, OUT SDStreamMediaInfo & streamInfo)
+void GetPresetMediaInfo(SD_VIDEO_STANDARD emVideoStandard, SD_VIDEO_TYPE emVideoType, SD_COLOR_FORMAT emColorFormat, SD_AUDIO_TYPE emAudioType, DWORD dwSamplePerSec, int nH264Level, OUT SDStreamMediaInfo & streamInfo)
 {
 	switch (emVideoStandard)
 	{
@@ -285,28 +285,4 @@ LPCTSTR GetPresetMediaInfo(SD_VIDEO_STANDARD emVideoStandard, SD_VIDEO_TYPE emVi
 	streamInfo.sAudioMediaInfo.extradata_size = 0;
 	streamInfo.sAudioMediaInfo.dwStruSize = sizeof(SDAudioMediaInfo);			// 结构大小
 	streamInfo.dwStruSize = sizeof(SDStreamMediaInfo);
-
-	if (emVideoType == SDVIDEOTYPE_H264 && emAudioType == SDAUDIOTYPE_AAC)
-	{
-		streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 25000000;
-		return _T(".mp4");
-	}
-	if (emVideoType == SDVIDEOTYPE_H264_INTEL && emAudioType == SDAUDIOTYPE_AAC)
-	{
-		streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 25000000;
-		return _T(".mp4");
-	}
-	else if (emVideoType == SDVIDEOTYPE_MPEG4 && emAudioType == SDAUDIOTYPE_MP3)
-	{
-		streamInfo.sVideoMediaInfo.dwDataRateInBitsPerSec = 25000000;
-		return _T(".mp4");
-	}
-	else if (emVideoType == SDVIDEOTYPE_MPEG2_IFRAME && emAudioType == SDAUDIOTYPE_WAVE_PCM)
-	{
-		return _T(".avi");
-	}
-	else
-	{
-		return _T(".avi");
-	}
 }
