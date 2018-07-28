@@ -120,6 +120,7 @@ void CEncodecPressTestDlg::DoPlay()
 {
 	int nMaxCpu = 0;
 	int nMaxMem = 0;
+	m_vaLoop.Clear();
 	CEdit * pEdit = (CEdit *)GetDlgItem(IDC_EDIT_INFOMATION);
 	if (pEdit && ::IsWindow(pEdit->GetSafeHwnd()))
 	{
@@ -1806,6 +1807,7 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 	int nSel3 = 0;
 	int nSel4 = 0;
 	int nSel5 = 0;
+	int nSel6 = 0;
 	for (size_t i = 0; i < 8; i++)
 	{
 		//combox选第一项，文件名选inddex
@@ -1813,6 +1815,7 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 		CComboBox * pVideoTypeComb = GetCodecVideoTypeCombo(i);
 		CComboBox * pColorFmtComb = GetCodecColorFmtCombo(i);
 		CComboBox * pAudioTypeComb = GetCodecAudioTypeCombo(i);
+		CComboBox * pFileSuffixNameComb = GetCodecFileSuffixNameCombo(i);
 		CEdit *		pFileNameEdit = GetCodecFileNameEdit(i);
 		CEdit *		pH264LevelEdit = GetCodecH264LevelEdit(i);
 		if (pVideoStandardComb
@@ -1821,6 +1824,7 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 			&& pAudioTypeComb
 			&& pFileNameEdit
 			&& pH264LevelEdit
+			&& pFileSuffixNameComb
 			)
 		{
 			if (0 == i)
@@ -1830,6 +1834,7 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 				nSel3 = pColorFmtComb->GetCurSel();
 				nSel4 = pAudioTypeComb->GetCurSel();
 				nSel5 = GetCodecH264Level(i);
+				nSel6 = pFileSuffixNameComb->GetCurSel();
 			}
 			else
 			{
@@ -1837,6 +1842,7 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 				pVideoTypeComb->SetCurSel(nSel2);
 				pColorFmtComb->SetCurSel(nSel3);
 				pAudioTypeComb->SetCurSel(nSel4);
+				pFileSuffixNameComb->SetCurSel(nSel6);
 				CString strLevel;
 				strLevel.Format(_T("%d"), nSel5);
 				pH264LevelEdit->SetWindowText(strLevel);
