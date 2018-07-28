@@ -12,6 +12,7 @@
 #include "CodecFFmpeg\ecCodecFFmpegAudioEncoder.h"
 #include "CodecIntel\ecCodecIntelProtocolEncoder.h"
 #include "CodecIntel\ecCodecIntelVideoEncoder.h"
+#include "CodecAudioEffect\ecCodecAudioEffect.h"
 
 void ecCodecFactory::logFF(void *, int level, const char * fmt, va_list ap)
 {
@@ -182,6 +183,21 @@ bool ecCodecFactory::DeleteAudioDecoder(IecCodecAudioDecoder *& pObj)
 }
 
 bool ecCodecFactory::DeleteAudioEncoder(IecCodecAudioEncoder *& pObj)
+{
+	pObj->Release();
+	delete pObj;
+	pObj = nullptr;
+	return true;
+}
+
+IecCodecAudioEquliazer * ecCodecFactory::GetAudioEquliazer()
+{
+	IecCodecAudioEquliazer * pAudioEquliazer = nullptr;
+	pAudioEquliazer = new ecCodecAudioEquliazer;
+	return pAudioEquliazer;
+}
+
+bool ecCodecFactory::DeleteAudioEquliazer(IecCodecAudioEquliazer *& pObj)
 {
 	pObj->Release();
 	delete pObj;

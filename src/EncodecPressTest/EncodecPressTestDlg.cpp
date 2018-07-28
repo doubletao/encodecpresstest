@@ -206,6 +206,35 @@ void CEncodecPressTestDlg::DoPlay()
 		std::string cstrPath = ConverCStringToStdString(strPath);
 		if (m_ecfactory)
 		{
+			//创建音频均衡器
+			IecCodecAudioEquliazer * pAudioEquliazer = m_ecfactory->GetAudioEquliazer();
+			if (!pAudioEquliazer)
+			{
+				assert(false);
+			}
+			else
+			{
+				pAudioEquliazer->InitAudioEquliazer(10);
+
+				std::vector<int> vecValue;
+				vecValue.push_back(1);
+				vecValue.push_back(14);
+				vecValue.push_back(16);
+				vecValue.push_back(15);
+				vecValue.push_back(-15);
+				vecValue.push_back(-13);
+				vecValue.push_back(-10);
+				vecValue.push_back(8);
+				vecValue.push_back(6);
+				vecValue.push_back(4);
+
+				for (int i = 0; i < vecValue.size(); i++)
+				{
+					pAudioEquliazer->SetEqValue(i, 0, vecValue[i]);
+					pAudioEquliazer->SetEqValue(i, 1, vecValue[i]);
+				}
+			}
+
 			IecCodecProtocolDecoder * pDecoder = m_ecfactory->GetProtocolDecoder();
 			if (pDecoder)
 			{
@@ -260,7 +289,7 @@ void CEncodecPressTestDlg::DoPlay()
 						SD_UINT32 numAudioSample = 0;
 
 						m_vaBuf.Reset(nVideoBufferSize, SamplePerFrame);
-						m_vaLoop.Reset(100, nVideoBufferSize, SamplePerFrame);
+						m_vaLoop.Reset(10, nVideoBufferSize, SamplePerFrame);
 						
 						bool bFirst = false;
 						m_ctrSlider.SetRange(0, streamMediaInfoEx.dwVideoFrameNum);
@@ -474,6 +503,15 @@ void CEncodecPressTestDlg::DoPlay()
 									}
 								}
 
+								//音频均衡
+								if (WaitForSingleObject(m_evtAudioEqualizer, 0) == WAIT_OBJECT_0)
+								{
+									if (pAudioEquliazer)
+									{
+										pAudioEquliazer->DoEquliazer(pAudioData, nAudioBufferSize, audioInfo.dwSamplesPerSec, audioInfo.dwChannels);
+									}
+								}
+
 								while (!m_vaLoop.Push(pVideoData, nVideoBufferSize, pAudioData, numAudioSample))
 								{
 									//push不进去就等5个毫秒再说
@@ -572,6 +610,7 @@ void CEncodecPressTestDlg::DoPlay()
 					m_pEncoder[i] = nullptr;
 				}
 			}
+			m_ecfactory->DeleteAudioEquliazer(pAudioEquliazer);
 		}
 	}
 	StopDisplay();
@@ -725,6 +764,7 @@ CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
 	, m_bLogOpened(false)
 	, m_pDisplayThread(nullptr)
 	, m_evtDisplayStop(FALSE, TRUE, NULL, NULL)
+	, m_evtAudioEqualizer(FALSE, TRUE, NULL, NULL)
 	, m_bSlow(false)
 	, m_nRepeatTime(1)
 {
@@ -838,6 +878,7 @@ BEGIN_MESSAGE_MAP(CEncodecPressTestDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_CHECK_ENCODEC7, &CEncodecPressTestDlg::OnBnClickedCheckEncodec7)
 	ON_BN_CLICKED(IDC_CHECK_ENCODEC8, &CEncodecPressTestDlg::OnBnClickedCheckEncodec8)
 	ON_BN_CLICKED(IDC_BTN_COPY_FIRST_PARAM, &CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam)
+	ON_BN_CLICKED(IDC_CHK_AUDIO_EQ, &CEncodecPressTestDlg::OnBnClickedChkAudioEq)
 END_MESSAGE_MAP()
 
 // CEncodecPressTestDlg 消息处理程序
@@ -1850,5 +1891,18 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 			CString strName = _T("encodec");
 			pFileNameEdit->SetWindowText(strName);
 		}
+	}
+}
+
+
+void CEncodecPressTestDlg::OnBnClickedChkAudioEq()
+{
+	if (WaitForSingleObject(m_evtAudioEqualizer, 0) == WAIT_OBJECT_0)
+	{
+		m_evtAudioEqualizer.ResetEvent();
+	}
+	else
+	{
+		m_evtAudioEqualizer.SetEvent();
 	}
 }

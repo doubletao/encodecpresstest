@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\ecCodec\ecCodec.h" />
     <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecAudioDecoder.h" />
+    <ClInclude Include="..\..\..\..\include\ecCodec\IecCodecAudioEffect.h" />
     <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecAudioEncoder.h" />
     <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecFactory.h" />
     <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecProtocolDecoder.h" />
@@ -21,6 +22,11 @@
     <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecScaler.h" />
     <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecVideoDecoder.h" />
     <ClInclude Include="..\..\..\..\Include\ecCodec\IecCodecVideoEncoder.h" />
+    <ClInclude Include="CodecAudioEffect\ecCodecAudioEffect.h" />
+    <ClInclude Include="CodecAudioEffect\eq.h" />
+    <ClInclude Include="CodecAudioEffect\iir.h" />
+    <ClInclude Include="CodecAudioEffect\iir_cfs.h" />
+    <ClInclude Include="CodecAudioEffect\iir_fpu.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegAudioDecoder.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegAudioEncoder.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegProtocolDecoder.h" />
@@ -56,6 +62,10 @@
     <ClInclude Include="ecCodecFactory.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CodecAudioEffect\ecCodecAudioEffect.cpp" />
+    <ClCompile Include="CodecAudioEffect\eq.cpp" />
+    <ClCompile Include="CodecAudioEffect\iir_cfs.cpp" />
+    <ClCompile Include="CodecAudioEffect\iir_fpu.cpp" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegAudioDecoder.cpp" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegAudioEncoder.cpp" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegProtocolDecoder.cpp" />
