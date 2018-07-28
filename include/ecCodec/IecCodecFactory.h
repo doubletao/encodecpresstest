@@ -6,6 +6,7 @@
 #include "IecCodecVideoEncoder.h"
 #include "IecCodecAudioDecoder.h"
 #include "IecCodecAudioEncoder.h"
+#include "IecCodecAudioEffect.h"
 
 enum EmCodecProvider
 {
@@ -30,6 +31,8 @@ public:
 	virtual bool DeleteAudioDecoder(IecCodecAudioDecoder *& pObj) = 0;
 	virtual IecCodecAudioEncoder * GetAudioEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
 	virtual bool DeleteAudioEncoder(IecCodecAudioEncoder *& pObj) = 0;
+	virtual IecCodecAudioEquliazer * GetAudioEquliazer() = 0;
+	virtual bool DeleteAudioEquliazer(IecCodecAudioEquliazer *& pObj) = 0;
 };
 
 #ifdef __cplusplus

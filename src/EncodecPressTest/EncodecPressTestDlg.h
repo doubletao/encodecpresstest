@@ -33,6 +33,9 @@ private:
 	//快慢放参数
 	bool m_bSlow;
 	int m_nRepeatTime;
+
+	//均衡器开关
+	CEvent m_evtAudioEqualizer;
 private:
 	CWinThread * m_pPlayThread;
 	CEvent m_evtPlayStop;
@@ -125,4 +128,5 @@ public:
 	afx_msg void OnBnClickedCheckEncodec7();
 	afx_msg void OnBnClickedCheckEncodec8();
 	afx_msg void OnBnClickedBtnCopyFirstParam();
+	afx_msg void OnBnClickedChkAudioEq();
 };

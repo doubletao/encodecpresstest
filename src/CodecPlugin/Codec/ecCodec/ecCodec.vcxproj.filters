@@ -28,6 +28,9 @@
     <Filter Include="CodecIntel\IntelSample\vm">
       <UniqueIdentifier>{2e6bba31-3176-4cdc-8adf-cb6dcc256392}</UniqueIdentifier>
     </Filter>
+    <Filter Include="CodecAudioEffect">
+      <UniqueIdentifier>{228b9b07-aa2f-4bc2-bb0d-c95def3572a7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ecCodecFactory.h">
@@ -159,6 +162,24 @@
     <ClInclude Include="CodecIntel\IntelSample\vpp_ex.h">
       <Filter>CodecIntel\IntelSample</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ecCodec\IecCodecAudioEffect.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\ecCodecAudioEffect.h">
+      <Filter>CodecAudioEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\eq.h">
+      <Filter>CodecAudioEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\iir.h">
+      <Filter>CodecAudioEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\iir_cfs.h">
+      <Filter>CodecAudioEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\iir_fpu.h">
+      <Filter>CodecAudioEffect</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ecCodecFactory.cpp">
@@ -235,6 +256,18 @@
     </ClCompile>
     <ClCompile Include="CodecIntel\IntelSample\vpp_ex.cpp">
       <Filter>CodecIntel\IntelSample</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\ecCodecAudioEffect.cpp">
+      <Filter>CodecAudioEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\eq.cpp">
+      <Filter>CodecAudioEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\iir_cfs.cpp">
+      <Filter>CodecAudioEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\iir_fpu.cpp">
+      <Filter>CodecAudioEffect</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

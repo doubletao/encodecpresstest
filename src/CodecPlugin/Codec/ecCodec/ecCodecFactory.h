@@ -23,5 +23,7 @@ public:
 	virtual bool DeleteAudioDecoder(IecCodecAudioDecoder *& pObj);
 	virtual IecCodecAudioEncoder * GetAudioEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg);
 	virtual bool DeleteAudioEncoder(IecCodecAudioEncoder *& pObj);
+	virtual IecCodecAudioEquliazer * GetAudioEquliazer();
+	virtual bool DeleteAudioEquliazer(IecCodecAudioEquliazer *& pObj);
 };
 
