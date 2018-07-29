@@ -11,7 +11,7 @@ ecCodecAudioEquliazer::ecCodecAudioEquliazer()
 
 ecCodecAudioEquliazer::~ecCodecAudioEquliazer()
 {
-
+	Release();
 }
 
 bool ecCodecAudioEquliazer::InitAudioEquliazer(int nSamplePerSec, int nChannelCount, int nBand)

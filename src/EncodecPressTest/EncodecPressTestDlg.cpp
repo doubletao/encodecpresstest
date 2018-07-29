@@ -71,6 +71,51 @@ END_MESSAGE_MAP()
 
 
 
+void CEncodecPressTestDlg::OpenAudioEqualizer(bool bOpen)
+{
+	if (bOpen)
+	{
+		m_evtAudioEqualizer.SetEvent();
+	}
+	else
+	{
+		m_evtAudioEqualizer.ResetEvent();
+	}
+}
+
+bool CEncodecPressTestDlg::IsAudioEqualizerOpen()
+{
+	if (WaitForSingleObject(m_evtAudioEqualizer, 0) == WAIT_OBJECT_0)
+	{
+		return true;
+	}
+	return false;
+}
+
+void CEncodecPressTestDlg::SetAudioEquliazerValue(int nIndex, int nValue)
+{
+	//如果是open状态下修改值，则先close，然后改完再open
+	bool bOpen = false;
+	if (IsAudioEqualizerOpen())
+	{
+		bOpen = true;
+		OpenAudioEqualizer(false);
+	}
+	if (nIndex > -1 && nIndex < m_vecAudioEqualizerValue.size())
+	{
+		m_vecAudioEqualizerValue[nIndex] = nValue;
+		if (m_pAudioEquliazer)
+		{
+			m_pAudioEquliazer->SetEqValue(nIndex, 0, m_vecAudioEqualizerValue[nIndex]);
+			m_pAudioEquliazer->SetEqValue(nIndex, 1, m_vecAudioEqualizerValue[nIndex]);
+		}
+	}
+	if (bOpen)
+	{
+		OpenAudioEqualizer(true);
+	}
+}
+
 UINT CEncodecPressTestDlg::ThreadPlay(LPVOID pParam)
 {
 	CEncodecPressTestDlg * pThis = (CEncodecPressTestDlg *)pParam;
@@ -268,34 +313,18 @@ void CEncodecPressTestDlg::DoPlay()
 						uint32_t nAudioPos = 0;
 
 						//创建音频均衡器
-						IecCodecAudioEquliazer * pAudioEquliazer = m_ecfactory->GetAudioEquliazer();
-						if (!pAudioEquliazer)
+						m_pAudioEquliazer = m_ecfactory->GetAudioEquliazer();
+						if (!m_pAudioEquliazer)
 						{
 							assert(false);
 						}
 						else
 						{
-							pAudioEquliazer->InitAudioEquliazer(audioInfo.dwSamplesPerSec, audioInfo.dwChannels, 10);
-
-							std::vector<int> vecValue;
-							vecValue.push_back(1);
-							vecValue.push_back(14);
-							vecValue.push_back(16);
-							vecValue.push_back(15);
-							vecValue.push_back(-15);
-							vecValue.push_back(-13);
-							vecValue.push_back(-10);
-							vecValue.push_back(8);
-							vecValue.push_back(6);
-							vecValue.push_back(4);
-
-							for (int i = 0; i < vecValue.size(); i++)
+							m_pAudioEquliazer->InitAudioEquliazer(audioInfo.dwSamplesPerSec, audioInfo.dwChannels, 10);
+							for (int i = 0; i < m_vecAudioEqualizerValue.size(); i++)
 							{
-								pAudioEquliazer->SetEqValue(i, 0, vecValue[i]);
-								pAudioEquliazer->SetEqValue(i, 1, vecValue[i]);
-
-								//pAudioEquliazer->SetEqValue(i, 0, 0);
-								//pAudioEquliazer->SetEqValue(i, 1, 0);
+								m_pAudioEquliazer->SetEqValue(i, 0, m_vecAudioEqualizerValue[i]);
+								m_pAudioEquliazer->SetEqValue(i, 1, m_vecAudioEqualizerValue[i]);
 							}
 						}
 
@@ -509,11 +538,11 @@ void CEncodecPressTestDlg::DoPlay()
 								}
 
 								//音频均衡
-								if (WaitForSingleObject(m_evtAudioEqualizer, 0) == WAIT_OBJECT_0)
+								if (IsAudioEqualizerOpen())
 								{
-									if (pAudioEquliazer)
+									if (m_pAudioEquliazer)
 									{
-										pAudioEquliazer->DoEquliazer(pAudioData, nAudioBufferSize);
+										m_pAudioEquliazer->DoEquliazer(pAudioData, nAudioBufferSize);
 									}
 								}
 
@@ -600,8 +629,8 @@ void CEncodecPressTestDlg::DoPlay()
 						delete pVideoData;
 						pVideoData = nullptr;
 
-						m_ecfactory->DeleteAudioEquliazer(pAudioEquliazer);
-						pAudioEquliazer = nullptr;
+						m_ecfactory->DeleteAudioEquliazer(m_pAudioEquliazer);
+						m_pAudioEquliazer = nullptr;
 					}
 				}
 #ifdef DEBUG_AUDIO_OUTFILE
@@ -774,6 +803,7 @@ CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
 	, m_evtAudioEqualizer(FALSE, TRUE, NULL, NULL)
 	, m_bSlow(false)
 	, m_nRepeatTime(1)
+	, m_pAudioEquliazer(nullptr)
 {
 	m_ecfactory = ecCodec_CreateCodecFactory();
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -782,6 +812,7 @@ CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
 	{
 		m_pEncoder[i] = nullptr;
 	}
+	m_vecAudioEqualizerValue.resize(10, 0);
 }
 
 CEncodecPressTestDlg::~CEncodecPressTestDlg()
@@ -793,6 +824,12 @@ CEncodecPressTestDlg::~CEncodecPressTestDlg()
 	{
 		delete m_pEncoder[i];
 		m_pEncoder[i] = nullptr;
+	}
+	if (m_pAudioEquliazer && m_ecfactory)
+	{
+		m_pAudioEquliazer->Release();
+		m_ecfactory->DeleteAudioEquliazer(m_pAudioEquliazer);
+		m_pAudioEquliazer = nullptr;
 	}
 	ecCodec_ReleaseCodecFactory(m_ecfactory);
 	if (m_bLogOpened)
@@ -1904,12 +1941,12 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 
 void CEncodecPressTestDlg::OnBnClickedChkAudioEq()
 {
-	if (WaitForSingleObject(m_evtAudioEqualizer, 0) == WAIT_OBJECT_0)
+	if (IsAudioEqualizerOpen())
 	{
-		m_evtAudioEqualizer.ResetEvent();
+		OpenAudioEqualizer(false);
 	}
 	else
 	{
-		m_evtAudioEqualizer.SetEvent();
+		OpenAudioEqualizer(true);
 	}
 }
