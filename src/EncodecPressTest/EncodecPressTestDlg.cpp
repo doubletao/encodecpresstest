@@ -328,7 +328,7 @@ void CEncodecPressTestDlg::DoPlay()
 							}
 						}
 
-						//创建解码器
+						//创建编码器
 #ifdef ENABLE_ENCODE
 						for (size_t i = 0; i < 8; i++)
 						{
@@ -444,6 +444,16 @@ void CEncodecPressTestDlg::DoPlay()
 								{
 									bContinue = pDecoder->GetVABuffer(pVideoData, pAudioData, &numAudioSample);
 								}
+
+								//音频均衡
+								if (IsAudioEqualizerOpen())
+								{
+									if (m_pAudioEquliazer)
+									{
+										m_pAudioEquliazer->DoEquliazer(pAudioData, nAudioBufferSize);
+									}
+								}
+
 #ifdef DEBUG_AUDIO_OUTFILE
 								//音频先写到文件里
 								fwrite(pAudioData, 1, numAudioSample * 8, pAudioFile);
@@ -534,15 +544,6 @@ void CEncodecPressTestDlg::DoPlay()
 									{
 										fwrite(pVideoData, 1, nVideoBufferSize, file);  //V
 										fclose(file);
-									}
-								}
-
-								//音频均衡
-								if (IsAudioEqualizerOpen())
-								{
-									if (m_pAudioEquliazer)
-									{
-										m_pAudioEquliazer->DoEquliazer(pAudioData, nAudioBufferSize);
 									}
 								}
 
