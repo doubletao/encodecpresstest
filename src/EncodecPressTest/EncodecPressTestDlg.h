@@ -134,4 +134,5 @@ public:
 	afx_msg void OnBnClickedCheckEncodec8();
 	afx_msg void OnBnClickedBtnCopyFirstParam();
 	afx_msg void OnBnClickedChkAudioEq();
+	afx_msg void OnBnClickedBtnAudioEqReset();
 };

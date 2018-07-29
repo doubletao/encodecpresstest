@@ -923,6 +923,7 @@ BEGIN_MESSAGE_MAP(CEncodecPressTestDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_CHECK_ENCODEC8, &CEncodecPressTestDlg::OnBnClickedCheckEncodec8)
 	ON_BN_CLICKED(IDC_BTN_COPY_FIRST_PARAM, &CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam)
 	ON_BN_CLICKED(IDC_CHK_AUDIO_EQ, &CEncodecPressTestDlg::OnBnClickedChkAudioEq)
+	ON_BN_CLICKED(IDC_BTN_AUDIO_EQ_RESET, &CEncodecPressTestDlg::OnBnClickedBtnAudioEqReset)
 END_MESSAGE_MAP()
 
 // CEncodecPressTestDlg 消息处理程序
@@ -1108,6 +1109,49 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 		pSpeedRatio->SetCurSel(0);
 	}
 
+	auto InitialAudioSlider = [](CSliderCtrl * pScrollAudioEqPos)
+	{
+		pScrollAudioEqPos->SetRangeMin(-20);
+		pScrollAudioEqPos->SetRangeMax(20);
+		pScrollAudioEqPos->SetPos(0);
+		pScrollAudioEqPos->SetTic(1);
+		pScrollAudioEqPos->SetTicFreq(1);
+	};
+	CSliderCtrl * pScrollAudioEqPos0 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ1);
+	CSliderCtrl * pScrollAudioEqPos1 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ2);
+	CSliderCtrl * pScrollAudioEqPos2 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ3);
+	CSliderCtrl * pScrollAudioEqPos3 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ4);
+	CSliderCtrl * pScrollAudioEqPos4 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ5);
+	CSliderCtrl * pScrollAudioEqPos5 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ6);
+	CSliderCtrl * pScrollAudioEqPos6 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ7);
+	CSliderCtrl * pScrollAudioEqPos7 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ8);
+	CSliderCtrl * pScrollAudioEqPos8 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ9);
+	CSliderCtrl * pScrollAudioEqPos9 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ10);
+	if (
+		pScrollAudioEqPos0 && ::IsWindow(pScrollAudioEqPos0->GetSafeHwnd())
+		&& pScrollAudioEqPos1 && ::IsWindow(pScrollAudioEqPos1->GetSafeHwnd())
+		&& pScrollAudioEqPos2 && ::IsWindow(pScrollAudioEqPos2->GetSafeHwnd())
+		&& pScrollAudioEqPos3 && ::IsWindow(pScrollAudioEqPos3->GetSafeHwnd())
+		&& pScrollAudioEqPos4 && ::IsWindow(pScrollAudioEqPos4->GetSafeHwnd())
+		&& pScrollAudioEqPos5 && ::IsWindow(pScrollAudioEqPos5->GetSafeHwnd())
+		&& pScrollAudioEqPos6 && ::IsWindow(pScrollAudioEqPos6->GetSafeHwnd())
+		&& pScrollAudioEqPos7 && ::IsWindow(pScrollAudioEqPos7->GetSafeHwnd())
+		&& pScrollAudioEqPos8 && ::IsWindow(pScrollAudioEqPos8->GetSafeHwnd())
+		&& pScrollAudioEqPos9 && ::IsWindow(pScrollAudioEqPos9->GetSafeHwnd())
+		)
+	{
+		InitialAudioSlider(pScrollAudioEqPos0);
+		InitialAudioSlider(pScrollAudioEqPos1);
+		InitialAudioSlider(pScrollAudioEqPos2);
+		InitialAudioSlider(pScrollAudioEqPos3);
+		InitialAudioSlider(pScrollAudioEqPos4);
+		InitialAudioSlider(pScrollAudioEqPos5);
+		InitialAudioSlider(pScrollAudioEqPos6);
+		InitialAudioSlider(pScrollAudioEqPos7);
+		InitialAudioSlider(pScrollAudioEqPos8);
+		InitialAudioSlider(pScrollAudioEqPos9);
+	}
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -1208,14 +1252,88 @@ void CEncodecPressTestDlg::OnBnClickedBtnOutChooseFile()
 
 void CEncodecPressTestDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
-	if (pScrollBar)
+	CSliderCtrl * pScrollPlayPos = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_SEEK);
+	CSliderCtrl * pScrollAudioEqPos0 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ1);
+	CSliderCtrl * pScrollAudioEqPos1 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ2);
+	CSliderCtrl * pScrollAudioEqPos2 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ3);
+	CSliderCtrl * pScrollAudioEqPos3 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ4);
+	CSliderCtrl * pScrollAudioEqPos4 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ5);
+	CSliderCtrl * pScrollAudioEqPos5 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ6);
+	CSliderCtrl * pScrollAudioEqPos6 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ7);
+	CSliderCtrl * pScrollAudioEqPos7 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ8);
+	CSliderCtrl * pScrollAudioEqPos8 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ9);
+	CSliderCtrl * pScrollAudioEqPos9 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ10);
+	if (pScrollPlayPos && ::IsWindow(pScrollPlayPos->GetSafeHwnd())
+		&& pScrollAudioEqPos0 && ::IsWindow(pScrollAudioEqPos0->GetSafeHwnd())
+		&& pScrollAudioEqPos1 && ::IsWindow(pScrollAudioEqPos1->GetSafeHwnd())
+		&& pScrollAudioEqPos2 && ::IsWindow(pScrollAudioEqPos2->GetSafeHwnd())
+		&& pScrollAudioEqPos3 && ::IsWindow(pScrollAudioEqPos3->GetSafeHwnd())
+		&& pScrollAudioEqPos4 && ::IsWindow(pScrollAudioEqPos4->GetSafeHwnd())
+		&& pScrollAudioEqPos5 && ::IsWindow(pScrollAudioEqPos5->GetSafeHwnd())
+		&& pScrollAudioEqPos6 && ::IsWindow(pScrollAudioEqPos6->GetSafeHwnd())
+		&& pScrollAudioEqPos7 && ::IsWindow(pScrollAudioEqPos7->GetSafeHwnd())
+		&& pScrollAudioEqPos8 && ::IsWindow(pScrollAudioEqPos8->GetSafeHwnd())
+		&& pScrollAudioEqPos9 && ::IsWindow(pScrollAudioEqPos9->GetSafeHwnd())
+		)
 	{
-		int nID = pScrollBar->GetDlgCtrlID();
-		if (nID == IDC_SLIDER_SEEK)
+		if (pScrollBar)
 		{
-			Lock();
-			m_nFrame = m_ctrSlider.GetPos();
-			Unlock();
+			int nID = pScrollBar->GetDlgCtrlID();
+			if (nID == IDC_SLIDER_SEEK)
+			{
+				Lock();
+				m_nFrame = m_ctrSlider.GetPos();
+				Unlock();
+			}
+			else
+			{
+				int nAudioPos = 0;
+				switch (nID)
+				{
+				case IDC_SLIDER_AUDIO_EQ1:
+					nAudioPos = pScrollAudioEqPos0->GetPos();
+					SetAudioEquliazerValue(0, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ2:
+					nAudioPos = pScrollAudioEqPos1->GetPos();
+					SetAudioEquliazerValue(1, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ3:
+					nAudioPos = pScrollAudioEqPos2->GetPos();
+					SetAudioEquliazerValue(2, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ4:
+					nAudioPos = pScrollAudioEqPos3->GetPos();
+					SetAudioEquliazerValue(3, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ5:
+					nAudioPos = pScrollAudioEqPos4->GetPos();
+					SetAudioEquliazerValue(4, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ6:
+					nAudioPos = pScrollAudioEqPos5->GetPos();
+					SetAudioEquliazerValue(5, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ7:
+					nAudioPos = pScrollAudioEqPos6->GetPos();
+					SetAudioEquliazerValue(6, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ8:
+					nAudioPos = pScrollAudioEqPos7->GetPos();
+					SetAudioEquliazerValue(7, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ9:
+					nAudioPos = pScrollAudioEqPos8->GetPos();
+					SetAudioEquliazerValue(8, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ10:
+					nAudioPos = pScrollAudioEqPos9->GetPos();
+					SetAudioEquliazerValue(9, nAudioPos);
+					break;
+				default:
+					break;
+				}
+			}
 		}
 	}
 
@@ -1949,4 +2067,52 @@ void CEncodecPressTestDlg::OnBnClickedChkAudioEq()
 	{
 		OpenAudioEqualizer(true);
 	}
+}
+
+void CEncodecPressTestDlg::OnBnClickedBtnAudioEqReset()
+{
+	CSliderCtrl * pScrollAudioEqPos0 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ1);
+	CSliderCtrl * pScrollAudioEqPos1 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ2);
+	CSliderCtrl * pScrollAudioEqPos2 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ3);
+	CSliderCtrl * pScrollAudioEqPos3 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ4);
+	CSliderCtrl * pScrollAudioEqPos4 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ5);
+	CSliderCtrl * pScrollAudioEqPos5 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ6);
+	CSliderCtrl * pScrollAudioEqPos6 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ7);
+	CSliderCtrl * pScrollAudioEqPos7 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ8);
+	CSliderCtrl * pScrollAudioEqPos8 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ9);
+	CSliderCtrl * pScrollAudioEqPos9 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ10);
+	if (
+		pScrollAudioEqPos0 && ::IsWindow(pScrollAudioEqPos0->GetSafeHwnd())
+		&& pScrollAudioEqPos1 && ::IsWindow(pScrollAudioEqPos1->GetSafeHwnd())
+		&& pScrollAudioEqPos2 && ::IsWindow(pScrollAudioEqPos2->GetSafeHwnd())
+		&& pScrollAudioEqPos3 && ::IsWindow(pScrollAudioEqPos3->GetSafeHwnd())
+		&& pScrollAudioEqPos4 && ::IsWindow(pScrollAudioEqPos4->GetSafeHwnd())
+		&& pScrollAudioEqPos5 && ::IsWindow(pScrollAudioEqPos5->GetSafeHwnd())
+		&& pScrollAudioEqPos6 && ::IsWindow(pScrollAudioEqPos6->GetSafeHwnd())
+		&& pScrollAudioEqPos7 && ::IsWindow(pScrollAudioEqPos7->GetSafeHwnd())
+		&& pScrollAudioEqPos8 && ::IsWindow(pScrollAudioEqPos8->GetSafeHwnd())
+		&& pScrollAudioEqPos9 && ::IsWindow(pScrollAudioEqPos9->GetSafeHwnd())
+		)
+	{
+		pScrollAudioEqPos0->SetPos(0);
+		pScrollAudioEqPos1->SetPos(0);
+		pScrollAudioEqPos2->SetPos(0);
+		pScrollAudioEqPos3->SetPos(0);
+		pScrollAudioEqPos4->SetPos(0);
+		pScrollAudioEqPos5->SetPos(0);
+		pScrollAudioEqPos6->SetPos(0);
+		pScrollAudioEqPos7->SetPos(0);
+		pScrollAudioEqPos8->SetPos(0);
+		pScrollAudioEqPos9->SetPos(0);
+	}
+	SetAudioEquliazerValue(0, 0);
+	SetAudioEquliazerValue(1, 0);
+	SetAudioEquliazerValue(2, 0);
+	SetAudioEquliazerValue(3, 0);
+	SetAudioEquliazerValue(4, 0);
+	SetAudioEquliazerValue(5, 0);
+	SetAudioEquliazerValue(6, 0);
+	SetAudioEquliazerValue(7, 0);
+	SetAudioEquliazerValue(8, 0);
+	SetAudioEquliazerValue(9, 0);
 }
