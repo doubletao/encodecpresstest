@@ -206,35 +206,6 @@ void CEncodecPressTestDlg::DoPlay()
 		std::string cstrPath = ConverCStringToStdString(strPath);
 		if (m_ecfactory)
 		{
-			//创建音频均衡器
-			IecCodecAudioEquliazer * pAudioEquliazer = m_ecfactory->GetAudioEquliazer();
-			if (!pAudioEquliazer)
-			{
-				assert(false);
-			}
-			else
-			{
-				pAudioEquliazer->InitAudioEquliazer(10);
-
-				std::vector<int> vecValue;
-				vecValue.push_back(1);
-				vecValue.push_back(14);
-				vecValue.push_back(16);
-				vecValue.push_back(15);
-				vecValue.push_back(-15);
-				vecValue.push_back(-13);
-				vecValue.push_back(-10);
-				vecValue.push_back(8);
-				vecValue.push_back(6);
-				vecValue.push_back(4);
-
-				for (int i = 0; i < vecValue.size(); i++)
-				{
-					pAudioEquliazer->SetEqValue(i, 0, vecValue[i]);
-					pAudioEquliazer->SetEqValue(i, 1, vecValue[i]);
-				}
-			}
-
 			IecCodecProtocolDecoder * pDecoder = m_ecfactory->GetProtocolDecoder();
 			if (pDecoder)
 			{
@@ -295,6 +266,40 @@ void CEncodecPressTestDlg::DoPlay()
 						m_ctrSlider.SetRange(0, streamMediaInfoEx.dwVideoFrameNum);
 						m_ctrSlider.SetTicFreq(streamMediaInfoEx.dwVideoFrameNum / 100.0);
 						uint32_t nAudioPos = 0;
+
+						//创建音频均衡器
+						IecCodecAudioEquliazer * pAudioEquliazer = m_ecfactory->GetAudioEquliazer();
+						if (!pAudioEquliazer)
+						{
+							assert(false);
+						}
+						else
+						{
+							pAudioEquliazer->InitAudioEquliazer(audioInfo.dwSamplesPerSec, audioInfo.dwChannels, 10);
+
+							std::vector<int> vecValue;
+							vecValue.push_back(1);
+							vecValue.push_back(14);
+							vecValue.push_back(16);
+							vecValue.push_back(15);
+							vecValue.push_back(-15);
+							vecValue.push_back(-13);
+							vecValue.push_back(-10);
+							vecValue.push_back(8);
+							vecValue.push_back(6);
+							vecValue.push_back(4);
+
+							for (int i = 0; i < vecValue.size(); i++)
+							{
+								pAudioEquliazer->SetEqValue(i, 0, vecValue[i]);
+								pAudioEquliazer->SetEqValue(i, 1, vecValue[i]);
+
+								//pAudioEquliazer->SetEqValue(i, 0, 0);
+								//pAudioEquliazer->SetEqValue(i, 1, 0);
+							}
+						}
+
+						//创建解码器
 #ifdef ENABLE_ENCODE
 						for (size_t i = 0; i < 8; i++)
 						{
@@ -508,7 +513,7 @@ void CEncodecPressTestDlg::DoPlay()
 								{
 									if (pAudioEquliazer)
 									{
-										pAudioEquliazer->DoEquliazer(pAudioData, nAudioBufferSize, audioInfo.dwSamplesPerSec, audioInfo.dwChannels);
+										pAudioEquliazer->DoEquliazer(pAudioData, nAudioBufferSize);
 									}
 								}
 
@@ -594,6 +599,9 @@ void CEncodecPressTestDlg::DoPlay()
 						pAudioData = nullptr;
 						delete pVideoData;
 						pVideoData = nullptr;
+
+						m_ecfactory->DeleteAudioEquliazer(pAudioEquliazer);
+						pAudioEquliazer = nullptr;
 					}
 				}
 #ifdef DEBUG_AUDIO_OUTFILE
@@ -610,7 +618,6 @@ void CEncodecPressTestDlg::DoPlay()
 					m_pEncoder[i] = nullptr;
 				}
 			}
-			m_ecfactory->DeleteAudioEquliazer(pAudioEquliazer);
 		}
 	}
 	StopDisplay();

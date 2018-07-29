@@ -2,7 +2,19 @@
 #include "ecCodecAudioEffect.h"
 #include "eq.h"
 
-bool ecCodecAudioEquliazer::InitAudioEquliazer(int nBand)
+ecCodecAudioEquliazer::ecCodecAudioEquliazer()
+	: m_nSamplePerSec(48000)
+	, m_nChannelCount(2)
+{
+
+}
+
+ecCodecAudioEquliazer::~ecCodecAudioEquliazer()
+{
+
+}
+
+bool ecCodecAudioEquliazer::InitAudioEquliazer(int nSamplePerSec, int nChannelCount, int nBand)
 {
 	bool bRet = true;
 	init_equliazer(nBand);
@@ -20,16 +32,16 @@ bool ecCodecAudioEquliazer::SetEqValue(int nBandIndex, int nChIndex, float fValu
 {
 	bool bRet = false;
 	//set_eq_value(fValue, nBandIndex, nChIndex);
-	set_eq_value(fValue, -nBandIndex, nChIndex);
-	set_eq_value(20.0f - fValue, nBandIndex, nChIndex);
+	set_eq_value(20.0f + fValue, -nBandIndex, nChIndex);
+	set_eq_value(fValue, nBandIndex, nChIndex);
 
 	return bRet;
 }
 
-int ecCodecAudioEquliazer::DoEquliazer(const SD_UINT8 * pAudioBuf, int nBufSize, int nSamplePerSec, int nChannelCount)
+int ecCodecAudioEquliazer::DoEquliazer(const SD_UINT8 * pAudioBuf, int nBufSize)
 {
 	int nRet = 0;
-	nRet = do_equliazer((short *)pAudioBuf, nBufSize, nSamplePerSec, nChannelCount);
+	nRet = do_equliazer((short *)pAudioBuf, nBufSize, m_nSamplePerSec, m_nChannelCount);
 	return nRet;
 }
 

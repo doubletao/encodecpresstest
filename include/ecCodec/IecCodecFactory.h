@@ -31,6 +31,7 @@ public:
 	virtual bool DeleteAudioDecoder(IecCodecAudioDecoder *& pObj) = 0;
 	virtual IecCodecAudioEncoder * GetAudioEncoder(EmCodecProvider emCodecProvider = EMCodec_FFmpeg) = 0;
 	virtual bool DeleteAudioEncoder(IecCodecAudioEncoder *& pObj) = 0;
+	//注意！均衡器全局只有一个，不要创建多个
 	virtual IecCodecAudioEquliazer * GetAudioEquliazer() = 0;
 	virtual bool DeleteAudioEquliazer(IecCodecAudioEquliazer *& pObj) = 0;
 };
