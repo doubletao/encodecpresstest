@@ -6,12 +6,16 @@
 class ecCodecAudioEquliazer
 	: public IecCodecAudioEquliazer
 {
+protected:
+	int m_nSamplePerSec;
+	int m_nChannelCount;
 public:
-	virtual ~ecCodecAudioEquliazer() {}
+	ecCodecAudioEquliazer();
+	virtual ~ecCodecAudioEquliazer();
 
 	// 初始化均衡器
 	// 默认10个频段，一般用默认值就好
-	virtual bool InitAudioEquliazer(int nBand = 10);
+	virtual bool InitAudioEquliazer(int nSamplePerSec, int nChannelCount, int nBand = 10);
 
 	//释放
 	virtual bool Release();
@@ -20,7 +24,7 @@ public:
 	virtual bool SetEqValue(int nBandIndex, int nChIndex, float fValue);
 
 	//执行均衡
-	virtual int DoEquliazer(const SD_UINT8 * pAudioBuf, int nBufSize, int nSamplePerSec, int nChannelCount);
+	virtual int DoEquliazer(const SD_UINT8 * pAudioBuf, int nBufSize);
 
 	//获取设置
 	virtual int GetEqBandCount();

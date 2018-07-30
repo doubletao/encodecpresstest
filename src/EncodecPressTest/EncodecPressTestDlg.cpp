@@ -71,6 +71,51 @@ END_MESSAGE_MAP()
 
 
 
+void CEncodecPressTestDlg::OpenAudioEqualizer(bool bOpen)
+{
+	if (bOpen)
+	{
+		m_evtAudioEqualizer.SetEvent();
+	}
+	else
+	{
+		m_evtAudioEqualizer.ResetEvent();
+	}
+}
+
+bool CEncodecPressTestDlg::IsAudioEqualizerOpen()
+{
+	if (WaitForSingleObject(m_evtAudioEqualizer, 0) == WAIT_OBJECT_0)
+	{
+		return true;
+	}
+	return false;
+}
+
+void CEncodecPressTestDlg::SetAudioEquliazerValue(int nIndex, int nValue)
+{
+	//如果是open状态下修改值，则先close，然后改完再open
+	bool bOpen = false;
+	if (IsAudioEqualizerOpen())
+	{
+		bOpen = true;
+		OpenAudioEqualizer(false);
+	}
+	if (nIndex > -1 && nIndex < m_vecAudioEqualizerValue.size())
+	{
+		m_vecAudioEqualizerValue[nIndex] = nValue;
+		if (m_pAudioEquliazer)
+		{
+			m_pAudioEquliazer->SetEqValue(nIndex, 0, m_vecAudioEqualizerValue[nIndex]);
+			m_pAudioEquliazer->SetEqValue(nIndex, 1, m_vecAudioEqualizerValue[nIndex]);
+		}
+	}
+	if (bOpen)
+	{
+		OpenAudioEqualizer(true);
+	}
+}
+
 UINT CEncodecPressTestDlg::ThreadPlay(LPVOID pParam)
 {
 	CEncodecPressTestDlg * pThis = (CEncodecPressTestDlg *)pParam;
@@ -206,35 +251,6 @@ void CEncodecPressTestDlg::DoPlay()
 		std::string cstrPath = ConverCStringToStdString(strPath);
 		if (m_ecfactory)
 		{
-			//创建音频均衡器
-			IecCodecAudioEquliazer * pAudioEquliazer = m_ecfactory->GetAudioEquliazer();
-			if (!pAudioEquliazer)
-			{
-				assert(false);
-			}
-			else
-			{
-				pAudioEquliazer->InitAudioEquliazer(10);
-
-				std::vector<int> vecValue;
-				vecValue.push_back(1);
-				vecValue.push_back(14);
-				vecValue.push_back(16);
-				vecValue.push_back(15);
-				vecValue.push_back(-15);
-				vecValue.push_back(-13);
-				vecValue.push_back(-10);
-				vecValue.push_back(8);
-				vecValue.push_back(6);
-				vecValue.push_back(4);
-
-				for (int i = 0; i < vecValue.size(); i++)
-				{
-					pAudioEquliazer->SetEqValue(i, 0, vecValue[i]);
-					pAudioEquliazer->SetEqValue(i, 1, vecValue[i]);
-				}
-			}
-
 			IecCodecProtocolDecoder * pDecoder = m_ecfactory->GetProtocolDecoder();
 			if (pDecoder)
 			{
@@ -295,6 +311,24 @@ void CEncodecPressTestDlg::DoPlay()
 						m_ctrSlider.SetRange(0, streamMediaInfoEx.dwVideoFrameNum);
 						m_ctrSlider.SetTicFreq(streamMediaInfoEx.dwVideoFrameNum / 100.0);
 						uint32_t nAudioPos = 0;
+
+						//创建音频均衡器
+						m_pAudioEquliazer = m_ecfactory->GetAudioEquliazer();
+						if (!m_pAudioEquliazer)
+						{
+							assert(false);
+						}
+						else
+						{
+							m_pAudioEquliazer->InitAudioEquliazer(audioInfo.dwSamplesPerSec, audioInfo.dwChannels, 10);
+							for (int i = 0; i < m_vecAudioEqualizerValue.size(); i++)
+							{
+								m_pAudioEquliazer->SetEqValue(i, 0, m_vecAudioEqualizerValue[i]);
+								m_pAudioEquliazer->SetEqValue(i, 1, m_vecAudioEqualizerValue[i]);
+							}
+						}
+
+						//创建编码器
 #ifdef ENABLE_ENCODE
 						for (size_t i = 0; i < 8; i++)
 						{
@@ -410,6 +444,16 @@ void CEncodecPressTestDlg::DoPlay()
 								{
 									bContinue = pDecoder->GetVABuffer(pVideoData, pAudioData, &numAudioSample);
 								}
+
+								//音频均衡
+								if (IsAudioEqualizerOpen())
+								{
+									if (m_pAudioEquliazer)
+									{
+										m_pAudioEquliazer->DoEquliazer(pAudioData, nAudioBufferSize);
+									}
+								}
+
 #ifdef DEBUG_AUDIO_OUTFILE
 								//音频先写到文件里
 								fwrite(pAudioData, 1, numAudioSample * 8, pAudioFile);
@@ -503,15 +547,6 @@ void CEncodecPressTestDlg::DoPlay()
 									}
 								}
 
-								//音频均衡
-								if (WaitForSingleObject(m_evtAudioEqualizer, 0) == WAIT_OBJECT_0)
-								{
-									if (pAudioEquliazer)
-									{
-										pAudioEquliazer->DoEquliazer(pAudioData, nAudioBufferSize, audioInfo.dwSamplesPerSec, audioInfo.dwChannels);
-									}
-								}
-
 								while (!m_vaLoop.Push(pVideoData, nVideoBufferSize, pAudioData, numAudioSample))
 								{
 									//push不进去就等5个毫秒再说
@@ -594,6 +629,9 @@ void CEncodecPressTestDlg::DoPlay()
 						pAudioData = nullptr;
 						delete pVideoData;
 						pVideoData = nullptr;
+
+						m_ecfactory->DeleteAudioEquliazer(m_pAudioEquliazer);
+						m_pAudioEquliazer = nullptr;
 					}
 				}
 #ifdef DEBUG_AUDIO_OUTFILE
@@ -610,7 +648,6 @@ void CEncodecPressTestDlg::DoPlay()
 					m_pEncoder[i] = nullptr;
 				}
 			}
-			m_ecfactory->DeleteAudioEquliazer(pAudioEquliazer);
 		}
 	}
 	StopDisplay();
@@ -767,6 +804,7 @@ CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
 	, m_evtAudioEqualizer(FALSE, TRUE, NULL, NULL)
 	, m_bSlow(false)
 	, m_nRepeatTime(1)
+	, m_pAudioEquliazer(nullptr)
 {
 	m_ecfactory = ecCodec_CreateCodecFactory();
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -775,6 +813,7 @@ CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
 	{
 		m_pEncoder[i] = nullptr;
 	}
+	m_vecAudioEqualizerValue.resize(10, 0);
 }
 
 CEncodecPressTestDlg::~CEncodecPressTestDlg()
@@ -786,6 +825,12 @@ CEncodecPressTestDlg::~CEncodecPressTestDlg()
 	{
 		delete m_pEncoder[i];
 		m_pEncoder[i] = nullptr;
+	}
+	if (m_pAudioEquliazer && m_ecfactory)
+	{
+		m_pAudioEquliazer->Release();
+		m_ecfactory->DeleteAudioEquliazer(m_pAudioEquliazer);
+		m_pAudioEquliazer = nullptr;
 	}
 	ecCodec_ReleaseCodecFactory(m_ecfactory);
 	if (m_bLogOpened)
@@ -879,6 +924,7 @@ BEGIN_MESSAGE_MAP(CEncodecPressTestDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_CHECK_ENCODEC8, &CEncodecPressTestDlg::OnBnClickedCheckEncodec8)
 	ON_BN_CLICKED(IDC_BTN_COPY_FIRST_PARAM, &CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam)
 	ON_BN_CLICKED(IDC_CHK_AUDIO_EQ, &CEncodecPressTestDlg::OnBnClickedChkAudioEq)
+	ON_BN_CLICKED(IDC_BTN_AUDIO_EQ_RESET, &CEncodecPressTestDlg::OnBnClickedBtnAudioEqReset)
 END_MESSAGE_MAP()
 
 // CEncodecPressTestDlg 消息处理程序
@@ -1064,6 +1110,49 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 		pSpeedRatio->SetCurSel(0);
 	}
 
+	auto InitialAudioSlider = [](CSliderCtrl * pScrollAudioEqPos)
+	{
+		pScrollAudioEqPos->SetRangeMin(-20);
+		pScrollAudioEqPos->SetRangeMax(20);
+		pScrollAudioEqPos->SetPos(0);
+		pScrollAudioEqPos->SetTic(1);
+		pScrollAudioEqPos->SetTicFreq(1);
+	};
+	CSliderCtrl * pScrollAudioEqPos0 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ1);
+	CSliderCtrl * pScrollAudioEqPos1 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ2);
+	CSliderCtrl * pScrollAudioEqPos2 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ3);
+	CSliderCtrl * pScrollAudioEqPos3 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ4);
+	CSliderCtrl * pScrollAudioEqPos4 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ5);
+	CSliderCtrl * pScrollAudioEqPos5 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ6);
+	CSliderCtrl * pScrollAudioEqPos6 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ7);
+	CSliderCtrl * pScrollAudioEqPos7 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ8);
+	CSliderCtrl * pScrollAudioEqPos8 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ9);
+	CSliderCtrl * pScrollAudioEqPos9 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ10);
+	if (
+		pScrollAudioEqPos0 && ::IsWindow(pScrollAudioEqPos0->GetSafeHwnd())
+		&& pScrollAudioEqPos1 && ::IsWindow(pScrollAudioEqPos1->GetSafeHwnd())
+		&& pScrollAudioEqPos2 && ::IsWindow(pScrollAudioEqPos2->GetSafeHwnd())
+		&& pScrollAudioEqPos3 && ::IsWindow(pScrollAudioEqPos3->GetSafeHwnd())
+		&& pScrollAudioEqPos4 && ::IsWindow(pScrollAudioEqPos4->GetSafeHwnd())
+		&& pScrollAudioEqPos5 && ::IsWindow(pScrollAudioEqPos5->GetSafeHwnd())
+		&& pScrollAudioEqPos6 && ::IsWindow(pScrollAudioEqPos6->GetSafeHwnd())
+		&& pScrollAudioEqPos7 && ::IsWindow(pScrollAudioEqPos7->GetSafeHwnd())
+		&& pScrollAudioEqPos8 && ::IsWindow(pScrollAudioEqPos8->GetSafeHwnd())
+		&& pScrollAudioEqPos9 && ::IsWindow(pScrollAudioEqPos9->GetSafeHwnd())
+		)
+	{
+		InitialAudioSlider(pScrollAudioEqPos0);
+		InitialAudioSlider(pScrollAudioEqPos1);
+		InitialAudioSlider(pScrollAudioEqPos2);
+		InitialAudioSlider(pScrollAudioEqPos3);
+		InitialAudioSlider(pScrollAudioEqPos4);
+		InitialAudioSlider(pScrollAudioEqPos5);
+		InitialAudioSlider(pScrollAudioEqPos6);
+		InitialAudioSlider(pScrollAudioEqPos7);
+		InitialAudioSlider(pScrollAudioEqPos8);
+		InitialAudioSlider(pScrollAudioEqPos9);
+	}
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -1164,14 +1253,88 @@ void CEncodecPressTestDlg::OnBnClickedBtnOutChooseFile()
 
 void CEncodecPressTestDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
-	if (pScrollBar)
+	CSliderCtrl * pScrollPlayPos = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_SEEK);
+	CSliderCtrl * pScrollAudioEqPos0 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ1);
+	CSliderCtrl * pScrollAudioEqPos1 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ2);
+	CSliderCtrl * pScrollAudioEqPos2 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ3);
+	CSliderCtrl * pScrollAudioEqPos3 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ4);
+	CSliderCtrl * pScrollAudioEqPos4 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ5);
+	CSliderCtrl * pScrollAudioEqPos5 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ6);
+	CSliderCtrl * pScrollAudioEqPos6 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ7);
+	CSliderCtrl * pScrollAudioEqPos7 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ8);
+	CSliderCtrl * pScrollAudioEqPos8 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ9);
+	CSliderCtrl * pScrollAudioEqPos9 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ10);
+	if (pScrollPlayPos && ::IsWindow(pScrollPlayPos->GetSafeHwnd())
+		&& pScrollAudioEqPos0 && ::IsWindow(pScrollAudioEqPos0->GetSafeHwnd())
+		&& pScrollAudioEqPos1 && ::IsWindow(pScrollAudioEqPos1->GetSafeHwnd())
+		&& pScrollAudioEqPos2 && ::IsWindow(pScrollAudioEqPos2->GetSafeHwnd())
+		&& pScrollAudioEqPos3 && ::IsWindow(pScrollAudioEqPos3->GetSafeHwnd())
+		&& pScrollAudioEqPos4 && ::IsWindow(pScrollAudioEqPos4->GetSafeHwnd())
+		&& pScrollAudioEqPos5 && ::IsWindow(pScrollAudioEqPos5->GetSafeHwnd())
+		&& pScrollAudioEqPos6 && ::IsWindow(pScrollAudioEqPos6->GetSafeHwnd())
+		&& pScrollAudioEqPos7 && ::IsWindow(pScrollAudioEqPos7->GetSafeHwnd())
+		&& pScrollAudioEqPos8 && ::IsWindow(pScrollAudioEqPos8->GetSafeHwnd())
+		&& pScrollAudioEqPos9 && ::IsWindow(pScrollAudioEqPos9->GetSafeHwnd())
+		)
 	{
-		int nID = pScrollBar->GetDlgCtrlID();
-		if (nID == IDC_SLIDER_SEEK)
+		if (pScrollBar)
 		{
-			Lock();
-			m_nFrame = m_ctrSlider.GetPos();
-			Unlock();
+			int nID = pScrollBar->GetDlgCtrlID();
+			if (nID == IDC_SLIDER_SEEK)
+			{
+				Lock();
+				m_nFrame = m_ctrSlider.GetPos();
+				Unlock();
+			}
+			else
+			{
+				int nAudioPos = 0;
+				switch (nID)
+				{
+				case IDC_SLIDER_AUDIO_EQ1:
+					nAudioPos = pScrollAudioEqPos0->GetPos();
+					SetAudioEquliazerValue(0, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ2:
+					nAudioPos = pScrollAudioEqPos1->GetPos();
+					SetAudioEquliazerValue(1, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ3:
+					nAudioPos = pScrollAudioEqPos2->GetPos();
+					SetAudioEquliazerValue(2, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ4:
+					nAudioPos = pScrollAudioEqPos3->GetPos();
+					SetAudioEquliazerValue(3, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ5:
+					nAudioPos = pScrollAudioEqPos4->GetPos();
+					SetAudioEquliazerValue(4, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ6:
+					nAudioPos = pScrollAudioEqPos5->GetPos();
+					SetAudioEquliazerValue(5, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ7:
+					nAudioPos = pScrollAudioEqPos6->GetPos();
+					SetAudioEquliazerValue(6, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ8:
+					nAudioPos = pScrollAudioEqPos7->GetPos();
+					SetAudioEquliazerValue(7, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ9:
+					nAudioPos = pScrollAudioEqPos8->GetPos();
+					SetAudioEquliazerValue(8, nAudioPos);
+					break;
+				case IDC_SLIDER_AUDIO_EQ10:
+					nAudioPos = pScrollAudioEqPos9->GetPos();
+					SetAudioEquliazerValue(9, nAudioPos);
+					break;
+				default:
+					break;
+				}
+			}
 		}
 	}
 
@@ -1897,12 +2060,60 @@ void CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam()
 
 void CEncodecPressTestDlg::OnBnClickedChkAudioEq()
 {
-	if (WaitForSingleObject(m_evtAudioEqualizer, 0) == WAIT_OBJECT_0)
+	if (IsAudioEqualizerOpen())
 	{
-		m_evtAudioEqualizer.ResetEvent();
+		OpenAudioEqualizer(false);
 	}
 	else
 	{
-		m_evtAudioEqualizer.SetEvent();
+		OpenAudioEqualizer(true);
 	}
+}
+
+void CEncodecPressTestDlg::OnBnClickedBtnAudioEqReset()
+{
+	CSliderCtrl * pScrollAudioEqPos0 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ1);
+	CSliderCtrl * pScrollAudioEqPos1 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ2);
+	CSliderCtrl * pScrollAudioEqPos2 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ3);
+	CSliderCtrl * pScrollAudioEqPos3 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ4);
+	CSliderCtrl * pScrollAudioEqPos4 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ5);
+	CSliderCtrl * pScrollAudioEqPos5 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ6);
+	CSliderCtrl * pScrollAudioEqPos6 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ7);
+	CSliderCtrl * pScrollAudioEqPos7 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ8);
+	CSliderCtrl * pScrollAudioEqPos8 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ9);
+	CSliderCtrl * pScrollAudioEqPos9 = (CSliderCtrl *)GetDlgItem(IDC_SLIDER_AUDIO_EQ10);
+	if (
+		pScrollAudioEqPos0 && ::IsWindow(pScrollAudioEqPos0->GetSafeHwnd())
+		&& pScrollAudioEqPos1 && ::IsWindow(pScrollAudioEqPos1->GetSafeHwnd())
+		&& pScrollAudioEqPos2 && ::IsWindow(pScrollAudioEqPos2->GetSafeHwnd())
+		&& pScrollAudioEqPos3 && ::IsWindow(pScrollAudioEqPos3->GetSafeHwnd())
+		&& pScrollAudioEqPos4 && ::IsWindow(pScrollAudioEqPos4->GetSafeHwnd())
+		&& pScrollAudioEqPos5 && ::IsWindow(pScrollAudioEqPos5->GetSafeHwnd())
+		&& pScrollAudioEqPos6 && ::IsWindow(pScrollAudioEqPos6->GetSafeHwnd())
+		&& pScrollAudioEqPos7 && ::IsWindow(pScrollAudioEqPos7->GetSafeHwnd())
+		&& pScrollAudioEqPos8 && ::IsWindow(pScrollAudioEqPos8->GetSafeHwnd())
+		&& pScrollAudioEqPos9 && ::IsWindow(pScrollAudioEqPos9->GetSafeHwnd())
+		)
+	{
+		pScrollAudioEqPos0->SetPos(0);
+		pScrollAudioEqPos1->SetPos(0);
+		pScrollAudioEqPos2->SetPos(0);
+		pScrollAudioEqPos3->SetPos(0);
+		pScrollAudioEqPos4->SetPos(0);
+		pScrollAudioEqPos5->SetPos(0);
+		pScrollAudioEqPos6->SetPos(0);
+		pScrollAudioEqPos7->SetPos(0);
+		pScrollAudioEqPos8->SetPos(0);
+		pScrollAudioEqPos9->SetPos(0);
+	}
+	SetAudioEquliazerValue(0, 0);
+	SetAudioEquliazerValue(1, 0);
+	SetAudioEquliazerValue(2, 0);
+	SetAudioEquliazerValue(3, 0);
+	SetAudioEquliazerValue(4, 0);
+	SetAudioEquliazerValue(5, 0);
+	SetAudioEquliazerValue(6, 0);
+	SetAudioEquliazerValue(7, 0);
+	SetAudioEquliazerValue(8, 0);
+	SetAudioEquliazerValue(9, 0);
 }

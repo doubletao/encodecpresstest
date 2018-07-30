@@ -34,8 +34,13 @@ private:
 	bool m_bSlow;
 	int m_nRepeatTime;
 
-	//均衡器开关
-	CEvent m_evtAudioEqualizer;
+	//均衡器
+	IecCodecAudioEquliazer * m_pAudioEquliazer;
+	CEvent m_evtAudioEqualizer;//开关
+	std::vector<int> m_vecAudioEqualizerValue;//均衡器增益值
+	void OpenAudioEqualizer(bool bOpen);
+	bool IsAudioEqualizerOpen();
+	void SetAudioEquliazerValue(int nIndex, int nValue);
 private:
 	CWinThread * m_pPlayThread;
 	CEvent m_evtPlayStop;
@@ -129,4 +134,5 @@ public:
 	afx_msg void OnBnClickedCheckEncodec8();
 	afx_msg void OnBnClickedBtnCopyFirstParam();
 	afx_msg void OnBnClickedChkAudioEq();
+	afx_msg void OnBnClickedBtnAudioEqReset();
 };
