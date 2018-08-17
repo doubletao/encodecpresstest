@@ -27,3 +27,59 @@ public:
 	virtual bool Release() = 0;
 };
 
+//一个简单的回声特技的实现
+class IecCodecAudioResound
+{
+public:
+	virtual ~IecCodecAudioResound() {}
+
+	//初始化(目前没有用)
+	virtual bool InitialAudioResound(int nSamplePerSec, int nChannelCount) = 0;
+
+	//设置参数
+	virtual bool SetParam(int nDelay, float fKeep) = 0;
+
+	//执行
+	virtual bool DoResound(const SD_UINT8 * pAudioBuf, int nBufSize) = 0;
+
+	//释放
+	virtual bool Release() = 0;
+};
+
+//一个简单的响度均衡的实现
+class IecCodecAudioVolumeAvg
+{
+public:
+	virtual ~IecCodecAudioVolumeAvg() {}
+
+	//初始化(目前没有用)
+	virtual bool InitialAudioVolumeAvg(int nSamplePerSec, int nChannelCount) = 0;
+
+	//设置参数
+	virtual bool SetParam(float fVolume) = 0;
+
+	//执行
+	virtual bool DoVolumeAvg(const SD_UINT8 * pAudioBuf, int nBufSize) = 0;
+
+	//释放
+	virtual bool Release() = 0;
+};
+
+//一个简单的降噪
+class IecCodecAudioDenoise
+{
+public:
+	virtual ~IecCodecAudioDenoise() {}
+
+	//初始化(目前没有用)
+	virtual bool InitialAudioDenoise(int nSamplePerSec, int nChannelCount) = 0;
+
+	//设置参数
+	virtual bool SetParam(float fDenoiseDb) = 0;
+
+	//执行
+	virtual bool DoDenoise(const SD_UINT8 * pAudioBuf, int nBufSize) = 0;
+
+	//释放
+	virtual bool Release() = 0;
+};

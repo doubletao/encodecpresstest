@@ -34,6 +34,12 @@ public:
 	//注意！均衡器全局只有一个，不要创建多个
 	virtual IecCodecAudioEquliazer * GetAudioEquliazer() = 0;
 	virtual bool DeleteAudioEquliazer(IecCodecAudioEquliazer *& pObj) = 0;
+	virtual IecCodecAudioResound* GetAudioResound() = 0;
+	virtual bool DeleteAudioResound(IecCodecAudioResound *& pObj) = 0;
+	virtual IecCodecAudioVolumeAvg * GetAudioVolumeAvg() = 0;
+	virtual bool DeleteAudioVolumeAvg(IecCodecAudioVolumeAvg *& pObj) = 0;
+	virtual IecCodecAudioDenoise * GetAudioDenoise() = 0;
+	virtual bool DeleteAudioDenoise(IecCodecAudioDenoise *& pObj) = 0;
 };
 
 #ifdef __cplusplus
