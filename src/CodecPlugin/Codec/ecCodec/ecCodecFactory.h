@@ -25,5 +25,11 @@ public:
 	virtual bool DeleteAudioEncoder(IecCodecAudioEncoder *& pObj);
 	virtual IecCodecAudioEquliazer * GetAudioEquliazer();
 	virtual bool DeleteAudioEquliazer(IecCodecAudioEquliazer *& pObj);
+	virtual IecCodecAudioResound* GetAudioResound();
+	virtual bool DeleteAudioResound(IecCodecAudioResound *& pObj);
+	virtual IecCodecAudioVolumeAvg * GetAudioVolumeAvg();
+	virtual bool DeleteAudioVolumeAvg(IecCodecAudioVolumeAvg *& pObj);
+	virtual IecCodecAudioDenoise * GetAudioDenoise();
+	virtual bool DeleteAudioDenoise(IecCodecAudioDenoise *& pObj);
 };
 

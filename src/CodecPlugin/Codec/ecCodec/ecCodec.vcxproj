@@ -27,6 +27,33 @@
     <ClInclude Include="CodecAudioEffect\iir.h" />
     <ClInclude Include="CodecAudioEffect\iir_cfs.h" />
     <ClInclude Include="CodecAudioEffect\iir_fpu.h" />
+    <ClInclude Include="CodecAudioEffect\speex\arch.h" />
+    <ClInclude Include="CodecAudioEffect\speex\bfin.h" />
+    <ClInclude Include="CodecAudioEffect\speex\fftwrap.h" />
+    <ClInclude Include="CodecAudioEffect\speex\filterbank.h" />
+    <ClInclude Include="CodecAudioEffect\speex\fixed_arm4.h" />
+    <ClInclude Include="CodecAudioEffect\speex\fixed_arm5e.h" />
+    <ClInclude Include="CodecAudioEffect\speex\fixed_bfin.h" />
+    <ClInclude Include="CodecAudioEffect\speex\fixed_debug.h" />
+    <ClInclude Include="CodecAudioEffect\speex\fixed_generic.h" />
+    <ClInclude Include="CodecAudioEffect\speex\kiss_fft.h" />
+    <ClInclude Include="CodecAudioEffect\speex\kiss_fftr.h" />
+    <ClInclude Include="CodecAudioEffect\speex\math_approx.h" />
+    <ClInclude Include="CodecAudioEffect\speex\misc_bfin.h" />
+    <ClInclude Include="CodecAudioEffect\speex\os_support.h" />
+    <ClInclude Include="CodecAudioEffect\speex\pseudofloat.h" />
+    <ClInclude Include="CodecAudioEffect\speex\resample_neon.h" />
+    <ClInclude Include="CodecAudioEffect\speex\resample_sse.h" />
+    <ClInclude Include="CodecAudioEffect\speex\smallft.h" />
+    <ClInclude Include="CodecAudioEffect\speex\speexdsp_types.h" />
+    <ClInclude Include="CodecAudioEffect\speex\speex_buffer.h" />
+    <ClInclude Include="CodecAudioEffect\speex\speex_echo.h" />
+    <ClInclude Include="CodecAudioEffect\speex\speex_jitter.h" />
+    <ClInclude Include="CodecAudioEffect\speex\speex_preprocess.h" />
+    <ClInclude Include="CodecAudioEffect\speex\speex_resampler.h" />
+    <ClInclude Include="CodecAudioEffect\speex\stack_alloc.h" />
+    <ClInclude Include="CodecAudioEffect\speex\vorbis_psy.h" />
+    <ClInclude Include="CodecAudioEffect\speex\_kiss_fft_guts.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegAudioDecoder.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegAudioEncoder.h" />
     <ClInclude Include="CodecFFmpeg\ecCodecFFmpegProtocolDecoder.h" />
@@ -66,6 +93,17 @@
     <ClCompile Include="CodecAudioEffect\eq.cpp" />
     <ClCompile Include="CodecAudioEffect\iir_cfs.cpp" />
     <ClCompile Include="CodecAudioEffect\iir_fpu.cpp" />
+    <ClCompile Include="CodecAudioEffect\speex\buffer.c" />
+    <ClCompile Include="CodecAudioEffect\speex\fftwrap.c" />
+    <ClCompile Include="CodecAudioEffect\speex\filterbank.c" />
+    <ClCompile Include="CodecAudioEffect\speex\jitter.c" />
+    <ClCompile Include="CodecAudioEffect\speex\kiss_fft.c" />
+    <ClCompile Include="CodecAudioEffect\speex\kiss_fftr.c" />
+    <ClCompile Include="CodecAudioEffect\speex\mdf.c" />
+    <ClCompile Include="CodecAudioEffect\speex\preprocess.c" />
+    <ClCompile Include="CodecAudioEffect\speex\resample.c" />
+    <ClCompile Include="CodecAudioEffect\speex\scal.c" />
+    <ClCompile Include="CodecAudioEffect\speex\smallft.c" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegAudioDecoder.cpp" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegAudioEncoder.cpp" />
     <ClCompile Include="CodecFFmpeg\ecCodecFFmpegProtocolDecoder.cpp" />
@@ -91,6 +129,12 @@
     <ClCompile Include="CodecIntel\IntelSample\vm\thread.cpp" />
     <ClCompile Include="CodecIntel\IntelSample\vpp_ex.cpp" />
     <ClCompile Include="ecCodecFactory.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CodecAudioEffect\speex\echo_diagnostic.m" />
+    <None Include="CodecAudioEffect\speex\Makefile.am" />
+    <None Include="CodecAudioEffect\speex\Makefile.in" />
+    <None Include="CodecAudioEffect\speex\speexdsp_config_types.h.in" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{61146BF5-D2EF-4325-9DDB-DF3FF621E356}</ProjectGuid>
@@ -146,7 +190,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>EASY_CODEC_API;WIN64;_DEBUG;_WINDOWS;ECCODEC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_SMALLFT;FLOATING_POINT;EASY_CODEC_API;WIN64;_DEBUG;_WINDOWS;ECCODEC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\include\IntelCodec;..\include\IncFFMpeg;..\..\..\..\include\ecCodec;..\..\..\..\include\SDDefine;$(INTELMEDIASDKROOT)\include;$(INTELMEDIASDKROOT)\igfx_s3dcontrol\include;CodecIntel\Intel\common_include</AdditionalIncludeDirectories>
     </ClCompile>
@@ -167,7 +211,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>EASY_CODEC_API;WIN64;NDEBUG;_WINDOWS;ECCODEC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_SMALLFT;FLOATING_POINT;EASY_CODEC_API;WIN64;NDEBUG;_WINDOWS;ECCODEC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\include\IntelCodec;..\include\IncFFMpeg;..\..\..\..\include\ecCodec;..\..\..\..\include\SDDefine;$(INTELMEDIASDKROOT)\include;$(INTELMEDIASDKROOT)\igfx_s3dcontrol\include;CodecIntel\Intel\common_include</AdditionalIncludeDirectories>
     </ClCompile>

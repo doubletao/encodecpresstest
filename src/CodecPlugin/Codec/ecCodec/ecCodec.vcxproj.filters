@@ -31,6 +31,9 @@
     <Filter Include="CodecAudioEffect">
       <UniqueIdentifier>{228b9b07-aa2f-4bc2-bb0d-c95def3572a7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="CodecAudioEffect\speex">
+      <UniqueIdentifier>{cb40616c-5c67-4a49-ad59-7dc4125d4501}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ecCodecFactory.h">
@@ -180,6 +183,87 @@
     <ClInclude Include="CodecAudioEffect\iir_fpu.h">
       <Filter>CodecAudioEffect</Filter>
     </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\_kiss_fft_guts.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\arch.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\bfin.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\fftwrap.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\filterbank.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\fixed_arm4.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\fixed_arm5e.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\fixed_bfin.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\fixed_debug.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\fixed_generic.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\kiss_fft.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\kiss_fftr.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\math_approx.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\misc_bfin.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\os_support.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\pseudofloat.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\resample_neon.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\resample_sse.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\smallft.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\speex_buffer.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\speex_echo.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\speex_jitter.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\speex_preprocess.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\speex_resampler.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\speexdsp_types.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\stack_alloc.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
+    <ClInclude Include="CodecAudioEffect\speex\vorbis_psy.h">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ecCodecFactory.cpp">
@@ -269,5 +353,52 @@
     <ClCompile Include="CodecAudioEffect\iir_fpu.cpp">
       <Filter>CodecAudioEffect</Filter>
     </ClCompile>
+    <ClCompile Include="CodecAudioEffect\speex\buffer.c">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\speex\fftwrap.c">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\speex\filterbank.c">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\speex\jitter.c">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\speex\kiss_fft.c">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\speex\kiss_fftr.c">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\speex\mdf.c">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\speex\preprocess.c">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\speex\resample.c">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\speex\scal.c">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClCompile>
+    <ClCompile Include="CodecAudioEffect\speex\smallft.c">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CodecAudioEffect\speex\echo_diagnostic.m">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </None>
+    <None Include="CodecAudioEffect\speex\Makefile.am">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </None>
+    <None Include="CodecAudioEffect\speex\Makefile.in">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </None>
+    <None Include="CodecAudioEffect\speex\speexdsp_config_types.h.in">
+      <Filter>CodecAudioEffect\speex</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -205,6 +205,51 @@ bool ecCodecFactory::DeleteAudioEquliazer(IecCodecAudioEquliazer *& pObj)
 	return true;
 }
 
+IecCodecAudioResound * ecCodecFactory::GetAudioResound()
+{
+	IecCodecAudioResound * pAudioResound = nullptr;
+	pAudioResound = new ecCodecAudioResound;
+	return pAudioResound;
+}
+
+bool ecCodecFactory::DeleteAudioResound(IecCodecAudioResound *& pObj)
+{
+	pObj->Release();
+	delete pObj;
+	pObj = nullptr;
+	return true;
+}
+
+IecCodecAudioVolumeAvg * ecCodecFactory::GetAudioVolumeAvg()
+{
+	IecCodecAudioVolumeAvg * pAudioVolumeAvg = nullptr;
+	pAudioVolumeAvg = new ecCodecAudioVolumeAvg;
+	return pAudioVolumeAvg;
+}
+
+bool ecCodecFactory::DeleteAudioVolumeAvg(IecCodecAudioVolumeAvg *& pObj)
+{
+	pObj->Release();
+	delete pObj;
+	pObj = nullptr;
+	return true;
+}
+
+IecCodecAudioDenoise * ecCodecFactory::GetAudioDenoise()
+{
+	IecCodecAudioDenoise * pAudioDenoise = nullptr;
+	pAudioDenoise = new ecCodecAudioDenoise;
+	return pAudioDenoise;
+}
+
+bool ecCodecFactory::DeleteAudioDenoise(IecCodecAudioDenoise *& pObj)
+{
+	pObj->Release();
+	delete pObj;
+	pObj = nullptr;
+	return true;
+}
+
 bool ecCodecFactory::DeleteProtocolDecoder(IecCodecProtocolDecoder *& pObj)
 {
 	pObj->Release();
