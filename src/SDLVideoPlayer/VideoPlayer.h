@@ -2,6 +2,8 @@
 #include "SDLVideoPlayer.h"
 #ifdef PLAYER_USE_SDLPAINT
 #include "SDL2\SDL.h"
+
+#include "ddraw.h"
 #else
 #include "SDL2\SDL.h"
 #include "ddraw.h"
@@ -33,6 +35,7 @@ class VideoPlayer
 {
 private:
 #ifdef PLAYER_USE_SDLPAINT
+	HWND m_hWnd;
 	SDL_Window *screen;
 	SDL_Renderer* sdlRenderer;
 	SDL_Texture* sdlTexture;

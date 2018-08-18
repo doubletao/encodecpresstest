@@ -28,6 +28,7 @@ VideoPlayer::VideoPlayer()
 	, m_nWndWidth(0)
 	, m_nWndHeight(0)
 	, screen(nullptr)
+	, m_hWnd(nullptr)
 #else
 	, m_pDDObject(nullptr)
 	, m_pPrimary(nullptr)
@@ -120,11 +121,15 @@ VideoPlayer::~VideoPlayer()
 int VideoPlayer::IntialWnd(unsigned int nFormat, int x, int y, int nWndWidth, int nWndHeight, int nBufWidth, int nBufHeight, int nAudioSampPerSec, unsigned __int16 nSamplePerCall)
 {
 #ifdef PLAYER_USE_SDLPAINT
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
 	m_nWndWidth = nWndWidth;
 	m_nWndHeight = nWndHeight;
 	//先创建screen
 	screen = SDL_CreateWindow("Simplest ffmpeg player's Window", x, y,
-		nWndWidth, nWndHeight, SDL_WINDOW_OPENGL);
+		nWndWidth, nWndHeight, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN/*SDL_WINDOW_OPENGL*/);
 	if (!screen) 
 	{
 		printf("SDL: could not create window - exiting:%s\n", SDL_GetError());
@@ -176,6 +181,7 @@ int VideoPlayer::IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int
 	m_nWndWidth = nWndWidth;
 	m_nWndHeight = nWndHeight;
 	//先创建screen
+	m_hWnd = (HWND)hWnd;
 	screen = SDL_CreateWindowFrom(hWnd);
 	if (!screen)
 	{
@@ -360,10 +366,29 @@ int VideoPlayer::PushFrame(unsigned char * data, int linesize)
 {
 	//将数据刷出来
 #ifdef PLAYER_USE_SDLPAINT
-	SDL_UpdateTexture(sdlTexture, nullptr, data, linesize);
-	SDL_RenderClear(sdlRenderer);
-	SDL_RenderCopy(sdlRenderer, sdlTexture, nullptr, nullptr);
+	int nRet = SDL_UpdateTexture(sdlTexture, nullptr, data, linesize);
+	nRet = SDL_RenderClear(sdlRenderer);
+	nRet = SDL_RenderCopy(sdlRenderer, sdlTexture, nullptr, nullptr);
 	SDL_RenderPresent(sdlRenderer);
+
+	//检测一下事件
+	SDL_Event test_event;
+	if (SDL_PollEvent(&test_event))
+	{
+		switch (test_event.type)
+		{
+		case SDL_WINDOWEVENT:
+		{
+			if (SDL_WINDOWEVENT_EXPOSED == test_event.window.event)
+			{
+				ResetPlayer();
+				//SDL_SetRenderDrawColor(sdlRenderer, 0xA0, 0xA0, 0xA0, 0xFF);
+				//SDL_RenderClear(sdlRenderer);
+			}
+		}
+			break;
+		}
+	}
 #else
 	if (m_bInitialize == FALSE)
 	{
@@ -490,7 +515,18 @@ int VideoPlayer::PushAudioSample(unsigned char * data, int nBufSize)
 
 void VideoPlayer::ResetPlayer()
 {
-
+	::ShowWindow(m_hWnd, SW_SHOWNORMAL);
+	SDL_ShowWindow(screen);
+	SDL_Rect rtView;
+	SDL_RenderGetViewport(sdlRenderer, &rtView);
+	if (SDL_RectEmpty(&rtView))
+	{
+		rtView.x = 0;
+		rtView.y = 0;
+		rtView.w = m_nWndWidth;
+		rtView.h = m_nWndHeight;
+		SDL_RenderSetViewport(sdlRenderer, &rtView);
+	}
 }
 
 #ifndef PLAYER_USE_SDLPAINT

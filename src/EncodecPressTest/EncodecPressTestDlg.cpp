@@ -714,7 +714,7 @@ void CEncodecPressTestDlg::DoDisplay()
 				{
 					break;
 				}
-				TRACE(_T("m_vaLoop.UnusedSize()=%d\n"), m_vaLoop.UnusedSize());
+				//TRACE(_T("m_vaLoop.UnusedSize()=%d\n"), m_vaLoop.UnusedSize());
 				tmLastPush = clock();
 				m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
 				m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
@@ -734,7 +734,7 @@ void CEncodecPressTestDlg::DoDisplay()
 					{
 						break;
 					}
-					TRACE(_T("m_vaLoop.UnusedSize()=%d\n"), m_vaLoop.UnusedSize());
+					//TRACE(_T("m_vaLoop.UnusedSize()=%d\n"), m_vaLoop.UnusedSize());
 					tmLastPush = clock();
 					m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
 					m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
@@ -780,7 +780,7 @@ void CEncodecPressTestDlg::DoDisplay()
 				{
 					break;
 				}
-				TRACE(_T("m_vaLoop.UnusedSize()=%d\n"), m_vaLoop.UnusedSize());
+				//TRACE(_T("m_vaLoop.UnusedSize()=%d\n"), m_vaLoop.UnusedSize());
 				tmLastPush = clock();
 				m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
 				m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
