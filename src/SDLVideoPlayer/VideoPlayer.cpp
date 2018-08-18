@@ -28,7 +28,6 @@ VideoPlayer::VideoPlayer()
 	, m_nWndWidth(0)
 	, m_nWndHeight(0)
 	, screen(nullptr)
-	, m_hWnd(nullptr)
 #else
 	, m_pDDObject(nullptr)
 	, m_pPrimary(nullptr)
@@ -181,7 +180,6 @@ int VideoPlayer::IntialWnd(unsigned int nFormat, void * hWnd, int nWndWidth, int
 	m_nWndWidth = nWndWidth;
 	m_nWndHeight = nWndHeight;
 	//œ»¥¥Ω®screen
-	m_hWnd = (HWND)hWnd;
 	screen = SDL_CreateWindowFrom(hWnd);
 	if (!screen)
 	{
@@ -515,7 +513,6 @@ int VideoPlayer::PushAudioSample(unsigned char * data, int nBufSize)
 
 void VideoPlayer::ResetPlayer()
 {
-	::ShowWindow(m_hWnd, SW_SHOWNORMAL);
 	SDL_ShowWindow(screen);
 	SDL_Rect rtView;
 	SDL_RenderGetViewport(sdlRenderer, &rtView);
