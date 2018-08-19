@@ -277,7 +277,7 @@ void CEncodecPressTestDlg::DoPlay()
 						m_nTimebaseDen = streamMediaInfoEx.sVideoMediaInfo.dwStandardRate;
 						m_nTimebaseNum = streamMediaInfoEx.sVideoMediaInfo.dwStandardScale;
 						bool bContinue = true;
-						m_player.SetBufferFWH(SDL_PIXELFORMAT_UYVY, nWidth, nHeight);
+						//m_player.SetBufferFWH(SDL_PIXELFORMAT_UYVY, nWidth, nHeight);
 						SDVideoFrameImageBufInfo videoFrameImageBufInfo;
 						videoFrameImageBufInfo.dwXSize = nWidth;
 						videoFrameImageBufInfo.dwYSize = nHeight;
@@ -716,8 +716,10 @@ void CEncodecPressTestDlg::DoDisplay()
 				}
 				//TRACE(_T("m_vaLoop.UnusedSize()=%d\n"), m_vaLoop.UnusedSize());
 				tmLastPush = clock();
-				m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
-				m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
+				//m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
+				//m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
+				m_pPlayer->PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
+				m_pPlayer->PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
 				nUsedCount++;
 			}
 			else
@@ -736,8 +738,10 @@ void CEncodecPressTestDlg::DoDisplay()
 					}
 					//TRACE(_T("m_vaLoop.UnusedSize()=%d\n"), m_vaLoop.UnusedSize());
 					tmLastPush = clock();
-					m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
-					m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
+					//m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
+					//m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
+					m_pPlayer->PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
+					m_pPlayer->PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
 					nUsedCount = 0;
 				}
 				else
@@ -782,8 +786,10 @@ void CEncodecPressTestDlg::DoDisplay()
 				}
 				//TRACE(_T("m_vaLoop.UnusedSize()=%d\n"), m_vaLoop.UnusedSize());
 				tmLastPush = clock();
-				m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
-				m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
+				//m_player.PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
+				//m_player.PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
+				m_pPlayer->PushFrame(m_vaBuf.m_pVideoBuf, 1920 * 2);
+				m_pPlayer->PushAudioSample(m_vaBuf.m_pAudioBuf, m_vaBuf.m_nAudioSampleCount * 4);
 				nUsedCount = 0;
 			}
 		}
@@ -805,6 +811,7 @@ CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
 	, m_bSlow(false)
 	, m_nRepeatTime(1)
 	, m_pAudioEquliazer(nullptr)
+	, m_pPlayer(nullptr)
 {
 	m_ecfactory = ecCodec_CreateCodecFactory();
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -814,6 +821,8 @@ CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
 		m_pEncoder[i] = nullptr;
 	}
 	m_vecAudioEqualizerValue.resize(10, 0);
+
+	m_pPlayer = CreateVAPlayer(EM_VAPLayer_SDL);
 }
 
 CEncodecPressTestDlg::~CEncodecPressTestDlg()
@@ -838,6 +847,8 @@ CEncodecPressTestDlg::~CEncodecPressTestDlg()
 		m_fileLog.Close();
 		m_bLogOpened = false;
 	}
+	ReleasePlayer(m_pPlayer);
+	m_pPlayer = nullptr;
 }
 
 void CEncodecPressTestDlg::DoDataExchange(CDataExchange* pDX)
@@ -987,9 +998,10 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 		CRect rtPlayer;
 		pPlayerWnd->GetWindowRect(rtPlayer);
 #ifdef PLAYER_USE_SDLPAINT
-		m_player.IntialWnd(SDL_PIXELFORMAT_UYVY, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920);
+		//m_player.IntialWnd(SDL_PIXELFORMAT_UYVY, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920);
+		m_pPlayer->CreatePayer(0, 0, 800, 600, EmVAPlayerColorFmt_UYVY, 1920, 1080, EmVAPlayerSampleFmt_S16SYS, 48000, 2, 1920);
 #else
-		m_player.IntialWnd(SDL_PIXELFORMAT_UYVY, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920, CallbackGetDrawRect);
+		//m_player.IntialWnd(SDL_PIXELFORMAT_UYVY, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920, CallbackGetDrawRect);
 #endif
 	}
 

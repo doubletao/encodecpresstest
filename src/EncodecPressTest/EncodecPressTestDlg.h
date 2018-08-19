@@ -3,11 +3,13 @@
 //
 
 #pragma once
-#include "SDLVideoPlayer.h"
+//#include "SDLVideoPlayer.h"
 #include <string>
 #include "afxcmn.h"
 #include "IecCodecFactory.h"
 #include "EncodecThreader.h"
+#include "VAPlayerExport.h"
+#define PLAYER_USE_SDLPAINT
 
 const int MSG_PUSHINFO = WM_USER + 0x00001;
 
@@ -15,7 +17,8 @@ const int MSG_PUSHINFO = WM_USER + 0x00001;
 class CEncodecPressTestDlg : public CDialogEx
 {
 private:
-	SDLVideoPlayer m_player;
+	//SDLVideoPlayer m_player;
+	IVAPlayer * m_pPlayer;
 	unsigned long long m_nFrame;
 	unsigned long long m_nDispFrame;
 	int m_nTimebaseDen;
