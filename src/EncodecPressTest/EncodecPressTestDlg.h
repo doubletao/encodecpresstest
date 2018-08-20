@@ -138,4 +138,5 @@ public:
 	afx_msg void OnBnClickedBtnCopyFirstParam();
 	afx_msg void OnBnClickedChkAudioEq();
 	afx_msg void OnBnClickedBtnAudioEqReset();
+	afx_msg void OnBnClickedBtnResetPlayer();
 };

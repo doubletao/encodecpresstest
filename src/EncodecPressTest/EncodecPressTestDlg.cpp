@@ -937,6 +937,7 @@ BEGIN_MESSAGE_MAP(CEncodecPressTestDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_COPY_FIRST_PARAM, &CEncodecPressTestDlg::OnBnClickedBtnCopyFirstParam)
 	ON_BN_CLICKED(IDC_CHK_AUDIO_EQ, &CEncodecPressTestDlg::OnBnClickedChkAudioEq)
 	ON_BN_CLICKED(IDC_BTN_AUDIO_EQ_RESET, &CEncodecPressTestDlg::OnBnClickedBtnAudioEqReset)
+	ON_BN_CLICKED(IDC_BTN_RESET_PLAYER, &CEncodecPressTestDlg::OnBnClickedBtnResetPlayer)
 END_MESSAGE_MAP()
 
 // CEncodecPressTestDlg 消息处理程序
@@ -2130,4 +2131,13 @@ void CEncodecPressTestDlg::OnBnClickedBtnAudioEqReset()
 	SetAudioEquliazerValue(7, 0);
 	SetAudioEquliazerValue(8, 0);
 	SetAudioEquliazerValue(9, 0);
+}
+
+
+void CEncodecPressTestDlg::OnBnClickedBtnResetPlayer()
+{
+	if (m_pPlayer)
+	{
+		m_pPlayer->ResetPlayer();
+	}
 }
