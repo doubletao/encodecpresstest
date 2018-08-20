@@ -8,7 +8,7 @@ private:
 	int m_nBufSize;//缓冲区大小
 	int m_nCursor;//当前读取游标
 	int m_nRemainData;//当前数据size
-	std::mutex data_lock;
+	std::recursive_mutex data_lock;
 public:
 	CAudioBufferLoop();
 	~CAudioBufferLoop();

@@ -7,6 +7,7 @@
 class SDL_VAPlayer : public IVAPlayer
 {
 protected:
+	void * m_hWnd;
 	int m_nWndX;
 	int m_nWndY;
 	int m_nWndWidth;
@@ -48,7 +49,11 @@ public:
 	virtual bool ResetPlayer(int nWndX, int nWndY, int nWndWidth, int nWndHeight,
 		EmVAPlayerColorFmt emColorFmt, int nBufWidth, int nBufHeight,
 		EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall);
-	//充值播放器（释放然后按照原有参数重新创建）
+	//基于一个已经存在的窗体创建一个播放器
+	virtual bool CreatePayer(void * hWnd, int nWndX, int nWndY, int nWndWidth, int nWndHeight,
+		EmVAPlayerColorFmt emColorFmt, int nBufWidth, int nBufHeight,
+		EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall);
+	//重置播放器（释放然后按照原有参数重新创建）
 	virtual bool ResetPlayer();
 	virtual bool MoveWindow(int nX, int nY, int nWndWidth, int nWndHeight);
 	virtual int PushFrame(unsigned char * data, int linesize);
