@@ -21,12 +21,12 @@ CAudioBufferLoop::~CAudioBufferLoop()
 
 void CAudioBufferLoop::Lock()
 {
-	data_lock.lock();
+	m_lockData.lock();
 }
 
 void CAudioBufferLoop::Unlock()
 {
-	data_lock.unlock();
+	m_lockData.unlock();
 }
 
 void CAudioBufferLoop::Reset(int nBufSize)
@@ -62,6 +62,7 @@ void CAudioBufferLoop::Push(char * pBuf, int nSize)
 	//nSize > 0才有得聊
 	if (nSize > 0)
 	{
+		m_conTime.notify_one();
 		//当push量大于了缓冲区大小减去当前remain大小，则重新申请内存
 		if (nSize > m_nBufSize - m_nRemainData)
 		{
@@ -97,17 +98,17 @@ void CAudioBufferLoop::Push(char * pBuf, int nSize)
 	Unlock();
 }
 
-void CAudioBufferLoop::Pop(char * pBuf, int nSize)
+bool CAudioBufferLoop::Pop(char * pBuf, int nSize)
 {
+	bool bRet = false;
 	Lock();
 	//nSize > 0才有得聊
 	if (nSize > 0)
 	{
 		if (nSize > m_nRemainData)
 		{
-			//如果不够，则将现有的填进去，其他的部分填0
-			memset(pBuf, 0, nSize);
-			Pop(pBuf, m_nRemainData);
+			//如果不够，不凑活，直接false
+			bRet = false;
 		}
 		else
 		{
@@ -127,7 +128,24 @@ void CAudioBufferLoop::Pop(char * pBuf, int nSize)
 				memcpy(pBuf, m_pBuffer + m_nCursor, nSize);
 				m_nRemainData = m_nRemainData - nSize;
 			}
+			bRet = true;
 		}
 	}
 	Unlock();
+	return bRet;
+}
+
+bool CAudioBufferLoop::WaitPop(char * pBuf, int nSize, unsigned long nTimeup)
+{
+	while (!Pop(pBuf, nSize))
+	{
+		std::unique_lock<std::mutex> lockWait(m_lockTime);
+		std::cv_status cvsts = m_conTime.wait_for(lockWait, std::chrono::milliseconds(nTimeup));
+		if (cvsts == std::cv_status::timeout)
+		{
+			//时间到，退出
+			return false;
+		}
+	}
+	return true;
 }

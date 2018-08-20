@@ -110,8 +110,16 @@ void SDL_VAPlayer::fill_audio(void * udata, Uint8 * stream, int len)
 	{
 		//SDL 2.0
 		SDL_memset(stream, 0, len);
-		pThis->m_AudioDataLoop.Pop(pThis->m_pAudioBuffer, len);
-		SDL_MixAudio(stream, (const Uint8 *)pThis->m_pAudioBuffer, len, SDL_MIX_MAXVOLUME);
+		if (pThis->m_AudioDataLoop.WaitPop(pThis->m_pAudioBuffer, len, 100))
+		{
+			SDL_MixAudio(stream, (const Uint8 *)pThis->m_pAudioBuffer, len, SDL_MIX_MAXVOLUME);
+		}
+		else
+		{
+			char szOutput[256];
+			sprintf_s(szOutput, 256, "fill_audio len = %d, clock = %d\r\n", len, clock());
+			//OutputDebugStringA(szOutput);
+		}
 	}
 }
 
@@ -131,9 +139,9 @@ bool SDL_VAPlayer::CreatePayer(int nWndX, int nWndY, int nWndWidth, int nWndHeig
 	m_nSamplePerCall = nSamplePerCall;
 
 	int nRet = 0;
-	//nRet |= SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	//nRet |= SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-	//nRet |= SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	nRet |= SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	nRet |= SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	nRet |= SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	if (0 == nRet)
 	{
 		//œ»¥¥Ω®screen

@@ -774,6 +774,7 @@ void CEncodecPressTestDlg::DoDisplay()
 			}
 			else
 			{
+				//TRACE(_T("clock = %d\r\n"), clock());
 				//ÿ40msPushһ֡
 				time_t nWait = 40 - (clock() - tmLastPush);
 				if (nWait < 1)
