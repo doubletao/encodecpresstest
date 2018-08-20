@@ -8,3 +8,7 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	flags |= Qt::WindowCloseButtonHint | Qt::WindowMinMaxButtonsHint;
 	setWindowFlags(flags);
 }
+
+QtEncodecPlayer::~QtEncodecPlayer()
+{
+}
