@@ -12,6 +12,7 @@ SDL_VAPlayer::SDL_VAPlayer()
 	, m_emColorFmt(EmVAPlayerColorFmt_UYVY)
 	, m_nBufWidth(0)
 	, m_nBufHeight(0)
+	, m_bStartAudio(false)
 	, m_emSampleFmt(EmVAPlayerSampleFmt_S16SYS)
 	, m_nAudioSampPerSec(0)
 	, m_nChannelCount(0)
@@ -45,6 +46,26 @@ void SDL_VAPlayer::Lock()
 void SDL_VAPlayer::Unlock()
 {
 	m_lock.unlock();
+}
+
+void SDL_VAPlayer::DealSDLEvent()
+{
+	//检测一下事件
+	SDL_Event test_event;
+	if (SDL_PollEvent(&test_event))
+	{
+		switch (test_event.type)
+		{
+		case SDL_WINDOWEVENT:
+		{
+			if (SDL_WINDOWEVENT_EXPOSED == test_event.window.event)
+			{
+				ResetPlayer();
+			}
+		}
+		break;
+		}
+	}
 }
 
 unsigned __int32 SDL_VAPlayer::ConvertColorFmt(EmVAPlayerColorFmt emColorFmt)
@@ -123,7 +144,7 @@ void SDL_VAPlayer::fill_audio(void * udata, Uint8 * stream, int len)
 	}
 }
 
-bool SDL_VAPlayer::CreatePayer(int nWndX, int nWndY, int nWndWidth, int nWndHeight, EmVAPlayerColorFmt emColorFmt, int nBufWidth, int nBufHeight, EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall)
+bool SDL_VAPlayer::CreatePayer(int nWndX, int nWndY, int nWndWidth, int nWndHeight, EmVAPlayerColorFmt emColorFmt, int nBufWidth, int nBufHeight, bool bStartAudio, EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall)
 {
 	bool bRet = false;
 	m_nWndX = nWndX;
@@ -133,6 +154,7 @@ bool SDL_VAPlayer::CreatePayer(int nWndX, int nWndY, int nWndWidth, int nWndHeig
 	m_emColorFmt = emColorFmt;
 	m_nBufWidth = nBufWidth;
 	m_nBufHeight = nBufHeight;
+	m_bStartAudio = bStartAudio;
 	m_emSampleFmt = emSampleFmt;
 	m_nAudioSampPerSec = nAudioSampPerSec;
 	m_nChannelCount = nChannelCount;
@@ -160,24 +182,31 @@ bool SDL_VAPlayer::CreatePayer(int nWndX, int nWndY, int nWndWidth, int nWndHeig
 				m_sdlTexture = SDL_CreateTexture(m_sdlRenderer, ConvertColorFmt(emColorFmt), SDL_TEXTUREACCESS_STREAMING, nBufWidth, nBufHeight);
 				if (m_sdlTexture)
 				{
-					//初始化音频播放器
-					SDL_AudioSpec wanted_spec;
-					wanted_spec.freq = nAudioSampPerSec;
-					wanted_spec.format = ConvertSampleFmt(emSampleFmt);
-					wanted_spec.channels = nChannelCount;
-					wanted_spec.silence = 0;
-					wanted_spec.samples = nSamplePerCall;
-					wanted_spec.callback = fill_audio;
-					wanted_spec.userdata = this;
-
-					if (SDL_OpenAudio(&wanted_spec, NULL) == 0)
+					if (bStartAudio)
 					{
-						SDL_PauseAudio(0);
-						bRet = true;
+						//初始化音频播放器
+						SDL_AudioSpec wanted_spec;
+						wanted_spec.freq = nAudioSampPerSec;
+						wanted_spec.format = ConvertSampleFmt(emSampleFmt);
+						wanted_spec.channels = nChannelCount;
+						wanted_spec.silence = 0;
+						wanted_spec.samples = nSamplePerCall;
+						wanted_spec.callback = fill_audio;
+						wanted_spec.userdata = this;
+
+						if (SDL_OpenAudio(&wanted_spec, NULL) == 0)
+						{
+							SDL_PauseAudio(0);
+							bRet = true;
+						}
+						else
+						{
+							printf("can't open audio.\n");
+						}
 					}
 					else
 					{
-						printf("can't open audio.\n");
+						bRet = true;
 					}
 				}
 				else
@@ -199,7 +228,7 @@ bool SDL_VAPlayer::CreatePayer(int nWndX, int nWndY, int nWndWidth, int nWndHeig
 	return bRet;
 }
 
-bool SDL_VAPlayer::ResetPlayer(int nWndX, int nWndY, int nWndWidth, int nWndHeight, EmVAPlayerColorFmt emColorFmt, int nBufWidth, int nBufHeight, EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall)
+bool SDL_VAPlayer::ResetPlayer(int nWndX, int nWndY, int nWndWidth, int nWndHeight, EmVAPlayerColorFmt emColorFmt, int nBufWidth, int nBufHeight, bool bStartAudio, EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall)
 {
 	bool bRet = false;
 	m_nWndX = nWndX;
@@ -209,6 +238,7 @@ bool SDL_VAPlayer::ResetPlayer(int nWndX, int nWndY, int nWndWidth, int nWndHeig
 	m_emColorFmt = emColorFmt;
 	m_nBufWidth = nBufWidth;
 	m_nBufHeight = nBufHeight;
+	m_bStartAudio = bStartAudio;
 	m_emSampleFmt = emSampleFmt;
 	m_nAudioSampPerSec = nAudioSampPerSec;
 	m_nChannelCount = nChannelCount;
@@ -217,7 +247,7 @@ bool SDL_VAPlayer::ResetPlayer(int nWndX, int nWndY, int nWndWidth, int nWndHeig
 	Lock();
 	if (ReleasePlayer())
 	{
-		if (CreatePayer(nWndX, nWndY, nWndWidth, nWndHeight, emColorFmt, nBufWidth, nBufHeight, emSampleFmt, nAudioSampPerSec, nChannelCount, nSamplePerCall))
+		if (CreatePayer(nWndX, nWndY, nWndWidth, nWndHeight, emColorFmt, nBufWidth, nBufHeight, bStartAudio, emSampleFmt, nAudioSampPerSec, nChannelCount, nSamplePerCall))
 		{
 			bRet = true;
 		}
@@ -226,7 +256,7 @@ bool SDL_VAPlayer::ResetPlayer(int nWndX, int nWndY, int nWndWidth, int nWndHeig
 	return bRet;
 }
 
-bool SDL_VAPlayer::CreatePayer(void * hWnd, int nWndX, int nWndY, int nWndWidth, int nWndHeight, EmVAPlayerColorFmt emColorFmt, int nBufWidth, int nBufHeight, EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall)
+bool SDL_VAPlayer::CreatePayer(void * hWnd, int nWndX, int nWndY, int nWndWidth, int nWndHeight, EmVAPlayerColorFmt emColorFmt, int nBufWidth, int nBufHeight, bool bStartAudio, EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall)
 {
 	bool bRet = false;
 	m_hWnd = hWnd;
@@ -237,11 +267,14 @@ bool SDL_VAPlayer::CreatePayer(void * hWnd, int nWndX, int nWndY, int nWndWidth,
 	m_emColorFmt = emColorFmt;
 	m_nBufWidth = nBufWidth;
 	m_nBufHeight = nBufHeight;
+	m_bStartAudio = bStartAudio;
 	m_emSampleFmt = emSampleFmt;
 	m_nAudioSampPerSec = nAudioSampPerSec;
 	m_nChannelCount = nChannelCount;
 	m_nSamplePerCall = nSamplePerCall;
 
+	//先简单的实现一下，只是删除再创建，为防止释放重建的过程中有画面push进来，所以锁一下
+	Lock();
 	int nRet = 0;
 	nRet |= SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	nRet |= SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
@@ -263,24 +296,31 @@ bool SDL_VAPlayer::CreatePayer(void * hWnd, int nWndX, int nWndY, int nWndWidth,
 				m_sdlTexture = SDL_CreateTexture(m_sdlRenderer, ConvertColorFmt(emColorFmt), SDL_TEXTUREACCESS_STREAMING, nBufWidth, nBufHeight);
 				if (m_sdlTexture)
 				{
-					//初始化音频播放器
-					SDL_AudioSpec wanted_spec;
-					wanted_spec.freq = nAudioSampPerSec;
-					wanted_spec.format = ConvertSampleFmt(emSampleFmt);
-					wanted_spec.channels = nChannelCount;
-					wanted_spec.silence = 0;
-					wanted_spec.samples = nSamplePerCall;
-					wanted_spec.callback = fill_audio;
-					wanted_spec.userdata = this;
-
-					if (SDL_OpenAudio(&wanted_spec, NULL) == 0)
+					if (bStartAudio)
 					{
-						SDL_PauseAudio(0);
-						bRet = true;
+						//初始化音频播放器
+						SDL_AudioSpec wanted_spec;
+						wanted_spec.freq = nAudioSampPerSec;
+						wanted_spec.format = ConvertSampleFmt(emSampleFmt);
+						wanted_spec.channels = nChannelCount;
+						wanted_spec.silence = 0;
+						wanted_spec.samples = nSamplePerCall;
+						wanted_spec.callback = fill_audio;
+						wanted_spec.userdata = this;
+
+						if (SDL_OpenAudio(&wanted_spec, NULL) == 0)
+						{
+							SDL_PauseAudio(0);
+							bRet = true;
+						}
+						else
+						{
+							printf("can't open audio.\n");
+						}
 					}
 					else
 					{
-						printf("can't open audio.\n");
+						bRet = true;
 					}
 				}
 				else
@@ -298,6 +338,7 @@ bool SDL_VAPlayer::CreatePayer(void * hWnd, int nWndX, int nWndY, int nWndWidth,
 			printf("SDL: could not create window - exiting:%s\n", SDL_GetError());
 		}
 	}
+	Unlock();
 
 	return bRet;
 }
@@ -306,11 +347,11 @@ bool SDL_VAPlayer::ResetPlayer()
 {
 	if (m_hWnd)
 	{
-		return CreatePayer(m_hWnd, m_nWndX, m_nWndY, m_nWndWidth, m_nWndHeight, m_emColorFmt, m_nBufWidth, m_nBufHeight, m_emSampleFmt, m_nAudioSampPerSec, m_nChannelCount, m_nSamplePerCall);
+		return CreatePayer(m_hWnd, m_nWndX, m_nWndY, m_nWndWidth, m_nWndHeight, m_emColorFmt, m_nBufWidth, m_nBufHeight, m_bStartAudio, m_emSampleFmt, m_nAudioSampPerSec, m_nChannelCount, m_nSamplePerCall);
 	}
 	else
 	{
-		return CreatePayer(m_nWndX, m_nWndY, m_nWndWidth, m_nWndHeight, m_emColorFmt, m_nBufWidth, m_nBufHeight, m_emSampleFmt, m_nAudioSampPerSec, m_nChannelCount, m_nSamplePerCall);
+		return CreatePayer(m_nWndX, m_nWndY, m_nWndWidth, m_nWndHeight, m_emColorFmt, m_nBufWidth, m_nBufHeight, m_bStartAudio, m_emSampleFmt, m_nAudioSampPerSec, m_nChannelCount, m_nSamplePerCall);
 	}
 }
 
@@ -328,27 +369,39 @@ bool SDL_VAPlayer::MoveWindow(int nX, int nY, int nWndWidth, int nWndHeight)
 
 int SDL_VAPlayer::PushFrame(unsigned char * data, int linesize)
 {
-	int nRet = SDL_UpdateTexture(m_sdlTexture, nullptr, data, linesize);
-	nRet = SDL_RenderClear(m_sdlRenderer);
-	nRet = SDL_RenderCopy(m_sdlRenderer, m_sdlTexture, nullptr, nullptr);
-	SDL_RenderPresent(m_sdlRenderer);
+	Lock();
+	if (m_sdlTexture && m_sdlRenderer)
+	{
+		int nRet = SDL_UpdateTexture(m_sdlTexture, nullptr, data, linesize);
+		nRet = SDL_RenderClear(m_sdlRenderer);
+		nRet = SDL_RenderCopy(m_sdlRenderer, m_sdlTexture, nullptr, nullptr);
+		SDL_RenderPresent(m_sdlRenderer);
+	}
+	Unlock();
+	DealSDLEvent();
 	return 0;
 }
 
 int SDL_VAPlayer::PushYUVFrame(unsigned char **& data, int *& linesize)
 {
-	SDL_UpdateYUVTexture(m_sdlTexture, nullptr
-		, data[0], linesize[0]
-		, data[1], linesize[1]
-		, data[2], linesize[2]);
-	SDL_RenderClear(m_sdlRenderer);
-	SDL_Rect rtDes;
-	rtDes.x = 0;
-	rtDes.y = 0;
-	rtDes.w = m_nWndWidth;
-	rtDes.h = m_nWndHeight;
-	SDL_RenderCopy(m_sdlRenderer, m_sdlTexture, nullptr, &rtDes);
-	SDL_RenderPresent(m_sdlRenderer);
+	Lock();
+	if (m_sdlTexture && m_sdlRenderer)
+	{
+		SDL_UpdateYUVTexture(m_sdlTexture, nullptr
+			, data[0], linesize[0]
+			, data[1], linesize[1]
+			, data[2], linesize[2]);
+		SDL_RenderClear(m_sdlRenderer);
+		SDL_Rect rtDes;
+		rtDes.x = 0;
+		rtDes.y = 0;
+		rtDes.w = m_nWndWidth;
+		rtDes.h = m_nWndHeight;
+		SDL_RenderCopy(m_sdlRenderer, m_sdlTexture, nullptr, &rtDes);
+		SDL_RenderPresent(m_sdlRenderer);
+	}
+	Unlock();
+	DealSDLEvent();
 	return 0;
 }
 

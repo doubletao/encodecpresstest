@@ -15,6 +15,7 @@ protected:
 	EmVAPlayerColorFmt m_emColorFmt;
 	int m_nBufWidth;
 	int m_nBufHeight;
+	bool m_bStartAudio;
 	EmVAPlayerSampleFmt m_emSampleFmt;
 	int m_nAudioSampPerSec;
 	unsigned __int8 m_nChannelCount;
@@ -33,6 +34,7 @@ public:
 protected:
 	void Lock();
 	void Unlock();
+	void DealSDLEvent();//处理一些SDL事件
 public:
 	static unsigned __int32 ConvertColorFmt(EmVAPlayerColorFmt emColorFmt);
 	static EmVAPlayerColorFmt ConvertColorFmt(unsigned __int32 nFormat);
@@ -44,15 +46,15 @@ public:
 	//创建播放器
 	virtual bool CreatePayer(int nWndX, int nWndY, int nWndWidth, int nWndHeight,
 		EmVAPlayerColorFmt emColorFmt, int nBufWidth, int nBufHeight,
-		EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall);
+		bool bStartAudio, EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall);
 	//重置播放器（释放然后按照指定参数重新创建）
 	virtual bool ResetPlayer(int nWndX, int nWndY, int nWndWidth, int nWndHeight,
 		EmVAPlayerColorFmt emColorFmt, int nBufWidth, int nBufHeight,
-		EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall);
+		bool bStartAudio, EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall);
 	//基于一个已经存在的窗体创建一个播放器
 	virtual bool CreatePayer(void * hWnd, int nWndX, int nWndY, int nWndWidth, int nWndHeight,
 		EmVAPlayerColorFmt emColorFmt, int nBufWidth, int nBufHeight,
-		EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall);
+		bool bStartAudio, EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall);
 	//重置播放器（释放然后按照原有参数重新创建）
 	virtual bool ResetPlayer();
 	virtual bool MoveWindow(int nX, int nY, int nWndWidth, int nWndHeight);

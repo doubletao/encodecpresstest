@@ -1002,7 +1002,7 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 #ifdef PLAYER_USE_SDLPAINT
 		//m_player.IntialWnd(SDL_PIXELFORMAT_UYVY, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920);
 		//m_pPlayer->CreatePayer(pPlayerWnd->GetSafeHwnd(), 0, 0, 800, 600, EmVAPlayerColorFmt_UYVY, 1920, 1080, EmVAPlayerSampleFmt_S16SYS, 48000, 2, 1920);
-		m_pPlayer->CreatePayer(pPlayerWnd->GetSafeHwnd(), 0, 0, 800, 600, EmVAPlayerColorFmt_UYVY, 1920, 1080, EmVAPlayerSampleFmt_S16SYS, 48000, 2, 1920);
+		m_pPlayer->CreatePayer(pPlayerWnd->GetSafeHwnd(), 0, 0, 800, 600, EmVAPlayerColorFmt_UYVY, 1920, 1080, true, EmVAPlayerSampleFmt_S16SYS, 48000, 2, 1920);
 #else
 		//m_player.IntialWnd(SDL_PIXELFORMAT_UYVY, pPlayerWnd->GetSafeHwnd(), rtPlayer.Width(), rtPlayer.Height(), rtPlayer.Width(), rtPlayer.Height(), 48000, 1920, CallbackGetDrawRect);
 #endif
