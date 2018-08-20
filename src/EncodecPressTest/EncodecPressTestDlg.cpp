@@ -163,6 +163,14 @@ CString strMsg;
 
 void CEncodecPressTestDlg::DoPlay()
 {
+	CString strFileName;
+	CTime tm = CTime::GetCurrentTime();
+	strFileName.Format(_T("%04d%02d%02d%02d%02d%02d_%d.txt"), tm.GetYear(), tm.GetMonth(), tm.GetDay(), tm.GetHour(), tm.GetMinute(), tm.GetSecond(), clock());
+	if (m_bUseLog && !m_bLogOpened && m_fileLog.Open(strFileName, CFile::modeCreate | CFile::modeWrite))
+	{
+		m_bLogOpened = true;
+	}
+
 	int nMaxCpu = 0;
 	int nMaxMem = 0;
 	m_vaLoop.Clear();
@@ -662,6 +670,12 @@ void CEncodecPressTestDlg::DoPlay()
 		m_fileLog.WriteString(strMsg);
 		m_fileLog.WriteString(_T("\r\n"));
 	}
+
+	if (m_bLogOpened)
+	{
+		m_fileLog.Close();
+		m_bLogOpened = false;
+	}
 }
 
 UINT CEncodecPressTestDlg::ThreadDisplay(LPVOID pParam)
@@ -805,6 +819,7 @@ CEncodecPressTestDlg::CEncodecPressTestDlg(CWnd* pParent /*=NULL*/)
 	, m_nFrame(0)
 	, m_nDispFrame(0)
 	, m_ecfactory(nullptr)
+	, m_bUseLog(false)
 	, m_bLogOpened(false)
 	, m_pDisplayThread(nullptr)
 	, m_evtDisplayStop(FALSE, TRUE, NULL, NULL)
@@ -843,11 +858,6 @@ CEncodecPressTestDlg::~CEncodecPressTestDlg()
 		m_pAudioEquliazer = nullptr;
 	}
 	ecCodec_ReleaseCodecFactory(m_ecfactory);
-	if (m_bLogOpened)
-	{
-		m_fileLog.Close();
-		m_bLogOpened = false;
-	}
 	ReleasePlayer(m_pPlayer);
 	m_pPlayer = nullptr;
 }
@@ -938,6 +948,7 @@ BEGIN_MESSAGE_MAP(CEncodecPressTestDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_CHK_AUDIO_EQ, &CEncodecPressTestDlg::OnBnClickedChkAudioEq)
 	ON_BN_CLICKED(IDC_BTN_AUDIO_EQ_RESET, &CEncodecPressTestDlg::OnBnClickedBtnAudioEqReset)
 	ON_BN_CLICKED(IDC_BTN_RESET_PLAYER, &CEncodecPressTestDlg::OnBnClickedBtnResetPlayer)
+	ON_BN_CLICKED(IDC_CHK_USE_LOG, &CEncodecPressTestDlg::OnBnClickedChkUseLog)
 END_MESSAGE_MAP()
 
 // CEncodecPressTestDlg 消息处理程序
@@ -1106,14 +1117,6 @@ BOOL CEncodecPressTestDlg::OnInitDialog()
 			pFileNameEdit->SetWindowText(strName);
 			pH264LevelEdit->SetWindowText(_T("5"));
 		}
-	}
-
-	CString strFileName;
-	CTime tm = CTime::GetCurrentTime();
-	strFileName.Format(_T("%04d%02d%02d%02d%02d%02d_%d.txt"), tm.GetYear(), tm.GetMonth(), tm.GetDay(), tm.GetHour(), tm.GetMinute(), tm.GetSecond(), clock());
-	if (!m_bLogOpened && m_fileLog.Open(strFileName, CFile::modeCreate | CFile::modeWrite))
-	{
-		m_bLogOpened = true;
 	}
 
 	CComboBox * pSpeedMode = (CComboBox *)GetDlgItem(IDC_COMBO_SPEED_MODE);
@@ -2139,5 +2142,22 @@ void CEncodecPressTestDlg::OnBnClickedBtnResetPlayer()
 	if (m_pPlayer)
 	{
 		m_pPlayer->ResetPlayer();
+	}
+}
+
+
+void CEncodecPressTestDlg::OnBnClickedChkUseLog()
+{
+	CButton * pBtn = (CButton *)GetDlgItem(IDC_CHK_USE_LOG);
+	if (pBtn && ::IsWindow(pBtn->GetSafeHwnd()))
+	{
+		if (pBtn->GetCheck())
+		{
+			m_bUseLog = true;
+		}
+		else
+		{
+			m_bUseLog = false;
+		}
 	}
 }

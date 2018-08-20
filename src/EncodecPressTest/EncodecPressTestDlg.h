@@ -28,6 +28,7 @@ private:
 	CRITICAL_SECTION m_lock;
 
 	CStdioFile m_fileLog;
+	bool m_bUseLog;
 	bool m_bLogOpened;
 
 	VABuffer m_vaBuf;
@@ -139,4 +140,5 @@ public:
 	afx_msg void OnBnClickedChkAudioEq();
 	afx_msg void OnBnClickedBtnAudioEqReset();
 	afx_msg void OnBnClickedBtnResetPlayer();
+	afx_msg void OnBnClickedChkUseLog();
 };
