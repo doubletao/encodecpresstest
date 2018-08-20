@@ -32,6 +32,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConvertPCMTool", "src\Conve
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VAPlayer", "src\VAPlayer\VAPlayer.vcxproj", "{EEF5058A-8007-4BA0-BF5D-9369E4741B61}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QtEncodecPlayer", "src\QtEncodecPlayer\QtEncodecPlayer.vcxproj", "{B12702AD-ABFB-343A-A199-8E24837244A3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EEF5058A-8007-4BA0-BF5D-9369E4741B61} = {EEF5058A-8007-4BA0-BF5D-9369E4741B61}
+		{61146BF5-D2EF-4325-9DDB-DF3FF621E356} = {61146BF5-D2EF-4325-9DDB-DF3FF621E356}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -96,6 +102,14 @@ Global
 		{EEF5058A-8007-4BA0-BF5D-9369E4741B61}.Unicode_Debug|x64.Build.0 = Debug|x64
 		{EEF5058A-8007-4BA0-BF5D-9369E4741B61}.Unicode_Release|x64.ActiveCfg = Release|x64
 		{EEF5058A-8007-4BA0-BF5D-9369E4741B61}.Unicode_Release|x64.Build.0 = Release|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Debug|x64.ActiveCfg = Debug|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Debug|x64.Build.0 = Debug|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|x64.ActiveCfg = Release|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|x64.Build.0 = Release|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Unicode_Debug|x64.ActiveCfg = Debug|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Unicode_Debug|x64.Build.0 = Debug|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Unicode_Release|x64.ActiveCfg = Release|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Unicode_Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
