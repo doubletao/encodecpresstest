@@ -19,6 +19,17 @@ public:
 protected:
 	void CreateCtrl();
 	void LayoutCtrl();
+	void InitialConnect();
+protected slots:
+	void OnBnClickedSrcScan();
+	void OnBnClickedDesScan();
+	void OnBnClickedCue();
+	void OnBnClickedFirstFrame();
+	void OnBnClickedPreFrame();
+	void OnBnClickedPlayPause();
+	void OnBnClickedNextFrame();
+	void OnBnClickedLastFrame();
+	void OnBnClickedStop();
 protected:
 	//Layout
 	QVBoxLayout * m_pWholeVLyaout;//全局的一个纵向layout
@@ -57,4 +68,12 @@ protected:
 	QCheckBox * m_pChkLockVAPts;//强制pts对齐
 	QCheckBox * m_pChkLoop;//循环播放
 	QCheckBox * m_pChkForbitLoseFrame;//禁止丢帧
+	//播放控制
+	QPushButton * m_pBtnCue;
+	QPushButton * m_pBtnFirstFrame;
+	QPushButton * m_pBtnPreFrame;
+	QPushButton * m_pBtnPlayPause;
+	QPushButton * m_pBtnNextFrame;
+	QPushButton * m_pBtnLastFrame;
+	QPushButton * m_pBtnStop;
 };

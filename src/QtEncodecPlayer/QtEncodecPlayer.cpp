@@ -29,6 +29,13 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	, m_pChkLockVAPts(nullptr)
 	, m_pChkLoop(nullptr)
 	, m_pChkForbitLoseFrame(nullptr)
+	, m_pBtnCue(nullptr)
+	, m_pBtnFirstFrame(nullptr)
+	, m_pBtnPreFrame(nullptr)
+	, m_pBtnPlayPause(nullptr)
+	, m_pBtnNextFrame(nullptr)
+	, m_pBtnLastFrame(nullptr)
+	, m_pBtnStop(nullptr)
 {
 	resize(1440, 900);
 	Qt::WindowFlags flags = Qt::Dialog;
@@ -37,6 +44,7 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 
 	CreateCtrl();
 	LayoutCtrl();
+	InitialConnect();
 }
 
 QtEncodecPlayer::~QtEncodecPlayer()
@@ -93,6 +101,13 @@ void QtEncodecPlayer::CreateCtrl()
 	m_pChkLockVAPts = new QCheckBox(tr("IDS_ENCODEC_PLAYER_LOCK_VA_PTS"), m_pOtherSettingWidget);
 	m_pChkLoop = new QCheckBox(tr("IDS_ENCODEC_PLAYER_LOOP_PLAY"), m_pOtherSettingWidget);
 	m_pChkForbitLoseFrame = new QCheckBox(tr("IDS_ENCODEC_PLAYER_FORBID_FRAME_LOSE"), m_pOtherSettingWidget);
+	m_pBtnCue = new QPushButton(tr("IDS_ENCODEC_PLAYER_PLCTRL_CUE"), m_pOtherSettingWidget);
+	m_pBtnFirstFrame = new QPushButton(tr("IDS_ENCODEC_PLAYER_PLCTRL_FIRST_FRAME"), m_pOtherSettingWidget);
+	m_pBtnPreFrame = new QPushButton(tr("IDS_ENCODEC_PLAYER_PLCTRL_PRE_FRAME"), m_pOtherSettingWidget);
+	m_pBtnPlayPause = new QPushButton(tr("IDS_ENCODEC_PLAYER_PLCTRL_PLAY"), m_pOtherSettingWidget);
+	m_pBtnNextFrame = new QPushButton(tr("IDS_ENCODEC_PLAYER_PLCTRL_NEXT_FRAME"), m_pOtherSettingWidget);
+	m_pBtnLastFrame = new QPushButton(tr("IDS_ENCODEC_PLAYER_PLCTRL_LAST_FRAME"), m_pOtherSettingWidget);
+	m_pBtnStop = new QPushButton(tr("IDS_ENCODEC_PLAYER_PLCTRL_STOP"), m_pOtherSettingWidget);
 
 	m_pWholeVLyaout = new QVBoxLayout(this);
 	m_pTopHLayout = new QHBoxLayout(this);
@@ -115,10 +130,6 @@ void QtEncodecPlayer::LayoutCtrl()
 	m_pTopRightWidgetVLayout->addWidget(m_pEditInfo);
 	m_pTopRightWidgetVLayout->addWidget(m_pAudioEffectWidget);
 
-	m_pWholeVLyaout->addWidget(m_pMiddleHWidget);
-	m_pMiddleHWidget->setLayout(m_pMiddleHLayout);
-	m_pMiddleHLayout->addWidget(m_pSldPlayProcess);
-
 	m_pWholeVLyaout->addWidget(m_pInputOutputSettingWidget);
 	m_pInputOutputSettingWidget->setLayout(m_pInputOutputSettingHLayout);
 	m_pInputOutputSettingHLayout->addWidget(m_pStSpeedShift);
@@ -126,14 +137,16 @@ void QtEncodecPlayer::LayoutCtrl()
 	m_pInputOutputSettingHLayout->addWidget(m_pCombSpeedRatio);
 	m_pInputOutputSettingHLayout->addStretch(1);
 	m_pInputOutputSettingHLayout->addWidget(m_pStPlayerSource);
-	m_pInputOutputSettingHLayout->addWidget(m_pCombPlayerSource, 3);
+	m_pInputOutputSettingHLayout->addWidget(m_pCombPlayerSource, 1);
 	m_pInputOutputSettingHLayout->addWidget(m_pBtnPlayerSourceSel);
 	m_pInputOutputSettingHLayout->addStretch(1);
 	m_pInputOutputSettingHLayout->addWidget(m_pStEncodecDes);
-	m_pInputOutputSettingHLayout->addWidget(m_pCombEncodecDes, 3);
+	m_pInputOutputSettingHLayout->addWidget(m_pCombEncodecDes, 1);
 	m_pInputOutputSettingHLayout->addWidget(m_pBtnEncodecDes);
 
-	m_pWholeVLyaout->addWidget(m_pEncodecSetting);
+	m_pWholeVLyaout->addWidget(m_pMiddleHWidget);
+	m_pMiddleHWidget->setLayout(m_pMiddleHLayout);
+	m_pMiddleHLayout->addWidget(m_pSldPlayProcess);
 
 	m_pWholeVLyaout->addWidget(m_pOtherSettingWidget);
 	m_pOtherSettingWidget->setLayout(m_pOtherSettingHLayout);
@@ -141,4 +154,67 @@ void QtEncodecPlayer::LayoutCtrl()
 	m_pOtherSettingHLayout->addWidget(m_pChkLockVAPts);
 	m_pOtherSettingHLayout->addWidget(m_pChkLoop);
 	m_pOtherSettingHLayout->addWidget(m_pChkForbitLoseFrame);
+	m_pOtherSettingHLayout->addStretch(0);
+	m_pOtherSettingHLayout->addWidget(m_pBtnCue);
+	m_pOtherSettingHLayout->addWidget(m_pBtnFirstFrame);
+	m_pOtherSettingHLayout->addWidget(m_pBtnPreFrame);
+	m_pOtherSettingHLayout->addWidget(m_pBtnPlayPause);
+	m_pOtherSettingHLayout->addWidget(m_pBtnNextFrame);
+	m_pOtherSettingHLayout->addWidget(m_pBtnLastFrame);
+	m_pOtherSettingHLayout->addWidget(m_pBtnStop);
+
+	m_pWholeVLyaout->addWidget(m_pEncodecSetting);
+}
+
+void QtEncodecPlayer::InitialConnect()
+{
+	connect(m_pBtnPlayerSourceSel, SIGNAL(clicked()), this, SLOT(OnBnClickedSrcScan()));
+	connect(m_pBtnEncodecDes, SIGNAL(clicked()), this, SLOT(OnBnClickedDesScan()));
+	connect(m_pBtnCue, SIGNAL(clicked()), this, SLOT(OnBnClickedCue()));
+	connect(m_pBtnFirstFrame, SIGNAL(clicked()), this, SLOT(OnBnClickedFirstFrame()));
+	connect(m_pBtnPreFrame, SIGNAL(clicked()), this, SLOT(OnBnClickedPreFrame()));
+	connect(m_pBtnPlayPause, SIGNAL(clicked()), this, SLOT(OnBnClickedPlayPause()));
+	connect(m_pBtnNextFrame, SIGNAL(clicked()), this, SLOT(OnBnClickedNextFrame()));
+	connect(m_pBtnLastFrame, SIGNAL(clicked()), this, SLOT(OnBnClickedLastFrame()));
+	connect(m_pBtnStop, SIGNAL(clicked()), this, SLOT(OnBnClickedStop()));
+}
+
+void QtEncodecPlayer::OnBnClickedSrcScan()
+{
+}
+
+void QtEncodecPlayer::OnBnClickedDesScan()
+{
+}
+
+void QtEncodecPlayer::OnBnClickedCue()
+{
+}
+
+void QtEncodecPlayer::OnBnClickedFirstFrame()
+{
+}
+
+void QtEncodecPlayer::OnBnClickedPreFrame()
+{
+}
+
+void QtEncodecPlayer::OnBnClickedPlayPause()
+{
+	if (m_pBtnPlayPause)
+	{
+		m_pBtnPlayPause->setText(tr("IDS_ENCODEC_PLAYER_PLCTRL_PAUSE"));
+	}
+}
+
+void QtEncodecPlayer::OnBnClickedNextFrame()
+{
+}
+
+void QtEncodecPlayer::OnBnClickedLastFrame()
+{
+}
+
+void QtEncodecPlayer::OnBnClickedStop()
+{
 }
