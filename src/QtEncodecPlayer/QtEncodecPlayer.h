@@ -9,6 +9,7 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QCheckBox>
+#include "EncodecThreader.h"
 
 class QtEncodecPlayer : public QDialog
 {
@@ -20,6 +21,7 @@ protected:
 	void CreateCtrl();
 	void LayoutCtrl();
 	void InitialConnect();
+protected:
 protected slots:
 	void OnBnClickedSrcScan();
 	void OnBnClickedDesScan();
