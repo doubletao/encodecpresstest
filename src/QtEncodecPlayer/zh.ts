@@ -4,117 +4,127 @@
 <context>
     <name>QtEncodecPlayer</name>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="72"/>
+        <location filename="QtEncodecPlayer.cpp" line="73"/>
         <source>IDS_ENCODEC_PLAYER_SPEED_SWITCH</source>
         <translation type="unfinished">变速</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="74"/>
+        <location filename="QtEncodecPlayer.cpp" line="75"/>
         <source>IDS_ENCODEC_PLAYER_SPEED_UP</source>
         <translation type="unfinished">快放</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="75"/>
+        <location filename="QtEncodecPlayer.cpp" line="76"/>
         <source>IDS_ENCODEC_PLAYER_SPEED_DOWN</source>
         <translation type="unfinished">慢放</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="84"/>
+        <location filename="QtEncodecPlayer.cpp" line="85"/>
         <source>IDS_ENCODEC_PLAYER_SRC_PATH</source>
         <translation type="unfinished">源路径</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="87"/>
+        <location filename="QtEncodecPlayer.cpp" line="88"/>
         <source>rtmp://live.hkstv.hk.lxdns.com/live/hks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="88"/>
+        <location filename="QtEncodecPlayer.cpp" line="89"/>
         <source>rtmp://103.229.149.171/myapp/GoProCut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="89"/>
+        <location filename="QtEncodecPlayer.cpp" line="90"/>
         <source>rtmp://192.168.20.153:1935/live/1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="91"/>
+        <location filename="QtEncodecPlayer.cpp" line="92"/>
         <source>IDS_ENCODEC_PLAYER_SRC_SCAN</source>
         <translation type="unfinished">浏览</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="93"/>
+        <location filename="QtEncodecPlayer.cpp" line="94"/>
         <source>IDS_ENCODEC_PLAYER_DES_PATH</source>
         <translation type="unfinished">输出路径</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="96"/>
+        <location filename="QtEncodecPlayer.cpp" line="97"/>
         <source>E:\clip\</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="98"/>
+        <location filename="QtEncodecPlayer.cpp" line="99"/>
         <source>IDS_ENCODEC_PLAYER_DES_SCAN</source>
         <translation type="unfinished">浏览</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="100"/>
+        <location filename="QtEncodecPlayer.cpp" line="101"/>
         <source>IDS_ENCODEC_PLAYER_PERFORM_LOG</source>
         <translation type="unfinished">性能日志</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="101"/>
+        <location filename="QtEncodecPlayer.cpp" line="102"/>
         <source>IDS_ENCODEC_PLAYER_LOCK_VA_PTS</source>
         <translation type="unfinished">强制pts对齐</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="102"/>
+        <location filename="QtEncodecPlayer.cpp" line="103"/>
         <source>IDS_ENCODEC_PLAYER_LOOP_PLAY</source>
         <translation type="unfinished">循环播放</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="103"/>
+        <location filename="QtEncodecPlayer.cpp" line="104"/>
         <source>IDS_ENCODEC_PLAYER_FORBID_FRAME_LOSE</source>
         <translation type="unfinished">禁止丢帧</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="104"/>
+        <location filename="QtEncodecPlayer.cpp" line="105"/>
         <source>IDS_ENCODEC_PLAYER_PLCTRL_CUE</source>
         <translation type="unfinished">装载</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="105"/>
+        <location filename="QtEncodecPlayer.cpp" line="106"/>
         <source>IDS_ENCODEC_PLAYER_PLCTRL_FIRST_FRAME</source>
         <translation type="unfinished">首帧</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="106"/>
+        <location filename="QtEncodecPlayer.cpp" line="107"/>
         <source>IDS_ENCODEC_PLAYER_PLCTRL_PRE_FRAME</source>
         <translation type="unfinished">前帧</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="107"/>
+        <location filename="QtEncodecPlayer.cpp" line="108"/>
         <source>IDS_ENCODEC_PLAYER_PLCTRL_PLAY</source>
         <translation type="unfinished">播放</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="108"/>
+        <location filename="QtEncodecPlayer.cpp" line="109"/>
         <source>IDS_ENCODEC_PLAYER_PLCTRL_NEXT_FRAME</source>
         <translation type="unfinished">后帧</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="109"/>
+        <location filename="QtEncodecPlayer.cpp" line="110"/>
         <source>IDS_ENCODEC_PLAYER_PLCTRL_LAST_FRAME</source>
         <translation type="unfinished">尾帧</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="110"/>
+        <location filename="QtEncodecPlayer.cpp" line="111"/>
         <source>IDS_ENCODEC_PLAYER_PLCTRL_STOP</source>
         <translation type="unfinished">停止</translation>
     </message>
     <message>
-        <location filename="QtEncodecPlayer.cpp" line="206"/>
+        <location filename="QtEncodecPlayer.cpp" line="186"/>
+        <source>IDS_ENCODEC_PLAYER_SOURCE_FILE</source>
+        <translation type="unfinished">源文件</translation>
+    </message>
+    <message>
+        <location filename="QtEncodecPlayer.cpp" line="210"/>
+        <source>IDS_ENCODEC_PLAYER_DESTINY_FILE</source>
+        <translation type="unfinished">目标路径</translation>
+    </message>
+    <message>
+        <location filename="QtEncodecPlayer.cpp" line="247"/>
         <source>IDS_ENCODEC_PLAYER_PLCTRL_PAUSE</source>
         <translation type="unfinished">暂停</translation>
     </message>

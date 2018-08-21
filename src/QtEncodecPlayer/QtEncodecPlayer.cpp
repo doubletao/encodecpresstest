@@ -1,4 +1,5 @@
 #include "QtEncodecPlayer.h"
+#include <QFileDialog>
 
 QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	: QDialog(parent)
@@ -181,10 +182,38 @@ void QtEncodecPlayer::InitialConnect()
 
 void QtEncodecPlayer::OnBnClickedSrcScan()
 {
+	QFileDialog fileDialog(this);
+	fileDialog.setWindowTitle(tr("IDS_ENCODEC_PLAYER_SOURCE_FILE"));
+	fileDialog.setDirectory(".");
+	fileDialog.setFileMode(QFileDialog::ExistingFile);
+	fileDialog.setViewMode(QFileDialog::Detail);
+	fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
+	QStringList fileNames;
+	if (fileDialog.exec() == QDialog::Accepted)
+	{
+		fileNames = fileDialog.selectedFiles();
+		for (int n = 0; n < fileNames.size(); n++)
+		{
+			QString str = fileNames.at(n);
+			if (m_pCombPlayerSource)
+			{
+				m_pCombPlayerSource->setCurrentText(str);
+			}
+			break;
+		}
+	}
 }
 
 void QtEncodecPlayer::OnBnClickedDesScan()
 {
+	QString strFilePath = QFileDialog::getExistingDirectory(this, tr("IDS_ENCODEC_PLAYER_DESTINY_FILE"), "./");
+	if (!strFilePath.isEmpty())
+	{
+		if (m_pCombEncodecDes)
+		{
+			m_pCombEncodecDes->setCurrentText(strFilePath);
+		}
+	}
 }
 
 void QtEncodecPlayer::OnBnClickedCue()
