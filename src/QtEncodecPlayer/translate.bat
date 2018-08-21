@@ -1,0 +1,1 @@
+lrelease -verbose zh.ts -qm zh.qm
