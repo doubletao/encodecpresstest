@@ -18,6 +18,7 @@ public:
 	~EncodecThreader();
 	EncodecThreader(const EncodecThreader &);
 protected:
+	bool m_bQiut;//退出标记
 	std::mutex m_lockTime;//时间等待锁
 	std::condition_variable m_conTime;//时间等待条件锁
 	std::thread * m_pPlayThread;

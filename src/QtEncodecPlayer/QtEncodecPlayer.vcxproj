@@ -134,6 +134,7 @@ copy "$(ProjectDir)zh.qm" "$(TargetDir)translate\zh.qm";</Command>
     <ClCompile Include="EncodecThreader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="QtEncodecPlayer.cpp" />
+    <ClCompile Include="StdEvent.cpp" />
     <ClCompile Include="VABuffer.cpp" />
     <ClCompile Include="VALoop.cpp" />
   </ItemGroup>
@@ -146,6 +147,7 @@ copy "$(ProjectDir)zh.qm" "$(TargetDir)translate\zh.qm";</Command>
   <ItemGroup>
     <ClInclude Include="DecodecThreader.h" />
     <ClInclude Include="EncodecThreader.h" />
+    <ClInclude Include="StdEvent.h" />
     <ClInclude Include="VABuffer.h" />
     <ClInclude Include="VALoop.h" />
   </ItemGroup>

@@ -17,11 +17,13 @@ class QtEncodecPlayer : public QDialog
 public:
 	QtEncodecPlayer(QWidget *parent = Q_NULLPTR);
 	~QtEncodecPlayer();
+	void Release();
 protected:
 	void CreateCtrl();
 	void LayoutCtrl();
 	void InitialConnect();
 protected:
+	std::vector<EncodecThreader *> m_vecEncThreader;
 protected slots:
 	void OnBnClickedSrcScan();
 	void OnBnClickedDesScan();

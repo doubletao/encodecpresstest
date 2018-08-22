@@ -50,6 +50,17 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 
 QtEncodecPlayer::~QtEncodecPlayer()
 {
+	Release();
+}
+
+void QtEncodecPlayer::Release()
+{
+	for (auto it : m_vecEncThreader)
+	{
+		delete it;
+		it = nullptr;
+	}
+	m_vecEncThreader.clear();
 }
 
 void QtEncodecPlayer::CreateCtrl()
@@ -218,6 +229,9 @@ void QtEncodecPlayer::OnBnClickedDesScan()
 
 void QtEncodecPlayer::OnBnClickedCue()
 {
+	EncodecThreader * pEncTh = new EncodecThreader;
+	m_vecEncThreader.push_back(pEncTh);
+	pEncTh->Start();
 }
 
 void QtEncodecPlayer::OnBnClickedFirstFrame()

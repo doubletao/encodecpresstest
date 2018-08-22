@@ -11,6 +11,7 @@ private:
 	int m_nCursor;//当前读取游标
 	int m_nRemainData;//当前数据size
 	std::recursive_mutex m_lockData;//数据读写锁
+	bool m_bQiut;
 	std::mutex m_lockTime;//时间等待锁
 	std::condition_variable m_conTime;//时间等待条件锁
 public:

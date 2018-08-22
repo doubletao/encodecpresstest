@@ -44,6 +44,9 @@
     <ClCompile Include="EncodecThreader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StdEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="QtEncodecPlayer.h">
@@ -66,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EncodecThreader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StdEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -10,6 +10,7 @@ EncodecThreader::EncodecThreader()
 	, m_ecfactory(nullptr)
 	, m_pPlayThread(nullptr)
 	, m_bForbitLostFrame(false)
+	, m_bQiut(false)
 {
 	m_ecfactory = ecCodec_CreateCodecFactory();
 	m_vaLoop.Clear();
@@ -54,8 +55,19 @@ bool EncodecThreader::DoEncodec()
 		std::cv_status cvsts = m_conTime.wait_for(lockWait, std::chrono::milliseconds(nWait));
 		if (cvsts == std::cv_status::no_timeout)
 		{
-			//信号来了，退出
-			break;
+			//spurious wakeups
+			if (m_bQiut)
+			{
+				//信号来了，退出
+				break;
+			}
+			else
+			{
+#ifdef WIN32
+				//抓到了，纪念下
+				OutputDebugStringA("spurious wakeups\n");
+#endif
+			}
 		}
 		else
 		{
@@ -67,11 +79,15 @@ bool EncodecThreader::DoEncodec()
 				{
 					if (!m_pEncoder->PutVideoBuffer(vaTmp.GetVideoBuf(), false, &frameInfoTmp))
 					{
-						OutputDebugString(_T("m_pEncoder->PutVideoBuffer failed\n"));
+#ifdef WIN32
+						OutputDebugStringA("m_pEncoder->PutVideoBuffer failed\n");
+#endif
 					}
 					if (!m_pEncoder->PutAudioSamples(vaTmp.GetAudioBuf(), vaTmp.GetAudioSampleCount()))
 					{
-						OutputDebugString(_T("m_pEncoder->PutAudioSamples failed\n"));
+#ifdef WIN32
+						OutputDebugStringA("m_pEncoder->PutAudioSamples failed\n");
+#endif
 					}
 				}				
 			}
@@ -121,8 +137,19 @@ bool EncodecThreader::PutFrameBuffer(const SD_UINT8* pFrameBuf, SD_UINT32 dwVide
 			std::cv_status cvsts = m_conTime.wait_for(lockWait, std::chrono::milliseconds(5));
 			if (cvsts == std::cv_status::no_timeout)
 			{
-				//信号来了，退出
-				break;
+				//spurious wakeups
+				if (m_bQiut)
+				{
+					//信号来了，退出
+					break;
+				}
+				else
+				{
+#ifdef WIN32
+					//抓到了，纪念下
+					OutputDebugStringA("spurious wakeups\n");
+#endif
+				}
 			}
 		}
 	} while (m_bForbitLostFrame);
@@ -132,12 +159,20 @@ bool EncodecThreader::PutFrameBuffer(const SD_UINT8* pFrameBuf, SD_UINT32 dwVide
 bool EncodecThreader::Start()
 {
 	Stop();
+	{
+		std::unique_lock<std::mutex> lockWait(m_lockTime);
+		m_bQiut = false;
+	}
 	m_pPlayThread = new std::thread(&ThreadEncodec, this);
 	return true;
 }
 
 bool EncodecThreader::Stop()
 {
+	{
+		std::unique_lock<std::mutex> lockWait(m_lockTime);
+		m_bQiut = true;
+	}
 	m_conTime.notify_all();
 	if (m_pPlayThread)
 	{

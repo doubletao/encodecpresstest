@@ -10,6 +10,7 @@ CAudioBufferLoop::CAudioBufferLoop()
 	, m_nBufSize(0)
 	, m_nCursor(0)
 	, m_nRemainData(0)
+	, m_bQiut(false)
 {
 }
 
@@ -45,6 +46,10 @@ void CAudioBufferLoop::Reset(int nBufSize)
 void CAudioBufferLoop::Release()
 {
 	Lock();
+	{
+		std::unique_lock<std::mutex> lockWait(m_lockTime);
+		m_bQiut = true;
+	}
 	m_conTime.notify_all();//退出前释放所有等待
 	if (m_pBuffer)
 	{
@@ -139,7 +144,7 @@ bool CAudioBufferLoop::Pop(char * pBuf, int nSize)
 
 bool CAudioBufferLoop::WaitPop(char * pBuf, int nSize, unsigned long nTimeup)
 {
-	if (!Pop(pBuf, nSize))
+	while (!Pop(pBuf, nSize))
 	{
 		std::unique_lock<std::mutex> lockWait(m_lockTime);
 		std::cv_status cvsts = m_conTime.wait_for(lockWait, std::chrono::milliseconds(nTimeup));
@@ -156,8 +161,10 @@ bool CAudioBufferLoop::WaitPop(char * pBuf, int nSize, unsigned long nTimeup)
 #ifdef WIN32
 			OutputDebugStringA("WaitPop no_timeout\r\n");
 #endif
-			//等到了信号，再试一次就返回
-			return Pop(pBuf, nSize);
+			if (m_bQiut)
+			{
+				return false;
+			}
 		}
 	}
 	return true;
