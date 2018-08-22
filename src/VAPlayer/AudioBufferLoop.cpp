@@ -65,17 +65,17 @@ void CAudioBufferLoop::Push(char * pBuf, int nSize)
 	{
 		//每次有push的时候，
 		m_conTime.notify_one();
-		//当push量大于了缓冲区大小，则重新申请内存
+		//当push量大于了缓冲区大小，则重新申请内存，此时，旧数据被丢弃
 		if (nSize > m_nBufSize)
 		{
-			int nNewSize = (nSize / BUFFER_GROWTH + 1) * BUFFER_GROWTH;
+			//预留空间是所需空间的2倍多一点
+			int nNewSize = (nSize / BUFFER_GROWTH + 1) * 2 * BUFFER_GROWTH;
 			assert(nNewSize > nSize - 1);
 			char  * pNewBuf = new char[nNewSize];
 			assert(pNewBuf);
-			//拷贝原数据
-			Pop(pNewBuf, m_nRemainData);
 			m_nCursor = 0;
 			m_nBufSize = nNewSize;
+			m_nRemainData = 0;
 			delete[] m_pBuffer;
 			m_pBuffer = pNewBuf;
 			//拷贝新数据
@@ -117,19 +117,19 @@ bool CAudioBufferLoop::Pop(char * pBuf, int nSize)
 			//如果从游标到缓冲区末尾数据不够，则先往里填，剩下的从开头往里填
 			if (nSize > m_nBufSize - m_nCursor)
 			{
-				memcpy(pBuf, m_pBuffer + m_nCursor, m_nBufSize - m_nCursor);
+				int nCpy = m_nBufSize - m_nCursor;
+				memcpy(pBuf, m_pBuffer + m_nCursor, nCpy);
 				m_nCursor = 0;
-				m_nRemainData = m_nRemainData - (m_nBufSize - m_nCursor);
-				memcpy(pBuf + m_nBufSize - m_nCursor, m_pBuffer, nSize - (m_nBufSize - m_nCursor));
-				m_nCursor = nSize - (m_nBufSize - m_nCursor);
-				m_nRemainData = m_nRemainData - (nSize - (m_nBufSize - m_nCursor));
+				memcpy(pBuf + nCpy, m_pBuffer, nSize - nCpy);
+				m_nCursor = nSize - nCpy;
 			}
 			//如果游标位置能放下，直接往里填
 			else
 			{
 				memcpy(pBuf, m_pBuffer + m_nCursor, nSize);
-				m_nRemainData = m_nRemainData - nSize;
+				m_nCursor += nSize;
 			}
+			m_nRemainData = m_nRemainData - nSize;
 			bRet = true;
 		}
 	}

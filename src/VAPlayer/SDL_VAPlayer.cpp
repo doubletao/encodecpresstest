@@ -160,6 +160,7 @@ bool SDL_VAPlayer::CreatePayer(int nWndX, int nWndY, int nWndWidth, int nWndHeig
 	m_nChannelCount = nChannelCount;
 	m_nSamplePerCall = nSamplePerCall;
 
+	Lock();
 	int nRet = 0;
 	nRet |= SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	nRet |= SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
@@ -224,6 +225,7 @@ bool SDL_VAPlayer::CreatePayer(int nWndX, int nWndY, int nWndWidth, int nWndHeig
 			printf("SDL: could not create window - exiting:%s\n", SDL_GetError());
 		}
 	}
+	Unlock();
 
 	return bRet;
 }
@@ -434,6 +436,7 @@ bool SDL_VAPlayer::ReleasePlayer()
 		delete[] m_pAudioBuffer;
 		m_pAudioBuffer = nullptr;
 	}
+	SDL_CloseAudio();
 	m_hWnd = nullptr;
 	return true;
 }
