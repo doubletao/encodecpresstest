@@ -19,8 +19,14 @@ EncodecThreader::EncodecThreader()
 EncodecThreader::~EncodecThreader()
 {
 	Stop();
-	m_ecfactory->DeleteProtocolEncoder(m_pEncoder);
-	ecCodec_ReleaseCodecFactory(m_ecfactory);
+	if (m_pEncoder)
+	{
+		m_ecfactory->DeleteProtocolEncoder(m_pEncoder);
+	}
+	if (m_ecfactory)
+	{
+		ecCodec_ReleaseCodecFactory(m_ecfactory);
+	}
 }
 
 EncodecThreader::EncodecThreader(const EncodecThreader &)
@@ -57,14 +63,17 @@ bool EncodecThreader::DoEncodec()
 			if (m_vaLoop.Pop(vaTmp))
 			{
 				frameInfoTmp.iSize = vaTmp.GetVideoBufSize();// 帧数据大小		4---16
-				if (!m_pEncoder->PutVideoBuffer(vaTmp.GetVideoBuf(), false, &frameInfoTmp))
+				if (m_pEncoder)
 				{
-					OutputDebugString(_T("m_pEncoder->PutVideoBuffer failed\n"));
-				}
-				if (!m_pEncoder->PutAudioSamples(vaTmp.GetAudioBuf(), vaTmp.GetAudioSampleCount()))
-				{
-					OutputDebugString(_T("m_pEncoder->PutAudioSamples failed\n"));
-				}
+					if (!m_pEncoder->PutVideoBuffer(vaTmp.GetVideoBuf(), false, &frameInfoTmp))
+					{
+						OutputDebugString(_T("m_pEncoder->PutVideoBuffer failed\n"));
+					}
+					if (!m_pEncoder->PutAudioSamples(vaTmp.GetAudioBuf(), vaTmp.GetAudioSampleCount()))
+					{
+						OutputDebugString(_T("m_pEncoder->PutAudioSamples failed\n"));
+					}
+				}				
 			}
 		}
 	}
