@@ -65,8 +65,8 @@ void CAudioBufferLoop::Push(char * pBuf, int nSize)
 	{
 		//每次有push的时候，
 		m_conTime.notify_one();
-		//当push量大于了缓冲区大小减去当前remain大小，则重新申请内存
-		if (nSize > m_nBufSize - m_nRemainData)
+		//当push量大于了缓冲区大小，则重新申请内存
+		if (nSize > m_nBufSize)
 		{
 			int nNewSize = (nSize / BUFFER_GROWTH + 1) * BUFFER_GROWTH;
 			assert(nNewSize > nSize - 1);
