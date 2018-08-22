@@ -719,7 +719,7 @@ void CEncodecPressTestDlg::DoDisplay()
 			if (nUsedCount < nRepeatTime - 1)
 			{
 				//每40ms从队列里拿一帧出来
-				time_t nWait = 39 - (clock() - tmLastPush);
+				time_t nWait = 40 - (clock() - tmLastPush);
 				if (nWait < 1)
 				{
 					nWait = 1;

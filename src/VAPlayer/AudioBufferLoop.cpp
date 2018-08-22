@@ -145,11 +145,17 @@ bool CAudioBufferLoop::WaitPop(char * pBuf, int nSize, unsigned long nTimeup)
 		std::cv_status cvsts = m_conTime.wait_for(lockWait, std::chrono::milliseconds(nTimeup));
 		if (cvsts == std::cv_status::timeout)
 		{
+#ifdef WIN32
+			OutputDebugStringA("WaitPop timeout\r\n");
+#endif
 			//时间到，退出
 			return false;
 		}
 		else if (cvsts == std::cv_status::no_timeout)
 		{
+#ifdef WIN32
+			OutputDebugStringA("WaitPop no_timeout\r\n");
+#endif
 			//等到了信号，再试一次就返回
 			return Pop(pBuf, nSize);
 		}
