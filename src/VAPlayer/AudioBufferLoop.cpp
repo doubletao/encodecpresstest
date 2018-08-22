@@ -45,6 +45,7 @@ void CAudioBufferLoop::Reset(int nBufSize)
 void CAudioBufferLoop::Release()
 {
 	Lock();
+	m_conTime.notify_all();//退出前释放所有等待
 	if (m_pBuffer)
 	{
 		delete[] m_pBuffer;
@@ -62,6 +63,7 @@ void CAudioBufferLoop::Push(char * pBuf, int nSize)
 	//nSize > 0才有得聊
 	if (nSize > 0)
 	{
+		//每次有push的时候，
 		m_conTime.notify_one();
 		//当push量大于了缓冲区大小减去当前remain大小，则重新申请内存
 		if (nSize > m_nBufSize - m_nRemainData)
@@ -137,7 +139,7 @@ bool CAudioBufferLoop::Pop(char * pBuf, int nSize)
 
 bool CAudioBufferLoop::WaitPop(char * pBuf, int nSize, unsigned long nTimeup)
 {
-	while (!Pop(pBuf, nSize))
+	if (!Pop(pBuf, nSize))
 	{
 		std::unique_lock<std::mutex> lockWait(m_lockTime);
 		std::cv_status cvsts = m_conTime.wait_for(lockWait, std::chrono::milliseconds(nTimeup));
@@ -145,6 +147,11 @@ bool CAudioBufferLoop::WaitPop(char * pBuf, int nSize, unsigned long nTimeup)
 		{
 			//时间到，退出
 			return false;
+		}
+		else if (cvsts == std::cv_status::no_timeout)
+		{
+			//等到了信号，再试一次就返回
+			return Pop(pBuf, nSize);
 		}
 	}
 	return true;
