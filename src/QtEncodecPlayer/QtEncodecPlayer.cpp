@@ -1,5 +1,6 @@
 #include "QtEncodecPlayer.h"
 #include <QFileDialog>
+#include <QMessageBox>
 
 QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	: QDialog(parent)
@@ -215,6 +216,16 @@ void QtEncodecPlayer::OnBnClickedSrcScan()
 	}
 }
 
+bool QtEncodecPlayer::CallbackOneFrameDecodecedFunc(unsigned long long nCurFrame, void * pData, size_t nVideoBufSize, size_t nAudioSampleCount)
+{
+	return false;
+}
+
+bool QtEncodecPlayer::CallbackInfoMsgFunc(std::string strErr, void * pData)
+{
+	return false;
+}
+
 void QtEncodecPlayer::OnBnClickedDesScan()
 {
 	QString strFilePath = QFileDialog::getExistingDirectory(this, tr("IDS_ENCODEC_PLAYER_DESTINY_FILE"), "./");
@@ -229,9 +240,64 @@ void QtEncodecPlayer::OnBnClickedDesScan()
 
 void QtEncodecPlayer::OnBnClickedCue()
 {
-	EncodecThreader * pEncTh = new EncodecThreader;
-	m_vecEncThreader.push_back(pEncTh);
-	pEncTh->Start();
+	QString strSrc = "";
+	if (m_pCombPlayerSource)
+	{
+		strSrc = m_pCombPlayerSource->currentText();
+		if (!strSrc.isEmpty())
+		{
+			m_DecThreader.SetStop();
+			m_DecThreader.SetDecCallbackFunc(CallbackOneFrameDecodecedFunc, this);
+			m_DecThreader.SetInfoMsgCallbackFunc(CallbackInfoMsgFunc, this);
+			SDStreamMediaInfo mediaInfo;
+			if (m_DecThreader.SetInputSource(strSrc.toStdString(), mediaInfo))
+			{
+				SDVideoFrameImageBufInfo imageBufInfo;
+				imageBufInfo.dwXSize = 1920;
+				imageBufInfo.dwYSize = 1080;
+				if (m_pPlayerWidget)
+				{
+					imageBufInfo.dwXSize = m_pPlayerWidget->width();
+					imageBufInfo.dwYSize = m_pPlayerWidget->height();
+				}
+				imageBufInfo.enumColorFormat = SDCOLORFORMAT_UYVY;
+				SDAudioMediaInfo audioSamplesBufInfo;
+				audioSamplesBufInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM;
+				audioSamplesBufInfo.dwBitsPerSample = 32;
+				audioSamplesBufInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
+				audioSamplesBufInfo.dwAvgBitsPerSec = audioSamplesBufInfo.dwSamplesPerSec * audioSamplesBufInfo.dwBitsPerSample * audioSamplesBufInfo.dwChannels;
+				audioSamplesBufInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
+				audioSamplesBufInfo.dwSamplesPerSec = 48000;
+				audioSamplesBufInfo.dwChannels = 2;
+				if (m_DecThreader.SetOutputParam(imageBufInfo, audioSamplesBufInfo))
+				{
+					m_vaBuf.Reset(m_DecThreader.GetVideoBufSize(), m_DecThreader.GetSamplePerFrame());
+					m_vaLoop.Reset(10, m_DecThreader.GetVideoBufSize(), m_DecThreader.GetSamplePerFrame());
+					if (m_DecThreader.SetVideoBuf(m_vaBuf.GetVideoBuf(), m_vaBuf.GetVideoBufSize()))
+					{
+						if (m_DecThreader.SetAudioBuf(m_vaBuf.GetAudioBuf(), m_vaBuf.GetAudioSampleCount() * audioSamplesBufInfo.dwBitsPerSample / 8))
+						{
+							QMessageBox box;
+							box.setText("cued succ");
+							box.exec();
+						}
+					}
+				}
+				else
+				{
+					QMessageBox box;
+					box.setText("SetOutputParam failed");
+					box.exec();
+				}
+			}
+			else
+			{
+				QMessageBox box;
+				box.setText("cue failed");
+				box.exec();
+			}
+		}
+	}
 }
 
 void QtEncodecPlayer::OnBnClickedFirstFrame()
@@ -246,7 +312,14 @@ void QtEncodecPlayer::OnBnClickedPlayPause()
 {
 	if (m_pBtnPlayPause)
 	{
-		m_pBtnPlayPause->setText(tr("IDS_ENCODEC_PLAYER_PLCTRL_PAUSE"));
+		if (!m_DecThreader.IsPause())
+		{
+			m_pBtnPlayPause->setText(tr("IDS_ENCODEC_PLAYER_PLCTRL_PLAY"));
+		}
+		else
+		{
+			m_pBtnPlayPause->setText(tr("IDS_ENCODEC_PLAYER_PLCTRL_PAUSE"));
+		}
 	}
 }
 

@@ -7,11 +7,11 @@ static const int SAMPLE_SIZE = 4;
 
 EncodecThreader::EncodecThreader()
 	: m_pEncoder(nullptr)
-	, m_ecfactory(nullptr)
+	, m_ecFactory(nullptr)
 	, m_pPlayThread(nullptr)
 	, m_bForbitLostFrame(false)
 {
-	m_ecfactory = ecCodec_CreateCodecFactory();
+	m_ecFactory = ecCodec_CreateCodecFactory();
 	m_vaLoop.Clear();
 }
 
@@ -21,16 +21,12 @@ EncodecThreader::~EncodecThreader()
 	Stop();
 	if (m_pEncoder)
 	{
-		m_ecfactory->DeleteProtocolEncoder(m_pEncoder);
+		m_ecFactory->DeleteProtocolEncoder(m_pEncoder);
 	}
-	if (m_ecfactory)
+	if (m_ecFactory)
 	{
-		ecCodec_ReleaseCodecFactory(m_ecfactory);
+		ecCodec_ReleaseCodecFactory(m_ecFactory);
 	}
-}
-
-EncodecThreader::EncodecThreader(const EncodecThreader &)
-{
 }
 
 void EncodecThreader::ThreadEncodec(EncodecThreader * pThis)
@@ -86,11 +82,11 @@ bool EncodecThreader::SetOutputVAParam(const SDStreamMediaInfo & streamInfo, con
 	Stop();
 	if (streamInfo.sVideoMediaInfo.enumVideoType == SDVIDEOTYPE_H264_INTEL)
 	{
-		m_pEncoder = m_ecfactory->GetProtocolEncoder(EMCodec_Intel);
+		m_pEncoder = m_ecFactory->GetProtocolEncoder(EMCodec_Intel);
 	}
 	else
 	{
-		m_pEncoder = m_ecfactory->GetProtocolEncoder(EMCodec_FFmpeg);
+		m_pEncoder = m_ecFactory->GetProtocolEncoder(EMCodec_FFmpeg);
 	}
 	return m_pEncoder->SetSinkFile(&streamInfo, cstrFilePath.c_str());
 }

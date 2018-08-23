@@ -10,6 +10,7 @@
 #include <QPushButton>
 #include <QCheckBox>
 #include "EncodecThreader.h"
+#include "DecodecThreader.h"
 
 class QtEncodecPlayer : public QDialog
 {
@@ -24,6 +25,12 @@ protected:
 	void InitialConnect();
 protected:
 	std::vector<EncodecThreader *> m_vecEncThreader;
+	DecodecThreader m_DecThreader;
+	VABuffer m_vaBuf;
+	VALoop m_vaLoop;//²¥·ÅÂß¼­buffer
+protected:
+	static bool __stdcall CallbackOneFrameDecodecedFunc(unsigned long long nCurFrame, void * pData, size_t nVideoBufSize, size_t nAudioSampleCount);
+	static bool __stdcall CallbackInfoMsgFunc(std::string strErr, void * pData);
 protected slots:
 	void OnBnClickedSrcScan();
 	void OnBnClickedDesScan();

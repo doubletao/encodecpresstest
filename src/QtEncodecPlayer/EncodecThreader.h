@@ -10,14 +10,13 @@ class EncodecThreader
 {
 private:
 	IecCodecProtocolEncoder * m_pEncoder;
-	IecCodecFactory * m_ecfactory;
+	IecCodecFactory * m_ecFactory;
 
 	VALoop m_vaLoop;
 	bool m_bForbitLostFrame;
 public:
 	EncodecThreader();
 	~EncodecThreader();
-	EncodecThreader(const EncodecThreader &);
 protected:
 	CStdEvent m_evtQuit;
 	std::thread * m_pPlayThread;

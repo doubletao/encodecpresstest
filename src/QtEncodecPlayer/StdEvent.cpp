@@ -1,8 +1,8 @@
 #include "StdEvent.h"
 
 CStdEvent::CStdEvent()
+	: m_bQiut(false)
 {
-	m_bQiut = false;
 }
 
 CStdEvent::~CStdEvent()
