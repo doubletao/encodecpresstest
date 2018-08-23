@@ -302,22 +302,26 @@ void QtEncodecPlayer::OnBnClickedCue()
 
 void QtEncodecPlayer::OnBnClickedFirstFrame()
 {
+	m_DecThreader.SetFirstFrame();
 }
 
 void QtEncodecPlayer::OnBnClickedPreFrame()
 {
+	m_DecThreader.SetPreFrame();
 }
 
 void QtEncodecPlayer::OnBnClickedPlayPause()
 {
 	if (m_pBtnPlayPause)
 	{
-		if (!m_DecThreader.IsPause())
+		if (m_DecThreader.IsPlaying())
 		{
+			m_DecThreader.SetPlayPause(false);
 			m_pBtnPlayPause->setText(tr("IDS_ENCODEC_PLAYER_PLCTRL_PLAY"));
 		}
 		else
 		{
+			m_DecThreader.SetPlayPause(true);
 			m_pBtnPlayPause->setText(tr("IDS_ENCODEC_PLAYER_PLCTRL_PAUSE"));
 		}
 	}
@@ -325,12 +329,15 @@ void QtEncodecPlayer::OnBnClickedPlayPause()
 
 void QtEncodecPlayer::OnBnClickedNextFrame()
 {
+	m_DecThreader.SetNextFrame();
 }
 
 void QtEncodecPlayer::OnBnClickedLastFrame()
 {
+	m_DecThreader.SetNextFrame();
 }
 
 void QtEncodecPlayer::OnBnClickedStop()
 {
+	m_DecThreader.SetStop();
 }

@@ -89,7 +89,7 @@ bool DecodecThreader::DoDecodec()
 			{
 				SD_UINT32 nFrameLength = m_srcMediaInfoEx.dwVideoFrameNum;
 				m_nLastFrame = m_nCurFrame + 1;//刚开始last不能和cur一致，否则不解码了
-				while (nFrameLength > 0)
+				while (true)
 				{
 					if (m_evtQuit.Wait(0))
 					{
