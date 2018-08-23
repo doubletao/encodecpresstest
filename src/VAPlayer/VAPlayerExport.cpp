@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "VAPlayerExport.h"
 #include "SDL_VAPlayer.h"
 

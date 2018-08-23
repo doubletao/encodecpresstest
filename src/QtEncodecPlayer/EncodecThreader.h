@@ -4,6 +4,7 @@
 #include <queue>
 #include <vector>
 #include <thread>
+#include "StdEvent.h"
 
 class EncodecThreader
 {
@@ -18,9 +19,7 @@ public:
 	~EncodecThreader();
 	EncodecThreader(const EncodecThreader &);
 protected:
-	bool m_bQiut;//退出标记
-	std::mutex m_lockTime;//时间等待锁
-	std::condition_variable m_conTime;//时间等待条件锁
+	CStdEvent m_evtQuit;
 	std::thread * m_pPlayThread;
 
 	static void ThreadEncodec(EncodecThreader * pThis);

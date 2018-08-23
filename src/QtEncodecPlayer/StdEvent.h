@@ -1,7 +1,6 @@
 #pragma once
 #include <thread>
 #include <mutex>
-#include <vector>
 
 class CStdEvent
 {
@@ -17,4 +16,3 @@ public:
 	void SetEvent();//注意，这个set只能释放一次信号
 	bool Wait(unsigned int nWait = UINT32_MAX);//超时返回false，信号返回true
 };
-

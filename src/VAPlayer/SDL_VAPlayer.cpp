@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "SDL_VAPlayer.h"
 #include <assert.h>
 #pragma comment(lib, "SDL2\\lib\\SDL2.lib")

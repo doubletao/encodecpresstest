@@ -35,4 +35,3 @@ bool CStdEvent::Wait(unsigned int nWait)
 	}
 	return true;
 }
-

@@ -10,7 +10,6 @@ EncodecThreader::EncodecThreader()
 	, m_ecfactory(nullptr)
 	, m_pPlayThread(nullptr)
 	, m_bForbitLostFrame(false)
-	, m_bQiut(false)
 {
 	m_ecfactory = ecCodec_CreateCodecFactory();
 	m_vaLoop.Clear();
@@ -51,23 +50,9 @@ bool EncodecThreader::DoEncodec()
 	while (true)
 	{
 		int nWait = 3 - (clock() - tmClock);
-		std::unique_lock<std::mutex> lockWait(m_lockTime);
-		std::cv_status cvsts = m_conTime.wait_for(lockWait, std::chrono::milliseconds(nWait));
-		if (cvsts == std::cv_status::no_timeout)
+		if (m_evtQuit.Wait(nWait))
 		{
-			//spurious wakeups
-			if (m_bQiut)
-			{
-				//信号来了，退出
-				break;
-			}
-			else
-			{
-#ifdef WIN32
-				//抓到了，纪念下
-				OutputDebugStringA("spurious wakeups\n");
-#endif
-			}
+			break;
 		}
 		else
 		{
@@ -133,23 +118,9 @@ bool EncodecThreader::PutFrameBuffer(const SD_UINT8* pFrameBuf, SD_UINT32 dwVide
 		}
 		else
 		{
-			std::unique_lock<std::mutex> lockWait(m_lockTime);
-			std::cv_status cvsts = m_conTime.wait_for(lockWait, std::chrono::milliseconds(5));
-			if (cvsts == std::cv_status::no_timeout)
+			if (m_evtQuit.Wait(5))
 			{
-				//spurious wakeups
-				if (m_bQiut)
-				{
-					//信号来了，退出
-					break;
-				}
-				else
-				{
-#ifdef WIN32
-					//抓到了，纪念下
-					OutputDebugStringA("spurious wakeups\n");
-#endif
-				}
+				break;
 			}
 		}
 	} while (m_bForbitLostFrame);
@@ -159,21 +130,14 @@ bool EncodecThreader::PutFrameBuffer(const SD_UINT8* pFrameBuf, SD_UINT32 dwVide
 bool EncodecThreader::Start()
 {
 	Stop();
-	{
-		std::unique_lock<std::mutex> lockWait(m_lockTime);
-		m_bQiut = false;
-	}
+	m_evtQuit.ResetEvent();
 	m_pPlayThread = new std::thread(&ThreadEncodec, this);
 	return true;
 }
 
 bool EncodecThreader::Stop()
 {
-	{
-		std::unique_lock<std::mutex> lockWait(m_lockTime);
-		m_bQiut = true;
-	}
-	m_conTime.notify_all();
+	m_evtQuit.SetEvent();
 	if (m_pPlayThread)
 	{
 		m_pPlayThread->join();
