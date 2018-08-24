@@ -38,6 +38,8 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	, m_pBtnNextFrame(nullptr)
 	, m_pBtnLastFrame(nullptr)
 	, m_pBtnStop(nullptr)
+	, m_timerDisplay(nullptr)
+	, m_pPlayer(nullptr)
 {
 	resize(1440, 900);
 	Qt::WindowFlags flags = Qt::Dialog;
@@ -47,6 +49,7 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	CreateCtrl();
 	LayoutCtrl();
 	InitialConnect();
+	m_timerDisplay->start(40);
 }
 
 QtEncodecPlayer::~QtEncodecPlayer()
@@ -63,10 +66,18 @@ void QtEncodecPlayer::Release()
 		it = nullptr;
 	}
 	m_vecEncThreader.clear();
+	if (m_pPlayer)
+	{
+		ReleasePlayer(m_pPlayer);
+		m_pPlayer = nullptr;
+	}
 }
 
 void QtEncodecPlayer::CreateCtrl()
 {
+	m_timerDisplay = new QTimer(this);
+	m_timerDisplay->setTimerType(Qt::PreciseTimer);//毫秒级定时器
+
 	m_pPlayerWidget = new QWidget(this);
 	m_pPlayerWidget->setMinimumSize(400, 300);
 	m_pTopRightWidget = new QWidget(this);
@@ -129,6 +140,9 @@ void QtEncodecPlayer::CreateCtrl()
 	m_pMiddleHLayout = new QHBoxLayout(m_pMiddleHWidget);
 	m_pInputOutputSettingHLayout = new QHBoxLayout(m_pInputOutputSettingWidget);
 	m_pOtherSettingHLayout = new QHBoxLayout(m_pOtherSettingWidget);
+
+	m_pPlayer = CreateVAPlayer(EM_VAPLayer_SDL);
+	m_pPlayer->CreatePayer(0, 0, 400, 300, EmVAPlayerColorFmt_UYVY, 1920, 1080, true, EmVAPlayerSampleFmt_S16SYS, 48000, 2, 1920);
 }
 
 void QtEncodecPlayer::LayoutCtrl()
@@ -193,6 +207,7 @@ void QtEncodecPlayer::InitialConnect()
 	connect(m_pBtnStop, SIGNAL(clicked()), this, SLOT(OnBnClickedStop()));
 	connect(this, SIGNAL(EmitInfoMsg(const char *)), this, SLOT(OnInfoMsgArrive(const char *)));
 	connect(this, SIGNAL(EmitInfoMsg()), this, SLOT(OnInfoMsgArrive()));
+	connect(m_timerDisplay, SIGNAL(timeout()), this, SLOT(DisplayBuf()));
 }
 
 void QtEncodecPlayer::DisConnect()
@@ -255,15 +270,22 @@ void QtEncodecPlayer::PushMsg(std::string strMsg)
 
 bool QtEncodecPlayer::PushBuf()
 {
-	if (m_vaLoop.Push(m_vaBuf))
+	while (!m_vaLoop.Push(m_vaBuf))
 	{
-
-	}
-	else
-	{
-		Sleep(40);
+		//push不进去就等着，非得push进去了才算
+		Sleep(5);
 	}
 	return true;
+}
+
+void QtEncodecPlayer::DisplayBuf()
+{
+	if (m_vaLoop.Pop(m_vaBufDisp))
+	{
+		//送入播放器
+		m_pPlayer->PushFrame(m_vaBufDisp.GetVideoBuf(), 3840);
+		m_pPlayer->PushAudioSample(m_vaBufDisp.GetAudioBuf(), m_vaBufDisp.GetAudioSampleCount() * 2);
+	}
 }
 
 void QtEncodecPlayer::OnBnClickedDesScan()

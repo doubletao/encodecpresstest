@@ -13,6 +13,8 @@
 #include "DecodecThreader.h"
 #include <queue>
 #include <mutex>
+#include <QTimer>
+#include "VAPlayerExport.h"
 
 class QtEncodecPlayer : public QDialog
 {
@@ -30,9 +32,12 @@ protected:
 	std::vector<EncodecThreader *> m_vecEncThreader;
 	DecodecThreader m_DecThreader;
 	VABuffer m_vaBuf;
+	VABuffer m_vaBufDisp;
 	VALoop m_vaLoop;//播放逻辑buffer
 	std::mutex m_lockMsgQueue;
 	std::queue<std::string> m_queMsg;//用于显示信息的消息队列
+	QTimer * m_timerDisplay;
+	IVAPlayer * m_pPlayer;
 protected:
 	static bool __stdcall CallbackOneFrameDecodecedFunc(unsigned long long nCurFrame, void * pData, size_t nVideoBufSize, size_t nAudioSampleCount);
 	static bool __stdcall CallbackInfoMsgFunc(std::string strErr, void * pData);
@@ -53,6 +58,7 @@ protected slots:
 	void OnBnClickedStop();
 	void OnInfoMsgArrive();
 	void OnInfoMsgArrive(const char * szInfoMsg);
+	void DisplayBuf();
 protected:
 	//Layout
 	QVBoxLayout * m_pWholeVLyaout;//全局的一个纵向layout

@@ -95,7 +95,7 @@ bool DecodecThreader::DoDecodec()
 				m_nLastAudioPos = 0;
 				SD_UINT32 nFrameLength = m_srcMediaInfoEx.dwVideoFrameNum;
 				char szOutput[256];
-				sprintf_s(szOutput, 256, "Info:clip length:%d audio:%d", nFrameLength);
+				sprintf_s(szOutput, 256, "Info:clip length:%d", nFrameLength);
 				EmitInfoMsg(szOutput);
 				m_nLastFrame = m_nCurFrame + 1;//刚开始last不能和cur一致，否则不解码了
 				while (true)

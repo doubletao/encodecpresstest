@@ -57,6 +57,9 @@
     <None Include="zh.ts">
       <Filter>Translation Files</Filter>
     </None>
+    <None Include="translate.bat">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VABuffer.h">

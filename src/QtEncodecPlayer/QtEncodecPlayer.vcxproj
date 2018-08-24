@@ -142,6 +142,7 @@ copy "$(ProjectDir)zh.qm" "$(TargetDir)translate\zh.qm";</Command>
     <QtMoc Include="QtEncodecPlayer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="translate.bat" />
     <None Include="zh.ts" />
   </ItemGroup>
   <ItemGroup>
