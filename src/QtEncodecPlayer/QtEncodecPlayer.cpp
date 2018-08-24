@@ -227,7 +227,12 @@ void QtEncodecPlayer::OnBnClickedSrcScan()
 
 bool QtEncodecPlayer::CallbackOneFrameDecodecedFunc(unsigned long long nCurFrame, void * pData, size_t nVideoBufSize, size_t nAudioSampleCount)
 {
-	return false;
+	QtEncodecPlayer * pThis = (QtEncodecPlayer *)pData;
+	if (pThis)
+	{
+		pThis->PushBuf();
+	}
+	return true;
 }
 
 bool QtEncodecPlayer::CallbackInfoMsgFunc(std::string strErr, void * pData)
@@ -246,6 +251,19 @@ void QtEncodecPlayer::PushMsg(std::string strMsg)
 	m_queMsg.push(strMsg);
 	m_lockMsgQueue.unlock();
 	emit EmitInfoMsg();
+}
+
+bool QtEncodecPlayer::PushBuf()
+{
+	if (m_vaLoop.Push(m_vaBuf))
+	{
+
+	}
+	else
+	{
+		Sleep(40);
+	}
+	return true;
 }
 
 void QtEncodecPlayer::OnBnClickedDesScan()
