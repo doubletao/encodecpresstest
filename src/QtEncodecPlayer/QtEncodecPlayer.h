@@ -25,6 +25,7 @@ protected:
 	void CreateCtrl();
 	void LayoutCtrl();
 	void InitialConnect();
+	void DisConnect();
 protected:
 	std::vector<EncodecThreader *> m_vecEncThreader;
 	DecodecThreader m_DecThreader;

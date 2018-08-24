@@ -51,6 +51,7 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 
 QtEncodecPlayer::~QtEncodecPlayer()
 {
+	DisConnect();
 	Release();
 }
 
@@ -192,6 +193,12 @@ void QtEncodecPlayer::InitialConnect()
 	connect(m_pBtnStop, SIGNAL(clicked()), this, SLOT(OnBnClickedStop()));
 	connect(this, SIGNAL(EmitInfoMsg(const char *)), this, SLOT(OnInfoMsgArrive(const char *)));
 	connect(this, SIGNAL(EmitInfoMsg()), this, SLOT(OnInfoMsgArrive()));
+}
+
+void QtEncodecPlayer::DisConnect()
+{
+	disconnect(this, SIGNAL(EmitInfoMsg(const char *)), 0, 0);
+	disconnect(this, SIGNAL(EmitInfoMsg()), 0, 0);
 }
 
 void QtEncodecPlayer::OnBnClickedSrcScan()

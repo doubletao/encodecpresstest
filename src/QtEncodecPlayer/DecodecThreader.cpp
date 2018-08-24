@@ -90,6 +90,9 @@ bool DecodecThreader::DoDecodec()
 			//开始前先获取长度，获取成功了才继续
 			if (m_ecDecoder->GetFileGlobalMediaInfo(&m_srcMediaInfoEx))
 			{
+				//刚启动，pos都归零
+				m_nCurFrame = 0;
+				m_nLastAudioPos = 0;
 				SD_UINT32 nFrameLength = m_srcMediaInfoEx.dwVideoFrameNum;
 				char szOutput[256];
 				sprintf_s(szOutput, 256, "Info:clip length:%d audio:%d", nFrameLength);
