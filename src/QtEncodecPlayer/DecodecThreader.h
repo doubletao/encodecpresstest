@@ -21,6 +21,7 @@ protected:
 	std::atomic_ullong m_nCurFrame;//当前解码帧
 	unsigned long long m_nLastFrame;//当前解码帧
 	uint32_t m_nLastAudioPos;//当前解码音频sample位置
+	size_t m_nDecErrCount;//连续解码失败到一定次数，则退出
 	unsigned int m_nSamplePerFrame;
 	std::atomic_bool m_bLockPts;//强制pts对齐
 	std::atomic_bool m_bLoop;//循环播放

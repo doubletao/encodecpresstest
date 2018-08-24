@@ -11,6 +11,8 @@
 #include <QCheckBox>
 #include "EncodecThreader.h"
 #include "DecodecThreader.h"
+#include <queue>
+#include <mutex>
 
 class QtEncodecPlayer : public QDialog
 {
@@ -28,9 +30,15 @@ protected:
 	DecodecThreader m_DecThreader;
 	VABuffer m_vaBuf;
 	VALoop m_vaLoop;//播放逻辑buffer
+	std::mutex m_lockMsgQueue;
+	std::queue<std::string> m_queMsg;//用于显示信息的消息队列
 protected:
 	static bool __stdcall CallbackOneFrameDecodecedFunc(unsigned long long nCurFrame, void * pData, size_t nVideoBufSize, size_t nAudioSampleCount);
 	static bool __stdcall CallbackInfoMsgFunc(std::string strErr, void * pData);
+	void PushMsg(std::string strMsg);
+signals:
+	void EmitInfoMsg(const char * szInfoMsg);
+	void EmitInfoMsg();
 protected slots:
 	void OnBnClickedSrcScan();
 	void OnBnClickedDesScan();
@@ -41,6 +49,8 @@ protected slots:
 	void OnBnClickedNextFrame();
 	void OnBnClickedLastFrame();
 	void OnBnClickedStop();
+	void OnInfoMsgArrive();
+	void OnInfoMsgArrive(const char * szInfoMsg);
 protected:
 	//Layout
 	QVBoxLayout * m_pWholeVLyaout;//全局的一个纵向layout

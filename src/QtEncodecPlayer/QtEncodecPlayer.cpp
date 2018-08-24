@@ -190,6 +190,8 @@ void QtEncodecPlayer::InitialConnect()
 	connect(m_pBtnNextFrame, SIGNAL(clicked()), this, SLOT(OnBnClickedNextFrame()));
 	connect(m_pBtnLastFrame, SIGNAL(clicked()), this, SLOT(OnBnClickedLastFrame()));
 	connect(m_pBtnStop, SIGNAL(clicked()), this, SLOT(OnBnClickedStop()));
+	connect(this, SIGNAL(EmitInfoMsg(const char *)), this, SLOT(OnInfoMsgArrive(const char *)));
+	connect(this, SIGNAL(EmitInfoMsg()), this, SLOT(OnInfoMsgArrive()));
 }
 
 void QtEncodecPlayer::OnBnClickedSrcScan()
@@ -223,7 +225,20 @@ bool QtEncodecPlayer::CallbackOneFrameDecodecedFunc(unsigned long long nCurFrame
 
 bool QtEncodecPlayer::CallbackInfoMsgFunc(std::string strErr, void * pData)
 {
-	return false;
+	QtEncodecPlayer * pThis = (QtEncodecPlayer *)pData;
+	if (pThis)
+	{
+		pThis->PushMsg(strErr);
+	}
+	return true;
+}
+
+void QtEncodecPlayer::PushMsg(std::string strMsg)
+{
+	m_lockMsgQueue.lock();
+	m_queMsg.push(strMsg);
+	m_lockMsgQueue.unlock();
+	emit EmitInfoMsg();
 }
 
 void QtEncodecPlayer::OnBnClickedDesScan()
@@ -277,24 +292,18 @@ void QtEncodecPlayer::OnBnClickedCue()
 					{
 						if (m_DecThreader.SetAudioBuf(m_vaBuf.GetAudioBuf(), m_vaBuf.GetAudioSampleCount() * audioSamplesBufInfo.dwBitsPerSample / 8))
 						{
-							QMessageBox box;
-							box.setText("cued succ");
-							box.exec();
+							emit EmitInfoMsg("cued succ");
 						}
 					}
 				}
 				else
 				{
-					QMessageBox box;
-					box.setText("SetOutputParam failed");
-					box.exec();
+					emit EmitInfoMsg("SetOutputParam failed");
 				}
 			}
 			else
 			{
-				QMessageBox box;
-				box.setText("cue failed");
-				box.exec();
+				emit EmitInfoMsg("cue failed");
 			}
 		}
 	}
@@ -340,4 +349,29 @@ void QtEncodecPlayer::OnBnClickedLastFrame()
 void QtEncodecPlayer::OnBnClickedStop()
 {
 	m_DecThreader.SetStop();
+	if (m_pBtnPlayPause)
+	{
+		m_pBtnPlayPause->setText(tr("IDS_ENCODEC_PLAYER_PLCTRL_PLAY"));
+	}
+}
+
+void QtEncodecPlayer::OnInfoMsgArrive()
+{
+	std::string strMsg;
+	m_lockMsgQueue.lock();
+	if (!m_queMsg.empty())
+	{
+		strMsg = m_queMsg.front();
+		m_queMsg.pop();
+	}
+	m_lockMsgQueue.unlock();
+	OnInfoMsgArrive(strMsg.c_str());
+}
+
+void QtEncodecPlayer::OnInfoMsgArrive(const char * szInfoMsg)
+{
+	if (m_pEditInfo)
+	{
+		m_pEditInfo->append(szInfoMsg);
+	}
 }

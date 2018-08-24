@@ -9,6 +9,7 @@ DecodecThreader::DecodecThreader()
 	, m_nLastFrame(0)
 	, m_nLastAudioPos(0)
 	, m_nSamplePerFrame(2048)
+	, m_nDecErrCount(0)
 	, m_bLockPts(false)
 	, m_bLoop(false)
 	, m_bPause(false)
@@ -74,8 +75,10 @@ void DecodecThreader::ThreadDecodec(DecodecThreader * pThis)
 {
 	if (pThis)
 	{
+		pThis->EmitInfoMsg("Info:Decodec thread started");
 		pThis->DoDecodec();
-	}
+		pThis->EmitInfoMsg("Info:Decodec thread exited");
+	}	
 }
 
 bool DecodecThreader::DoDecodec()
@@ -88,6 +91,9 @@ bool DecodecThreader::DoDecodec()
 			if (m_ecDecoder->GetFileGlobalMediaInfo(&m_srcMediaInfoEx))
 			{
 				SD_UINT32 nFrameLength = m_srcMediaInfoEx.dwVideoFrameNum;
+				char szOutput[256];
+				sprintf_s(szOutput, 256, "Info:clip length:%d audio:%d", nFrameLength);
+				EmitInfoMsg(szOutput);
 				m_nLastFrame = m_nCurFrame + 1;//刚开始last不能和cur一致，否则不解码了
 				while (true)
 				{
@@ -124,8 +130,11 @@ bool DecodecThreader::DoDecodec()
 			m_evtQuit.SetEvent();
 		}
 	}
-	EmitInfoMsg("Err:unexpected param err");
-	return false;
+	else
+	{
+		EmitInfoMsg("Err:unexpected param err");
+	}
+	return true;
 }
 
 bool DecodecThreader::DecodecCurFrame()
@@ -170,9 +179,19 @@ bool DecodecThreader::DecodecCurFrame()
 				}
 				if (bSucc)
 				{
+					m_nDecErrCount = 0;
 					if (m_pNotifyDecFunc && m_pDecCallbackData)
 					{
 						m_pNotifyDecFunc(m_nCurFrame, m_pDecCallbackData, frameInfo.iSize, numAudioSample);
+					}
+				}
+				else
+				{
+					m_nDecErrCount++;
+					if (m_nDecErrCount > 200)
+					{
+						//退出标记设置
+						m_evtQuit.SetEvent();
 					}
 				}
 			}
@@ -251,6 +270,7 @@ bool DecodecThreader::SetInputSource(const std::string & cstrFilePath, SDStreamM
 			{
 				if (m_ecDecoder->GetFileGlobalMediaInfo(&mediaInfo))
 				{
+					m_srcMediaInfo = mediaInfo;
 					bRet = true;
 				}
 				else
@@ -328,13 +348,15 @@ bool DecodecThreader::SetPlayPause(bool bPlay)
 		{
 			if (IsPlaying())
 			{
-				//如果正在运行，则停止
+				//如果正在运行，则先停止
 				SetStop();
 			}
 			if (nullptr == m_pDecodecThread)
 			{
 				m_evtQuit.ResetEvent();
 				m_pDecodecThread = new std::thread(ThreadDecodec, this);
+				EmitInfoMsg("Info:Playing");
+				return true;
 			}
 			else
 			{
@@ -347,6 +369,7 @@ bool DecodecThreader::SetPlayPause(bool bPlay)
 			if (IsPlaying())
 			{
 				m_bPause = true;
+				EmitInfoMsg("Info:Pausing");
 				return true;
 			}
 			else
@@ -365,12 +388,22 @@ bool DecodecThreader::SetPlayPause(bool bPlay)
 bool DecodecThreader::SetStop()
 {
 	m_evtQuit.SetEvent();
+	m_nDecErrCount = 0;
 	if (m_pDecodecThread)
 	{
 		m_pDecodecThread->join();
 		delete m_pDecodecThread;
 		m_pDecodecThread = nullptr;
 	}
+	if (m_ecFactory)
+	{
+		if (m_ecDecoder)
+		{
+			m_ecFactory->DeleteProtocolDecoder(m_ecDecoder);
+			m_ecDecoder = nullptr;
+		}
+	}
+	EmitInfoMsg("Info:Stoped");
 	return true;
 }
 
