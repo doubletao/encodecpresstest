@@ -49,11 +49,13 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	CreateCtrl();
 	LayoutCtrl();
 	InitialConnect();
+	m_evtQuit.ResetEvent();
 	m_timerDisplay->start(40);
 }
 
 QtEncodecPlayer::~QtEncodecPlayer()
 {
+	m_evtQuit.SetEvent();
 	DisConnect();
 	Release();
 }
@@ -142,7 +144,14 @@ void QtEncodecPlayer::CreateCtrl()
 	m_pOtherSettingHLayout = new QHBoxLayout(m_pOtherSettingWidget);
 
 	m_pPlayer = CreateVAPlayer(EM_VAPLayer_SDL);
-	m_pPlayer->CreatePayer(0, 0, 400, 300, EmVAPlayerColorFmt_UYVY, 1920, 1080, true, EmVAPlayerSampleFmt_S16SYS, 48000, 2, 1920);
+	int nBufWidth = 1920;
+	int nBugHeight = 1080;
+	if (m_pPlayerWidget)
+	{
+		nBufWidth = m_pPlayerWidget->width();
+		nBugHeight = m_pPlayerWidget->height();
+	}
+	m_pPlayer->CreatePayer(0, 0, nBufWidth, nBugHeight, EmVAPlayerColorFmt_UYVY, nBufWidth, nBugHeight, true, EmVAPlayerSampleFmt_S16SYS, 48000, 2, 1920);
 }
 
 void QtEncodecPlayer::LayoutCtrl()
@@ -273,7 +282,10 @@ bool QtEncodecPlayer::PushBuf()
 	while (!m_vaLoop.Push(m_vaBuf))
 	{
 		//push不进去就等着，非得push进去了才算
-		Sleep(5);
+		if (m_evtQuit.Wait(5))
+		{
+			break;
+		}
 	}
 	return true;
 }
@@ -282,9 +294,10 @@ void QtEncodecPlayer::DisplayBuf()
 {
 	if (m_vaLoop.Pop(m_vaBufDisp))
 	{
+		qDebug << clock();
 		//送入播放器
-		m_pPlayer->PushFrame(m_vaBufDisp.GetVideoBuf(), 3840);
-		m_pPlayer->PushAudioSample(m_vaBufDisp.GetAudioBuf(), m_vaBufDisp.GetAudioSampleCount() * 2);
+		m_pPlayer->PushFrame(m_vaBufDisp.GetVideoBuf(), m_desImageInfo.dwXSize * 2);
+		m_pPlayer->PushAudioSample(m_vaBufDisp.GetAudioBuf(), m_vaBufDisp.GetAudioSampleCount() * m_desAudioInfo.dwBitsPerSample / 8);
 	}
 }
 
@@ -314,30 +327,28 @@ void QtEncodecPlayer::OnBnClickedCue()
 			SDStreamMediaInfo mediaInfo;
 			if (m_DecThreader.SetInputSource(strSrc.toStdString(), mediaInfo))
 			{
-				SDVideoFrameImageBufInfo imageBufInfo;
-				imageBufInfo.dwXSize = 1920;
-				imageBufInfo.dwYSize = 1080;
+				m_desImageInfo.dwXSize = 1920;
+				m_desImageInfo.dwYSize = 1080;
 				if (m_pPlayerWidget)
 				{
-					imageBufInfo.dwXSize = m_pPlayerWidget->width();
-					imageBufInfo.dwYSize = m_pPlayerWidget->height();
+					m_desImageInfo.dwXSize = m_pPlayerWidget->width();
+					m_desImageInfo.dwYSize = m_pPlayerWidget->height();
 				}
-				imageBufInfo.enumColorFormat = SDCOLORFORMAT_UYVY;
-				SDAudioMediaInfo audioSamplesBufInfo;
-				audioSamplesBufInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM;
-				audioSamplesBufInfo.dwBitsPerSample = 32;
-				audioSamplesBufInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
-				audioSamplesBufInfo.dwAvgBitsPerSec = audioSamplesBufInfo.dwSamplesPerSec * audioSamplesBufInfo.dwBitsPerSample * audioSamplesBufInfo.dwChannels;
-				audioSamplesBufInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
-				audioSamplesBufInfo.dwSamplesPerSec = 48000;
-				audioSamplesBufInfo.dwChannels = 2;
-				if (m_DecThreader.SetOutputParam(imageBufInfo, audioSamplesBufInfo))
+				m_desImageInfo.enumColorFormat = SDCOLORFORMAT_UYVY;
+				m_desAudioInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM;
+				m_desAudioInfo.dwBitsPerSample = 32;
+				m_desAudioInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
+				m_desAudioInfo.dwAvgBitsPerSec = m_desAudioInfo.dwSamplesPerSec * m_desAudioInfo.dwBitsPerSample * m_desAudioInfo.dwChannels;
+				m_desAudioInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
+				m_desAudioInfo.dwSamplesPerSec = 48000;
+				m_desAudioInfo.dwChannels = 2;
+				if (m_DecThreader.SetOutputParam(m_desImageInfo, m_desAudioInfo))
 				{
 					m_vaBuf.Reset(m_DecThreader.GetVideoBufSize(), m_DecThreader.GetSamplePerFrame());
 					m_vaLoop.Reset(10, m_DecThreader.GetVideoBufSize(), m_DecThreader.GetSamplePerFrame());
 					if (m_DecThreader.SetVideoBuf(m_vaBuf.GetVideoBuf(), m_vaBuf.GetVideoBufSize()))
 					{
-						if (m_DecThreader.SetAudioBuf(m_vaBuf.GetAudioBuf(), m_vaBuf.GetAudioSampleCount() * audioSamplesBufInfo.dwBitsPerSample / 8))
+						if (m_DecThreader.SetAudioBuf(m_vaBuf.GetAudioBuf(), m_vaBuf.GetAudioSampleCount() * m_desAudioInfo.dwBitsPerSample / 8))
 						{
 							emit EmitInfoMsg("cued succ");
 						}

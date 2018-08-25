@@ -38,6 +38,9 @@ protected:
 	std::queue<std::string> m_queMsg;//用于显示信息的消息队列
 	QTimer * m_timerDisplay;
 	IVAPlayer * m_pPlayer;
+	CStdEvent m_evtQuit;
+	SDVideoFrameImageBufInfo m_desImageInfo;
+	SDAudioMediaInfo m_desAudioInfo;
 protected:
 	static bool __stdcall CallbackOneFrameDecodecedFunc(unsigned long long nCurFrame, void * pData, size_t nVideoBufSize, size_t nAudioSampleCount);
 	static bool __stdcall CallbackInfoMsgFunc(std::string strErr, void * pData);
