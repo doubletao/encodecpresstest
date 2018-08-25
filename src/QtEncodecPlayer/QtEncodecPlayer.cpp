@@ -294,7 +294,7 @@ void QtEncodecPlayer::DisplayBuf()
 {
 	if (m_vaLoop.Pop(m_vaBufDisp))
 	{
-		qDebug << clock();
+		qDebug("%d", clock());
 		//ËÍÈë²¥·ÅÆ÷
 		m_pPlayer->PushFrame(m_vaBufDisp.GetVideoBuf(), m_desImageInfo.dwXSize * 2);
 		m_pPlayer->PushAudioSample(m_vaBufDisp.GetAudioBuf(), m_vaBufDisp.GetAudioSampleCount() * m_desAudioInfo.dwBitsPerSample / 8);
