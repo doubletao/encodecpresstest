@@ -62,6 +62,7 @@ QtEncodecPlayer::~QtEncodecPlayer()
 
 void QtEncodecPlayer::Release()
 {
+	m_DecThreader.SetStop();
 	for (auto it : m_vecEncThreader)
 	{
 		delete it;
@@ -379,6 +380,7 @@ void QtEncodecPlayer::OnBnClickedPreFrame()
 
 void QtEncodecPlayer::OnBnClickedPlayPause()
 {
+	m_evtQuit.ResetEvent();
 	if (m_pBtnPlayPause)
 	{
 		if (m_DecThreader.IsPlaying())
@@ -406,6 +408,7 @@ void QtEncodecPlayer::OnBnClickedLastFrame()
 
 void QtEncodecPlayer::OnBnClickedStop()
 {
+	m_evtQuit.SetEvent();
 	m_DecThreader.SetStop();
 	if (m_pBtnPlayPause)
 	{

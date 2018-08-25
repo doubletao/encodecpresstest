@@ -59,7 +59,7 @@ void SDL_VAPlayer::DealSDLEvent()
 		{
 			if (SDL_WINDOWEVENT_EXPOSED == test_event.window.event)
 			{
-				ResetPlayer();
+				//ResetPlayer();
 			}
 		}
 		break;
