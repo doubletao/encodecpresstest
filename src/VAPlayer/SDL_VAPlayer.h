@@ -56,6 +56,7 @@ public:
 		EmVAPlayerColorFmt emColorFmt, int nBufWidth, int nBufHeight,
 		bool bStartAudio, EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall);
 	//重置播放器（释放然后按照原有参数重新创建）
+	virtual bool ResizeBuf(int nBufWidth, int nBufHeight);
 	virtual bool ResetPlayer();
 	virtual bool MoveWindow(int nX, int nY, int nWndWidth, int nWndHeight);
 	virtual int PushFrame(unsigned char * data, int linesize);

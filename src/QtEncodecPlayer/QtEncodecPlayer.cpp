@@ -291,6 +291,23 @@ bool QtEncodecPlayer::PushBuf()
 	return true;
 }
 
+void QtEncodecPlayer::ResetPlayerSize(int nVideoWidth, int nVideoHeight)
+{
+	if (m_pPlayerWidget && m_pTopHLayout)
+	{
+		//找出当前高度，在高度的基础上，设置宽度
+		int nWndHeight = m_pTopHLayout->geometry().height();
+		int nWndWidth = nWndHeight * 1.0f / nVideoHeight * nVideoWidth;
+		m_pPlayerWidget->setMinimumWidth(nWndWidth);
+		if (m_pPlayer)
+		{
+			int nBufWidth = m_pPlayerWidget->width();
+			int nBugHeight = m_pPlayerWidget->height();
+			m_pPlayer->ResizeBuf(nBufWidth, nBugHeight);
+		}
+	}
+}
+
 void QtEncodecPlayer::DisplayBuf()
 {
 	if (m_vaLoop.Pop(m_vaBufDisp))
@@ -320,6 +337,7 @@ void QtEncodecPlayer::OnBnClickedCue()
 	if (m_pCombPlayerSource)
 	{
 		strSrc = m_pCombPlayerSource->currentText();
+		emit EmitInfoMsg("cueing clip");
 		if (!strSrc.isEmpty())
 		{
 			m_DecThreader.SetStop();
@@ -328,36 +346,46 @@ void QtEncodecPlayer::OnBnClickedCue()
 			SDStreamMediaInfo mediaInfo;
 			if (m_DecThreader.SetInputSource(strSrc.toStdString(), mediaInfo))
 			{
-				m_desImageInfo.dwXSize = 1920;
-				m_desImageInfo.dwYSize = 1080;
-				if (m_pPlayerWidget)
+				int nSrcWidth = mediaInfo.sVideoMediaInfo.dwWidth;
+				int nSrcHeight = mediaInfo.sVideoMediaInfo.dwHeight;
+				if (nSrcWidth > 0 && nSrcHeight > 0)
 				{
-					m_desImageInfo.dwXSize = m_pPlayerWidget->width();
-					m_desImageInfo.dwYSize = m_pPlayerWidget->height();
-				}
-				m_desImageInfo.enumColorFormat = SDCOLORFORMAT_UYVY;
-				m_desAudioInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM;
-				m_desAudioInfo.dwBitsPerSample = 32;
-				m_desAudioInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
-				m_desAudioInfo.dwAvgBitsPerSec = m_desAudioInfo.dwSamplesPerSec * m_desAudioInfo.dwBitsPerSample * m_desAudioInfo.dwChannels;
-				m_desAudioInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
-				m_desAudioInfo.dwSamplesPerSec = 48000;
-				m_desAudioInfo.dwChannels = 2;
-				if (m_DecThreader.SetOutputParam(m_desImageInfo, m_desAudioInfo))
-				{
-					m_vaBuf.Reset(m_DecThreader.GetVideoBufSize(), m_DecThreader.GetSamplePerFrame());
-					m_vaLoop.Reset(10, m_DecThreader.GetVideoBufSize(), m_DecThreader.GetSamplePerFrame());
-					if (m_DecThreader.SetVideoBuf(m_vaBuf.GetVideoBuf(), m_vaBuf.GetVideoBufSize()))
+					ResetPlayerSize(nSrcWidth, nSrcHeight);
+					m_desImageInfo.dwXSize = 1920;
+					m_desImageInfo.dwYSize = 1080;
+					if (m_pPlayerWidget)
 					{
-						if (m_DecThreader.SetAudioBuf(m_vaBuf.GetAudioBuf(), m_vaBuf.GetAudioSampleCount() * m_desAudioInfo.dwBitsPerSample / 8))
+						m_desImageInfo.dwXSize = m_pPlayerWidget->width();
+						m_desImageInfo.dwYSize = m_pPlayerWidget->height();
+					}
+					m_desImageInfo.enumColorFormat = SDCOLORFORMAT_UYVY;
+					m_desAudioInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM;
+					m_desAudioInfo.dwBitsPerSample = 32;
+					m_desAudioInfo.enumAudioCFG = SDAUDIOCFG_STEREO;
+					m_desAudioInfo.dwAvgBitsPerSec = m_desAudioInfo.dwSamplesPerSec * m_desAudioInfo.dwBitsPerSample * m_desAudioInfo.dwChannels;
+					m_desAudioInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
+					m_desAudioInfo.dwSamplesPerSec = 48000;
+					m_desAudioInfo.dwChannels = 2;
+					if (m_DecThreader.SetOutputParam(m_desImageInfo, m_desAudioInfo))
+					{
+						m_vaBuf.Reset(m_DecThreader.GetVideoBufSize(), m_DecThreader.GetSamplePerFrame());
+						m_vaLoop.Reset(10, m_DecThreader.GetVideoBufSize(), m_DecThreader.GetSamplePerFrame());
+						if (m_DecThreader.SetVideoBuf(m_vaBuf.GetVideoBuf(), m_vaBuf.GetVideoBufSize()))
 						{
-							emit EmitInfoMsg("cued succ");
+							if (m_DecThreader.SetAudioBuf(m_vaBuf.GetAudioBuf(), m_vaBuf.GetAudioSampleCount() * m_desAudioInfo.dwBitsPerSample / 8))
+							{
+								emit EmitInfoMsg("cued succ");
+							}
 						}
+					}
+					else
+					{
+						emit EmitInfoMsg("SetOutputParam failed");
 					}
 				}
 				else
 				{
-					emit EmitInfoMsg("SetOutputParam failed");
+					emit EmitInfoMsg("cue clip width height err");
 				}
 			}
 			else

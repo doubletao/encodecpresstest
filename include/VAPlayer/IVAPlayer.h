@@ -28,6 +28,7 @@ public:
 		bool bStartAudio, EmVAPlayerSampleFmt emSampleFmt, int nAudioSampPerSec, unsigned __int8 nChannelCount, unsigned __int16 nSamplePerCall) = 0;
 	//重置播放器（释放然后按照原有参数重新创建）
 	virtual bool ResetPlayer() = 0;
+	virtual bool ResizeBuf(int nBufWidth, int nBufHeight) = 0;
 	virtual bool MoveWindow(int nX, int nY, int nWndWidth, int nWndHeight) = 0;
 	virtual int PushFrame(unsigned char * data, int linesize) = 0;
 	virtual int PushAudioSample(unsigned char * data, int nBufSize) = 0;

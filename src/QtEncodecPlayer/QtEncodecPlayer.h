@@ -46,6 +46,7 @@ protected:
 	static bool __stdcall CallbackInfoMsgFunc(std::string strErr, void * pData);
 	void PushMsg(std::string strMsg);
 	bool PushBuf();
+	void ResetPlayerSize(int nVideoWidth, int nVideoHeight);
 signals:
 	void EmitInfoMsg(const char * szInfoMsg);
 	void EmitInfoMsg();

@@ -35,6 +35,12 @@ SDL_VAPlayer::SDL_VAPlayer()
 SDL_VAPlayer::~SDL_VAPlayer()
 {
 	ReleasePlayer();
+	SDL_Quit();
+	if (m_pAudioBuffer)
+	{
+		delete[] m_pAudioBuffer;
+		m_pAudioBuffer = nullptr;
+	}
 }
 
 void SDL_VAPlayer::Lock()
@@ -343,21 +349,39 @@ bool SDL_VAPlayer::CreatePayer(void * hWnd, int nWndX, int nWndY, int nWndWidth,
 	return bRet;
 }
 
+bool SDL_VAPlayer::ResizeBuf(int nBufWidth, int nBufHeight)
+{
+	if (m_sdlRenderer)
+	{
+		SDL_DestroyTexture(m_sdlTexture);
+		m_sdlTexture = nullptr;
+		//¥¥Ω®Œ∆¿Ì
+		m_sdlTexture = SDL_CreateTexture(m_sdlRenderer, ConvertColorFmt(m_emColorFmt), SDL_TEXTUREACCESS_STREAMING, nBufWidth, nBufHeight);
+		if (m_sdlTexture)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool SDL_VAPlayer::ResetPlayer()
 {
+	bool bRet = false;
 	Lock();
 	if (ReleasePlayer())
 	{
 		if (m_hWnd)
 		{
-			return CreatePayer(m_hWnd, m_nWndX, m_nWndY, m_nWndWidth, m_nWndHeight, m_emColorFmt, m_nBufWidth, m_nBufHeight, m_bStartAudio, m_emSampleFmt, m_nAudioSampPerSec, m_nChannelCount, m_nSamplePerCall);
+			bRet = CreatePayer(m_hWnd, m_nWndX, m_nWndY, m_nWndWidth, m_nWndHeight, m_emColorFmt, m_nBufWidth, m_nBufHeight, m_bStartAudio, m_emSampleFmt, m_nAudioSampPerSec, m_nChannelCount, m_nSamplePerCall);
 		}
 		else
 		{
-			return CreatePayer(m_nWndX, m_nWndY, m_nWndWidth, m_nWndHeight, m_emColorFmt, m_nBufWidth, m_nBufHeight, m_bStartAudio, m_emSampleFmt, m_nAudioSampPerSec, m_nChannelCount, m_nSamplePerCall);
+			bRet = CreatePayer(m_nWndX, m_nWndY, m_nWndWidth, m_nWndHeight, m_emColorFmt, m_nBufWidth, m_nBufHeight, m_bStartAudio, m_emSampleFmt, m_nAudioSampPerSec, m_nChannelCount, m_nSamplePerCall);
 		}
 	}
 	Unlock();
+	return bRet;
 }
 
 bool SDL_VAPlayer::MoveWindow(int nX, int nY, int nWndWidth, int nWndHeight)
@@ -432,12 +456,6 @@ bool SDL_VAPlayer::ReleasePlayer()
 	{
 		SDL_DestroyTexture(m_sdlTexture);
 		m_sdlTexture = nullptr;
-	}
-	SDL_Quit();
-	if (m_pAudioBuffer)
-	{
-		delete[] m_pAudioBuffer;
-		m_pAudioBuffer = nullptr;
 	}
 	SDL_CloseAudio();
 	m_hWnd = nullptr;
