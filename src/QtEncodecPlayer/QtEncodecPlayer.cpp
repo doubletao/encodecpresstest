@@ -152,7 +152,7 @@ void QtEncodecPlayer::CreateCtrl()
 		nBufWidth = m_pPlayerWidget->width();
 		nBugHeight = m_pPlayerWidget->height();
 	}
-	m_pPlayer->CreatePayer(0, 0, nBufWidth, nBugHeight, EmVAPlayerColorFmt_UYVY, nBufWidth, nBugHeight, true, EmVAPlayerSampleFmt_S16SYS, 48000, 2, 1920);
+	m_pPlayer->CreatePayer((void *)m_pPlayerWidget->winId(), 0, 0, nBufWidth, nBugHeight, EmVAPlayerColorFmt_UYVY, nBufWidth, nBugHeight, true, EmVAPlayerSampleFmt_S16SYS, 48000, 2, 1920);
 }
 
 void QtEncodecPlayer::LayoutCtrl()
