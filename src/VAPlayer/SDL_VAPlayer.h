@@ -20,7 +20,7 @@ protected:
 	int m_nAudioSampPerSec;
 	unsigned __int8 m_nChannelCount;
 	unsigned __int16 m_nSamplePerCall;
-	std::mutex m_lock;
+	std::recursive_mutex m_lock;
 
 	CAudioBufferLoop m_AudioDataLoop;
 	char * m_pAudioBuffer;

@@ -59,7 +59,7 @@ void SDL_VAPlayer::DealSDLEvent()
 		{
 			if (SDL_WINDOWEVENT_EXPOSED == test_event.window.event)
 			{
-				//ResetPlayer();
+				ResetPlayer();
 			}
 		}
 		break;
@@ -274,7 +274,6 @@ bool SDL_VAPlayer::CreatePayer(void * hWnd, int nWndX, int nWndY, int nWndWidth,
 	m_nChannelCount = nChannelCount;
 	m_nSamplePerCall = nSamplePerCall;
 
-	//先简单的实现一下，只是删除再创建，为防止释放重建的过程中有画面push进来，所以锁一下
 	Lock();
 	int nRet = 0;
 	nRet |= SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -346,14 +345,19 @@ bool SDL_VAPlayer::CreatePayer(void * hWnd, int nWndX, int nWndY, int nWndWidth,
 
 bool SDL_VAPlayer::ResetPlayer()
 {
-	if (m_hWnd)
+	Lock();
+	if (ReleasePlayer())
 	{
-		return CreatePayer(m_hWnd, m_nWndX, m_nWndY, m_nWndWidth, m_nWndHeight, m_emColorFmt, m_nBufWidth, m_nBufHeight, m_bStartAudio, m_emSampleFmt, m_nAudioSampPerSec, m_nChannelCount, m_nSamplePerCall);
+		if (m_hWnd)
+		{
+			return CreatePayer(m_hWnd, m_nWndX, m_nWndY, m_nWndWidth, m_nWndHeight, m_emColorFmt, m_nBufWidth, m_nBufHeight, m_bStartAudio, m_emSampleFmt, m_nAudioSampPerSec, m_nChannelCount, m_nSamplePerCall);
+		}
+		else
+		{
+			return CreatePayer(m_nWndX, m_nWndY, m_nWndWidth, m_nWndHeight, m_emColorFmt, m_nBufWidth, m_nBufHeight, m_bStartAudio, m_emSampleFmt, m_nAudioSampPerSec, m_nChannelCount, m_nSamplePerCall);
+		}
 	}
-	else
-	{
-		return CreatePayer(m_nWndX, m_nWndY, m_nWndWidth, m_nWndHeight, m_emColorFmt, m_nBufWidth, m_nBufHeight, m_bStartAudio, m_emSampleFmt, m_nAudioSampPerSec, m_nChannelCount, m_nSamplePerCall);
-	}
+	Unlock();
 }
 
 bool SDL_VAPlayer::MoveWindow(int nX, int nY, int nWndWidth, int nWndHeight)
@@ -379,7 +383,7 @@ int SDL_VAPlayer::PushFrame(unsigned char * data, int linesize)
 		SDL_RenderPresent(m_sdlRenderer);
 	}
 	Unlock();
-	DealSDLEvent();
+	//DealSDLEvent();
 	return 0;
 }
 
@@ -402,7 +406,7 @@ int SDL_VAPlayer::PushYUVFrame(unsigned char **& data, int *& linesize)
 		SDL_RenderPresent(m_sdlRenderer);
 	}
 	Unlock();
-	DealSDLEvent();
+	//DealSDLEvent();
 	return 0;
 }
 
