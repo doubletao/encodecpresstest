@@ -298,7 +298,10 @@ void QtEncodecPlayer::ResetPlayerSize(int nVideoWidth, int nVideoHeight)
 		//找出当前高度，在高度的基础上，设置宽度
 		int nWndHeight = m_pTopHLayout->geometry().height();
 		int nWndWidth = nWndHeight * 1.0f / nVideoHeight * nVideoWidth;
+		nWndWidth = nWndWidth / 2 * 2 + 2;
+		nWndHeight = nWndHeight / 2 * 2 + 2;
 		m_pPlayerWidget->setMinimumWidth(nWndWidth);
+		m_pPlayerWidget->setMinimumHeight(nWndHeight);
 		if (m_pPlayer)
 		{
 			int nBufWidth = m_pPlayerWidget->width();
