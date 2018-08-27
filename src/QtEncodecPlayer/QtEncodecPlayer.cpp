@@ -333,13 +333,13 @@ void QtEncodecPlayer::ResetPlayerSize(int nVideoWidth, int nVideoHeight)
 	}
 }
 
-static size_t nLastDispTm = 0;
+//static size_t nLastDispTm = 0;
 void QtEncodecPlayer::DisplayBuf()
 {
 	if (m_vaLoop.Pop(m_vaBufDisp))
 	{
-		qDebug("%d", clock() - nLastDispTm);
-		nLastDispTm = clock();
+		//qDebug("%d", clock() - nLastDispTm);
+		//nLastDispTm = clock();
 		//ËÍÈë²¥·ÅÆ÷
 		m_pPlayer->PushFrame(m_vaBufDisp.GetVideoBuf(), m_desImageInfo.dwXSize * 2);
 		m_pPlayer->PushAudioSample(m_vaBufDisp.GetAudioBuf(), m_vaBufDisp.GetAudioSampleCount() * m_desAudioInfo.dwBitsPerSample / 8);
@@ -379,6 +379,14 @@ void QtEncodecPlayer::LockVAPtsStateChanged(int state)
 
 void QtEncodecPlayer::LoopStateChanged(int state)
 {
+	if (state == Qt::Checked)
+	{
+		m_DecThreader.SetLoop(true);
+	}
+	else
+	{
+		m_DecThreader.SetLoop(false);
+	}
 }
 
 void QtEncodecPlayer::ForbitLoseFrameStateChanged(int state)
