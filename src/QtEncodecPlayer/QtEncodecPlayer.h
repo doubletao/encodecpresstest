@@ -41,8 +41,9 @@ protected:
 	CStdEvent m_evtQuit;
 	SDVideoFrameImageBufInfo m_desImageInfo;
 	SDAudioMediaInfo m_desAudioInfo;
+	std::atomic_bool m_bSldMoving;//Slider拖动中，此时不接受回调函数对slider的setpos动作
 protected:
-	static bool __stdcall CallbackOneFrameDecodecedFunc(unsigned long long nCurFrame, void * pData, size_t nVideoBufSize, size_t nAudioSampleCount);
+	static bool __stdcall CallbackOneFrameDecodecedFunc(unsigned long long nCurFrame, void * pData, size_t nVideoBufSize, size_t nAudioSampleCount, unsigned int nVideoFrameNum);
 	static bool __stdcall CallbackInfoMsgFunc(std::string strErr, void * pData);
 	void PushMsg(std::string strMsg);
 	bool PushBuf();
@@ -50,6 +51,7 @@ protected:
 signals:
 	void EmitInfoMsg(const char * szInfoMsg);
 	void EmitInfoMsg();
+	void EmitDispMsg();
 protected slots:
 	void OnBnClickedSrcScan();
 	void OnBnClickedDesScan();
@@ -62,7 +64,14 @@ protected slots:
 	void OnBnClickedStop();
 	void OnInfoMsgArrive();
 	void OnInfoMsgArrive(const char * szInfoMsg);
+	void OnTimer();
 	void DisplayBuf();
+	void OnSliderPosStartChange();
+	void OnSliderPosChanged();
+	void PerformanceLogStateChanged(int state);
+	void LockVAPtsStateChanged(int state);
+	void LoopStateChanged(int state);
+	void ForbitLoseFrameStateChanged(int state);
 protected:
 	//Layout
 	QVBoxLayout * m_pWholeVLyaout;//全局的一个纵向layout

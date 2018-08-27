@@ -154,7 +154,7 @@ bool DecodecThreader::DecodecCurFrame()
 				m_ecDecoder->GetVABuffer(m_pVideoBuf, m_pAudioBuf, &numAudioSample);
 				if (m_pNotifyDecFunc && m_pDecCallbackData)
 				{
-					m_pNotifyDecFunc(m_nCurFrame, m_pDecCallbackData, GetVideoBufSize(), numAudioSample);
+					m_pNotifyDecFunc(m_nCurFrame, m_pDecCallbackData, GetVideoBufSize(), numAudioSample, m_srcMediaInfoEx.dwVideoFrameNum);
 				}
 			}
 			else
@@ -185,7 +185,7 @@ bool DecodecThreader::DecodecCurFrame()
 					m_nDecErrCount = 0;
 					if (m_pNotifyDecFunc && m_pDecCallbackData)
 					{
-						m_pNotifyDecFunc(m_nCurFrame, m_pDecCallbackData, frameInfo.iSize, numAudioSample);
+						m_pNotifyDecFunc(m_nCurFrame, m_pDecCallbackData, frameInfo.iSize, numAudioSample, m_srcMediaInfoEx.dwVideoFrameNum);
 					}
 				}
 				else
@@ -274,6 +274,7 @@ bool DecodecThreader::SetInputSource(const std::string & cstrFilePath, SDStreamM
 				if (m_ecDecoder->GetFileGlobalMediaInfo(&mediaInfo))
 				{
 					m_srcMediaInfo = mediaInfo;
+					m_bPause = false;
 					bRet = true;
 				}
 				else
@@ -351,19 +352,29 @@ bool DecodecThreader::SetPlayPause(bool bPlay)
 		{
 			if (IsPlaying())
 			{
-				//如果正在运行，则先停止
-				SetStop();
-			}
-			if (nullptr == m_pDecodecThread)
-			{
-				m_evtQuit.ResetEvent();
-				m_pDecodecThread = new std::thread(ThreadDecodec, this);
-				EmitInfoMsg("Info:Playing");
-				return true;
+				if (IsPause())
+				{
+					m_bPause = false;
+					EmitInfoMsg("Info:continued");
+				}
+				else
+				{
+					EmitInfoMsg("Warning:already playing");
+				}
 			}
 			else
 			{
-				EmitInfoMsg("Err:unexpected Thread living");
+				if (nullptr == m_pDecodecThread)
+				{
+					m_evtQuit.ResetEvent();
+					m_pDecodecThread = new std::thread(ThreadDecodec, this);
+					EmitInfoMsg("Info:Playing");
+					return true;
+				}
+				else
+				{
+					EmitInfoMsg("Err:unexpected Thread living");
+				}
 			}
 		}
 		else
@@ -372,7 +383,7 @@ bool DecodecThreader::SetPlayPause(bool bPlay)
 			if (IsPlaying())
 			{
 				m_bPause = true;
-				EmitInfoMsg("Info:Pausing");
+				EmitInfoMsg("Info:Paused");
 				return true;
 			}
 			else
@@ -533,9 +544,9 @@ unsigned int DecodecThreader::GetSamplePerFrame()
 	return m_nSamplePerFrame;
 }
 
-bool DecodecThreader::SetSeekPos(unsigned long long m_nCurFrame, bool bPause)
+bool DecodecThreader::SetSeekPos(unsigned long long nCurFrame, bool bPause)
 {
-	m_nCurFrame = m_nCurFrame;
+	m_nCurFrame = nCurFrame;
 	if (bPause)
 	{
 		if (IsPlaying())

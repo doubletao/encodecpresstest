@@ -4,7 +4,7 @@
 #include "StdEvent.h"
 
 //因为buf本身就是外部给定的，所以这里仅仅是通知一下，告诉外部本帧解完了，可以去拿了
-typedef bool (__stdcall * OneFrameDecodecedFunc)(unsigned long long nCurFrame, void * pData, size_t nVideoBufSize, size_t nAudioSampleCount);
+typedef bool (__stdcall * OneFrameDecodecedFunc)(unsigned long long nCurFrame, void * pData, size_t nVideoBufSize, size_t nAudioSampleCount, unsigned int nVideoFrameNum);
 typedef bool(__stdcall * InfoMsgFunc)(std::string strErr, void * pData);
 
 class DecodecThreader
@@ -66,7 +66,7 @@ public:
 	bool SetPreFrame(bool bPause = false);
 	bool SetNextFrame(bool bPause = false);
 	bool SetLastFrame(bool bPause = false);
-	bool SetSeekPos(unsigned long long m_nCurFrame, bool bPause = false);
+	bool SetSeekPos(unsigned long long nCurFrame, bool bPause = false);
 	bool SetLockVAPts(bool bLock);//是否需要强制pts对齐(使用这个接口一定要保证视音频都有)
 	bool SetLoop(bool bLoop);
 

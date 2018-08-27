@@ -2,6 +2,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+const int nVideoFramePerSec = 25;
+
 QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	: QDialog(parent)
 	, m_pWholeVLyaout(nullptr)
@@ -40,6 +42,7 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	, m_pBtnStop(nullptr)
 	, m_timerDisplay(nullptr)
 	, m_pPlayer(nullptr)
+	, m_bSldMoving(false)
 {
 	resize(1440, 900);
 	Qt::WindowFlags flags = Qt::Dialog;
@@ -50,7 +53,7 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	LayoutCtrl();
 	InitialConnect();
 	m_evtQuit.ResetEvent();
-	m_timerDisplay->start(40);
+	m_timerDisplay->start(1000 / nVideoFramePerSec);
 }
 
 QtEncodecPlayer::~QtEncodecPlayer()
@@ -62,7 +65,7 @@ QtEncodecPlayer::~QtEncodecPlayer()
 
 void QtEncodecPlayer::Release()
 {
-	m_DecThreader.SetStop();
+	OnBnClickedStop();
 	for (auto it : m_vecEncThreader)
 	{
 		delete it;
@@ -96,6 +99,10 @@ void QtEncodecPlayer::CreateCtrl()
 	m_pAudioEffectWidget->setMinimumHeight(200);
 
 	m_pSldPlayProcess = new QSlider(Qt::Horizontal, m_pMiddleHWidget);
+	m_pSldPlayProcess->setFocusPolicy(Qt::WheelFocus);
+	m_pSldPlayProcess->setTickPosition(QSlider::TicksBothSides);
+	m_pSldPlayProcess->setTickInterval(nVideoFramePerSec);
+	m_pSldPlayProcess->setSingleStep(nVideoFramePerSec);
 
 	m_pStSpeedShift = new QLabel(tr("IDS_ENCODEC_PLAYER_SPEED_SWITCH"), m_pInputOutputSettingWidget);
 	m_pCombSpeedShift = new QComboBox(m_pInputOutputSettingWidget);
@@ -217,7 +224,14 @@ void QtEncodecPlayer::InitialConnect()
 	connect(m_pBtnStop, SIGNAL(clicked()), this, SLOT(OnBnClickedStop()));
 	connect(this, SIGNAL(EmitInfoMsg(const char *)), this, SLOT(OnInfoMsgArrive(const char *)));
 	connect(this, SIGNAL(EmitInfoMsg()), this, SLOT(OnInfoMsgArrive()));
-	connect(m_timerDisplay, SIGNAL(timeout()), this, SLOT(DisplayBuf()));
+	connect(m_timerDisplay, SIGNAL(timeout()), this, SLOT(OnTimer()));
+	connect(this, SIGNAL(EmitDispMsg()), this, SLOT(DisplayBuf()));
+	connect(m_pSldPlayProcess, SIGNAL(sliderReleased()), this, SLOT(OnSliderPosChanged()));
+	connect(m_pSldPlayProcess, SIGNAL(sliderPressed()), this, SLOT(OnSliderPosStartChange()));
+	connect(m_pChkPerformanceLog, SIGNAL(stateChanged(int)), this, SLOT(PerformanceLogStateChanged(int)));
+	connect(m_pChkLockVAPts, SIGNAL(stateChanged(int)), this, SLOT(LockVAPtsStateChanged(int)));
+	connect(m_pChkLoop, SIGNAL(stateChanged(int)), this, SLOT(LoopStateChanged(int)));
+	connect(m_pChkForbitLoseFrame, SIGNAL(stateChanged(int)), this, SLOT(ForbitLoseFrameStateChanged(int)));
 }
 
 void QtEncodecPlayer::DisConnect()
@@ -250,12 +264,20 @@ void QtEncodecPlayer::OnBnClickedSrcScan()
 	}
 }
 
-bool QtEncodecPlayer::CallbackOneFrameDecodecedFunc(unsigned long long nCurFrame, void * pData, size_t nVideoBufSize, size_t nAudioSampleCount)
+bool QtEncodecPlayer::CallbackOneFrameDecodecedFunc(unsigned long long nCurFrame, void * pData, size_t nVideoBufSize, size_t nAudioSampleCount, unsigned int nVideoFrameNum)
 {
 	QtEncodecPlayer * pThis = (QtEncodecPlayer *)pData;
 	if (pThis)
 	{
 		pThis->PushBuf();
+		if (!pThis->m_bSldMoving && pThis->m_pSldPlayProcess)
+		{
+			if (pThis->m_pSldPlayProcess->maximum() != nVideoFrameNum)
+			{
+				pThis->m_pSldPlayProcess->setRange(0, nVideoFrameNum);
+			}
+			pThis->m_pSldPlayProcess->setValue(nCurFrame);
+		}
 	}
 	return true;
 }
@@ -311,15 +333,56 @@ void QtEncodecPlayer::ResetPlayerSize(int nVideoWidth, int nVideoHeight)
 	}
 }
 
+static size_t nLastDispTm = 0;
 void QtEncodecPlayer::DisplayBuf()
 {
 	if (m_vaLoop.Pop(m_vaBufDisp))
 	{
-		qDebug("%d", clock());
+		qDebug("%d", clock() - nLastDispTm);
+		nLastDispTm = clock();
 		//ËÍÈë²¥·ÅÆ÷
 		m_pPlayer->PushFrame(m_vaBufDisp.GetVideoBuf(), m_desImageInfo.dwXSize * 2);
 		m_pPlayer->PushAudioSample(m_vaBufDisp.GetAudioBuf(), m_vaBufDisp.GetAudioSampleCount() * m_desAudioInfo.dwBitsPerSample / 8);
 	}
+}
+
+void QtEncodecPlayer::OnSliderPosStartChange()
+{
+	m_bSldMoving = true;
+}
+
+void QtEncodecPlayer::OnSliderPosChanged()
+{
+	if (m_pSldPlayProcess)
+	{
+		int nPos = m_pSldPlayProcess->value();
+		m_DecThreader.SetSeekPos(nPos);
+	}
+	m_bSldMoving = false;
+}
+
+void QtEncodecPlayer::PerformanceLogStateChanged(int state)
+{
+}
+
+void QtEncodecPlayer::LockVAPtsStateChanged(int state)
+{
+	if (state == Qt::Checked)
+	{
+		m_DecThreader.SetLockVAPts(true);
+	}
+	else
+	{
+		m_DecThreader.SetLockVAPts(false);
+	}
+}
+
+void QtEncodecPlayer::LoopStateChanged(int state)
+{
+}
+
+void QtEncodecPlayer::ForbitLoseFrameStateChanged(int state)
+{
 }
 
 void QtEncodecPlayer::OnBnClickedDesScan()
@@ -343,7 +406,7 @@ void QtEncodecPlayer::OnBnClickedCue()
 		emit EmitInfoMsg("cueing clip");
 		if (!strSrc.isEmpty())
 		{
-			m_DecThreader.SetStop();
+			OnBnClickedStop();
 			m_DecThreader.SetDecCallbackFunc(CallbackOneFrameDecodecedFunc, this);
 			m_DecThreader.SetInfoMsgCallbackFunc(CallbackInfoMsgFunc, this);
 			SDStreamMediaInfo mediaInfo;
@@ -416,8 +479,16 @@ void QtEncodecPlayer::OnBnClickedPlayPause()
 	{
 		if (m_DecThreader.IsPlaying())
 		{
-			m_DecThreader.SetPlayPause(false);
-			m_pBtnPlayPause->setText(tr("IDS_ENCODEC_PLAYER_PLCTRL_PLAY"));
+			if (m_DecThreader.IsPause())
+			{
+				m_DecThreader.SetPlayPause(true);
+				m_pBtnPlayPause->setText(tr("IDS_ENCODEC_PLAYER_PLCTRL_PAUSE"));
+			}
+			else
+			{
+				m_DecThreader.SetPlayPause(false);
+				m_pBtnPlayPause->setText(tr("IDS_ENCODEC_PLAYER_PLCTRL_PLAY"));
+			}
 		}
 		else
 		{
@@ -434,7 +505,7 @@ void QtEncodecPlayer::OnBnClickedNextFrame()
 
 void QtEncodecPlayer::OnBnClickedLastFrame()
 {
-	m_DecThreader.SetNextFrame();
+	m_DecThreader.SetLastFrame();
 }
 
 void QtEncodecPlayer::OnBnClickedStop()
@@ -466,4 +537,9 @@ void QtEncodecPlayer::OnInfoMsgArrive(const char * szInfoMsg)
 	{
 		m_pEditInfo->append(szInfoMsg);
 	}
+}
+
+void QtEncodecPlayer::OnTimer()
+{
+	emit EmitDispMsg();
 }
