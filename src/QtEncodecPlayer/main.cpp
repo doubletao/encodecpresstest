@@ -1,6 +1,7 @@
 #include "QtEncodecPlayer.h"
 #include <QtWidgets/QApplication>
 #include <QTRanslator>
+#include <QFile>
 
 int main(int argc, char *argv[])
 {
@@ -13,6 +14,13 @@ int main(int argc, char *argv[])
 	{
 		a.installTranslator(translator);
 	}
+
+	//º”‘ÿ∆§∑Ù
+	//QString strSkinPath = a.applicationDirPath().append("/usedefineskin.qss");
+	//QFile qss(strSkinPath);
+	//qss.open(QFile::ReadOnly);
+	//a.setStyleSheet(qss.readAll());
+	//qss.close();
 
 	QtEncodecPlayer w;
 	w.show();

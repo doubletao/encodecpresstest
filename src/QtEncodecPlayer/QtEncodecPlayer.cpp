@@ -1,6 +1,7 @@
 #include "QtEncodecPlayer.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QStandardItemModel>
 
 const int nVideoFramePerSec = 25;
 
@@ -15,7 +16,7 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	, m_pTopRightWidget(nullptr)
 	, m_pMiddleHWidget(nullptr)
 	, m_pInputOutputSettingWidget(nullptr)
-	, m_pEncodecSetting(nullptr)
+	, m_pListEncodecSetting(nullptr)
 	, m_pOtherSettingWidget(nullptr)
 	, m_pEditInfo(nullptr)
 	, m_pAudioEffectWidget(nullptr)
@@ -89,8 +90,7 @@ void QtEncodecPlayer::CreateCtrl()
 	m_pTopRightWidget = new QWidget(this);
 	m_pMiddleHWidget = new QWidget(this);
 	m_pInputOutputSettingWidget = new QWidget(this);
-	m_pEncodecSetting = new QWidget(this);
-	m_pEncodecSetting->setMinimumHeight(250);
+	m_pListEncodecSetting = new QTableView(this);
 	m_pOtherSettingWidget = new QWidget(this);
 
 	m_pEditInfo = new QTextEdit(m_pTopRightWidget);
@@ -160,6 +160,20 @@ void QtEncodecPlayer::CreateCtrl()
 		nBugHeight = m_pPlayerWidget->height();
 	}
 	m_pPlayer->CreatePayer((void *)m_pPlayerWidget->winId(), 0, 0, nBufWidth, nBugHeight, EmVAPlayerColorFmt_UYVY, nBufWidth, nBugHeight, true, EmVAPlayerSampleFmt_S16SYS, 48000, 2, 1920);
+
+	//Ìî³älistÊý¾Ý
+	QStandardItemModel *model = new QStandardItemModel(this);
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 0; j < 6; j++)
+		{
+			QString strItem = QString("item%1_%2").arg(i).arg(j);
+			model->setItem(i, j, new QStandardItem(strItem));
+		}
+	}
+	m_pListEncodecSetting->setModel(model);
+	m_pListEncodecSetting->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	m_pListEncodecSetting->setSelectionBehavior(QAbstractItemView::SelectRows);
 }
 
 void QtEncodecPlayer::LayoutCtrl()
@@ -208,7 +222,8 @@ void QtEncodecPlayer::LayoutCtrl()
 	m_pOtherSettingHLayout->addWidget(m_pBtnLastFrame);
 	m_pOtherSettingHLayout->addWidget(m_pBtnStop);
 
-	m_pWholeVLyaout->addWidget(m_pEncodecSetting);
+	//m_pWholeVLyaout->addWidget(m_pEncodecSetting);
+	m_pWholeVLyaout->addWidget(m_pListEncodecSetting);
 }
 
 void QtEncodecPlayer::InitialConnect()
