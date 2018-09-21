@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 	
 	//¼ÓÔØ·­Òë
-	QTranslator *translator = new QTranslator;
+	QTranslator *translator = new QTranslator(&a);
 	QString strTransFilePath = a.applicationDirPath().append("/translate/");
 	if (translator->load("zh.qm", strTransFilePath))
 	{
