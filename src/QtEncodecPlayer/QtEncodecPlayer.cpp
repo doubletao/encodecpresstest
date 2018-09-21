@@ -50,6 +50,8 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	flags |= Qt::WindowCloseButtonHint | Qt::WindowMinMaxButtonsHint;
 	setWindowFlags(flags);
 
+	setWindowTitle(tr("IDS_ENCODEC_PLAYER_WINDOW_TITLE").arg(0).arg(10).arg(100).arg(1000));
+
 	CreateCtrl();
 	LayoutCtrl();
 	InitialConnect();
