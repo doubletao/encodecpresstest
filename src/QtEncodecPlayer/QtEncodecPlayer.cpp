@@ -5,6 +5,7 @@
 #include <QPixmap>
 #include <QImage>
 #include <QImageReader>
+#include <QTime>
 
 const int nVideoFramePerSec = 25;
 
@@ -186,7 +187,7 @@ void QtEncodecPlayer::CreateCtrl()
 	m_pListEncodecSetting->setColumnWidth(0, 80);
 
 	m_pListEncodecSetting->SetColumnType(0, EmRowListColumnType::Icon);
-	m_pListEncodecSetting->SetColumnType(1, EmRowListColumnType::ReadonlyText);
+	m_pListEncodecSetting->SetColumnType(1, EmRowListColumnType::Time, "hh:mm:ss:zz");
 	m_pListEncodecSetting->SetColumnType(2, EmRowListColumnType::ReadonlyText);
 	m_pListEncodecSetting->SetColumnType(3, EmRowListColumnType::ReadonlyText);
 	m_pListEncodecSetting->SetColumnType(4, EmRowListColumnType::Text);
@@ -194,16 +195,28 @@ void QtEncodecPlayer::CreateCtrl()
 
 	if (true)
 	{
-		QList<QByteArray> aryImg = QImageReader::supportedImageFormats();
-		//读一张图片并设为icon
-		QImage image;
-		if (image.load("F:/Media/img/4.jpg"))
+		QStringList lstImgPath;
+		lstImgPath.append("F:/Media/img/1.png");
+		lstImgPath.append("F:/Media/img/2.jpg");
+		lstImgPath.append("F:/Media/img/3.jpg");
+		lstImgPath.append("F:/Media/img/4.jpg");
+		lstImgPath.append("F:/Media/img/5.png");
+		for (size_t i = 0; i < lstImgPath.count(); i++)
 		{
-			QPixmap pixMap = QPixmap::fromImage(image.scaled(QSize(80, 75), Qt::KeepAspectRatio));
-			if (!pixMap.isNull())
+			//读一张图片并设为icon
+			QImage image;
+			if (image.load(lstImgPath[i]))
 			{
-				m_pListEncodecSetting->SetIcon(0, 0, pixMap);
+				QPixmap pixMap = QPixmap::fromImage(image.scaled(QSize(80, 75), Qt::KeepAspectRatio));
+				if (!pixMap.isNull())
+				{
+					m_pListEncodecSetting->SetIcon(i, 0, pixMap);
+				}
 			}
+
+			//时钟都归零
+			QTime timeValue(0, 0, 0, 0);
+			m_pListEncodecSetting->model()->setData(m_pListEncodecSetting->model()->index(i, 1), timeValue);
 		}
 	}
 }

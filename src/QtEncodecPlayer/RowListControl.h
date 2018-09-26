@@ -7,6 +7,7 @@ enum class EmRowListColumnType
 	Text,
 	Combobox,
 	Icon,
+	Time,
 };
 
 class RowListDelegate : public QStyledItemDelegate
@@ -45,6 +46,18 @@ public:
 	void SetListValue(QStringList lstStrValue);
 };
 
+class RowTimeComboboxDelegate : public RowListDelegate
+{
+private:
+	QString m_strDispFormat;
+public:
+	RowTimeComboboxDelegate(QWidget *parent, QString strDispFormat = "hh:mm:ss", int nWidth = 0, int nHeight = 30);
+	QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
+	void setEditorData(QWidget *editor, const QModelIndex &index) const Q_DECL_OVERRIDE;
+	void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const Q_DECL_OVERRIDE;
+	void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
+};
+
 class RowListIconDelegate : public RowListDelegate
 {
 public:
@@ -60,6 +73,7 @@ public:
 	virtual ~RowListControl();
 	void SetColumnType(int nColumn, EmRowListColumnType emType);
 	void SetColumnType(int nColumn, EmRowListColumnType emType, QStringList lstStrValue);//用来给例如下拉选类型填充数据
+	void SetColumnType(int nColumn, EmRowListColumnType emType, QString strValue);//用来给例如时间控件填充数据
 	void SetRowHeight(int nHeight);
 	bool SetIcon(int nRow, int nColumn, const QPixmap & img);
 };
