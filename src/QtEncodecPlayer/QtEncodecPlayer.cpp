@@ -2,6 +2,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QStandardItemModel>
+#include <QPixmap>
+#include <QImage>
+#include <QImageReader>
 
 const int nVideoFramePerSec = 25;
 
@@ -92,7 +95,7 @@ void QtEncodecPlayer::CreateCtrl()
 	m_pTopRightWidget = new QWidget(this);
 	m_pMiddleHWidget = new QWidget(this);
 	m_pInputOutputSettingWidget = new QWidget(this);
-	m_pListEncodecSetting = new QTableView(this);
+	m_pListEncodecSetting = new RowListControl(this);
 	m_pOtherSettingWidget = new QWidget(this);
 
 	m_pEditInfo = new QTextEdit(m_pTopRightWidget);
@@ -164,18 +167,45 @@ void QtEncodecPlayer::CreateCtrl()
 	m_pPlayer->CreatePayer((void *)m_pPlayerWidget->winId(), 0, 0, nBufWidth, nBugHeight, EmVAPlayerColorFmt_UYVY, nBufWidth, nBugHeight, true, EmVAPlayerSampleFmt_S16SYS, 48000, 2, 1920);
 
 	//填充list数据
-	QStandardItemModel *model = new QStandardItemModel(this);
+	QStringList lstStrValue;
+	QStandardItemModel * model = new QStandardItemModel(this);
 	for (int i = 0; i < 5; i++)
 	{
 		for (int j = 0; j < 6; j++)
 		{
 			QString strItem = QString("item%1_%2").arg(i).arg(j);
 			model->setItem(i, j, new QStandardItem(strItem));
+			lstStrValue.append(strItem);
 		}
 	}
+
 	m_pListEncodecSetting->setModel(model);
 	m_pListEncodecSetting->setSelectionMode(QAbstractItemView::ExtendedSelection);
 	m_pListEncodecSetting->setSelectionBehavior(QAbstractItemView::SelectRows);
+	m_pListEncodecSetting->SetRowHeight(75);
+	m_pListEncodecSetting->setColumnWidth(0, 80);
+
+	m_pListEncodecSetting->SetColumnType(0, EmRowListColumnType::Icon);
+	m_pListEncodecSetting->SetColumnType(1, EmRowListColumnType::ReadonlyText);
+	m_pListEncodecSetting->SetColumnType(2, EmRowListColumnType::ReadonlyText);
+	m_pListEncodecSetting->SetColumnType(3, EmRowListColumnType::ReadonlyText);
+	m_pListEncodecSetting->SetColumnType(4, EmRowListColumnType::Text);
+	m_pListEncodecSetting->SetColumnType(5, EmRowListColumnType::Combobox, lstStrValue);
+
+	if (true)
+	{
+		QList<QByteArray> aryImg = QImageReader::supportedImageFormats();
+		//读一张图片并设为icon
+		QImage image;
+		if (image.load("F:/Media/img/4.jpg"))
+		{
+			QPixmap pixMap = QPixmap::fromImage(image.scaled(QSize(80, 75), Qt::KeepAspectRatio));
+			if (!pixMap.isNull())
+			{
+				m_pListEncodecSetting->SetIcon(0, 0, pixMap);
+			}
+		}
+	}
 }
 
 void QtEncodecPlayer::LayoutCtrl()

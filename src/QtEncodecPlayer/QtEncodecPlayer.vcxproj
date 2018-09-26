@@ -134,6 +134,7 @@ copy "$(ProjectDir)zh.qm" "$(TargetDir)translate\zh.qm";</Command>
     <ClCompile Include="EncodecThreader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="QtEncodecPlayer.cpp" />
+    <ClCompile Include="RowListControl.cpp" />
     <ClCompile Include="StdEvent.cpp" />
     <ClCompile Include="VABuffer.cpp" />
     <ClCompile Include="VALoop.cpp" />
@@ -148,6 +149,12 @@ copy "$(ProjectDir)zh.qm" "$(TargetDir)translate\zh.qm";</Command>
   <ItemGroup>
     <ClInclude Include="DecodecThreader.h" />
     <ClInclude Include="EncodecThreader.h" />
+    <ClInclude Include="RowListControl.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName)\.;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;.\..\..\include\ecCodec;.\..\..\include\VAPlayer;.\..\..\include\SDDefine;C:\Program Files (x86)\Visual Leak Detector\include</IncludePath>
+      <Define Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UNICODE;WIN32;WIN64;QT_DLL;_USE_VA_PLAYER_LIB;_USE_CODEC_LIB;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB</Define>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName)\.;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;.\..\..\include\ecCodec;.\..\..\include\VAPlayer;.\..\..\include\SDDefine;C:\Program Files (x86)\Visual Leak Detector\include</IncludePath>
+      <Define Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UNICODE;WIN32;WIN64;QT_DLL;_USE_VA_PLAYER_LIB;_USE_CODEC_LIB;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB;_UNICODE</Define>
+    </ClInclude>
     <ClInclude Include="StdEvent.h" />
     <ClInclude Include="VABuffer.h" />
     <ClInclude Include="VALoop.h" />

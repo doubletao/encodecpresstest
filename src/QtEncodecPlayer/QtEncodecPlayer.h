@@ -16,6 +16,7 @@
 #include <QTimer>
 #include <QTableView>
 #include "VAPlayerExport.h"
+#include "RowListControl.h"
 
 class QtEncodecPlayer : public QDialog
 {
@@ -86,7 +87,7 @@ protected:
 	QWidget * m_pTopRightWidget;//播放器右边区域
 	QWidget * m_pMiddleHWidget;//中部滑条区域
 	QWidget * m_pInputOutputSettingWidget;//输入输出及播放速度设置
-	QTableView * m_pListEncodecSetting;//编码设置列表
+	RowListControl * m_pListEncodecSetting;//编码设置列表
 	QWidget * m_pOtherSettingWidget;//其他设置项
 	//第二层
 	//信息窗口及音频设置
