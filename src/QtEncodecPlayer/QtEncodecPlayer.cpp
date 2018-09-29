@@ -187,7 +187,7 @@ void QtEncodecPlayer::CreateCtrl()
 	m_pListEncodecSetting->setColumnWidth(0, 80);
 
 	m_pListEncodecSetting->SetColumnType(0, EmRowListColumnType::Icon);
-	m_pListEncodecSetting->SetColumnType(1, EmRowListColumnType::Time, "hh:mm:ss:zz");
+	m_pListEncodecSetting->SetColumnType(1, EmRowListColumnType::Time, "hh:mm:ss:zzz");
 	m_pListEncodecSetting->SetColumnType(2, EmRowListColumnType::ReadonlyText);
 	m_pListEncodecSetting->SetColumnType(3, EmRowListColumnType::ReadonlyText);
 	m_pListEncodecSetting->SetColumnType(4, EmRowListColumnType::Text);

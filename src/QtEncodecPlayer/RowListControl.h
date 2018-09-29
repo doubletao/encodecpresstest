@@ -46,12 +46,12 @@ public:
 	void SetListValue(QStringList lstStrValue);
 };
 
-class RowTimeComboboxDelegate : public RowListDelegate
+class RowTimeEditDelegate : public RowListDelegate
 {
 private:
 	QString m_strDispFormat;
 public:
-	RowTimeComboboxDelegate(QWidget *parent, QString strDispFormat = "hh:mm:ss", int nWidth = 0, int nHeight = 30);
+	RowTimeEditDelegate(QWidget *parent, QString strDispFormat = "hh:mm:ss", int nWidth = 0, int nHeight = 30);
 	QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
 	void setEditorData(QWidget *editor, const QModelIndex &index) const Q_DECL_OVERRIDE;
 	void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const Q_DECL_OVERRIDE;
