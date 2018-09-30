@@ -128,44 +128,52 @@ void RowListComboboxDelegate::SetListValue(QStringList lstStrValue)
 
 /////////////////////////////////RowTimeComboboxDelegate//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-RowTimeEditDelegate::RowTimeEditDelegate(QWidget *parent, QString strDispFormat/* = "hh:mm:ss"*/, int nWidth/* = 0*/, int nHeight/* = 30*/)
+RowFrameTimeEditDelegate::RowFrameTimeEditDelegate(QWidget *parent, QString strDispFormat/* = "hh:mm:ss:yy"*/, int nWidth/* = 0*/, int nHeight/* = 30*/)
 	: RowListDelegate(parent, nWidth, nHeight)
 	, m_strDispFormat(strDispFormat)
 {
 }
 
-QWidget * RowTimeEditDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+QWidget * RowFrameTimeEditDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
 	FrameTimeEdit * pEditor = new FrameTimeEdit(parent);
 	pEditor->setDisplayFormat(m_strDispFormat);
 	return pEditor;
 }
 
-void RowTimeEditDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+void RowFrameTimeEditDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-	QTime value = index.model()->data(index, Qt::DisplayRole).toTime();
+	QDateTime value = index.model()->data(index, Qt::DisplayRole).toDateTime();
 	QTimeEdit * pEditor = static_cast<QTimeEdit *>(editor);
 	if (pEditor)
 	{
-		pEditor->setTime(value);
+		pEditor->setDateTime(value);
 	}
 }
 
-void RowTimeEditDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+void RowFrameTimeEditDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
-	QTime value;
+	QDateTime value;
 	QTimeEdit * pEditor = static_cast<QTimeEdit *>(editor);
 	if (pEditor)
 	{
-		value = pEditor->time();
+		value = pEditor->dateTime();
 	}
 	model->setData(index, value, Qt::DisplayRole);
 }
 
-void RowTimeEditDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void RowFrameTimeEditDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-	QTime value = index.model()->data(index, Qt::DisplayRole).toTime();
-	QString strDisp = value.toString(m_strDispFormat);
+	QDateTime value = index.model()->data(index, Qt::DisplayRole).toDateTime();
+	int nYear = value.date().year();
+	if (nYear > 2000)
+	{
+		nYear = nYear - 2000;
+	}
+	int nHour = value.time().hour();
+	int nMinute = value.time().minute();
+	int nSecond = value.time().second();
+	QString strDisp = QString("%1:%2:%3:%4").arg(nHour, 2, 10, QLatin1Char('0')).arg(nMinute, 2, 10, QLatin1Char('0')).arg(nSecond, 2, 10, QLatin1Char('0')).arg(nYear, 2, 10, QLatin1Char('0'));
 	QRect rtText = option.rect;
 	painter->drawText(rtText, Qt::AlignCenter, strDisp);
 }
@@ -231,8 +239,8 @@ void RowListControl::SetColumnType(int nColumn, EmRowListColumnType emType)
 		setItemDelegateForColumn(nColumn, new RowListIconDelegate(this));
 		horizontalHeader()->setSectionResizeMode(nColumn, QHeaderView::Fixed);
 		break;
-	case EmRowListColumnType::Time:
-		setItemDelegateForColumn(nColumn, new RowTimeEditDelegate(this));
+	case EmRowListColumnType::FrameTime:
+		setItemDelegateForColumn(nColumn, new RowFrameTimeEditDelegate(this));
 	default:
 		break;
 	}
@@ -249,22 +257,6 @@ void RowListControl::SetColumnType(int nColumn, EmRowListColumnType emType, QStr
 		setItemDelegateForColumn(nColumn, pComboboxDelegate);
 	}
 		break;
-	default:
-		SetColumnType(nColumn, emType);
-		break;
-	}
-}
-
-void RowListControl::SetColumnType(int nColumn, EmRowListColumnType emType, QString strValue)
-{
-	switch (emType)
-	{
-	case EmRowListColumnType::Time:
-	{
-		RowTimeEditDelegate * pTimeEditDelegate = new RowTimeEditDelegate(this, strValue);
-		setItemDelegateForColumn(nColumn, pTimeEditDelegate);
-	}
-	break;
 	default:
 		SetColumnType(nColumn, emType);
 		break;

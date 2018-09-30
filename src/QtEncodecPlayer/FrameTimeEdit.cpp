@@ -3,26 +3,12 @@
 #include <QEvent>
 
 FrameTimeEdit::FrameTimeEdit(QWidget *parent/* = nullptr*/)
-	: QTimeEdit(parent)
+	: QDateTimeEdit(parent)
 {
+	//设定日期范围是2000年到2024年，取年份的后两位当作帧
+	setDateRange(QDate(2000, 12, 31), QDate(2024, 12, 31));
 }
 
 FrameTimeEdit::~FrameTimeEdit()
 {
-}
-
-bool FrameTimeEdit::event(QEvent * event)
-{
-	if (event->type() == QEvent::InputMethodQuery)
-	{
-		//对于input动作，动态调整一下值
-		QTime tmCurent = time();
-		qDebug() << tmCurent.msec();
-		if (tmCurent.msec() > 24)
-		{
-			tmCurent.setHMS(tmCurent.hour(), tmCurent.minute(), tmCurent.second(), 24);
-			setTime(tmCurent);
-		}
-	}
-	return QTimeEdit::event(event);
 }
