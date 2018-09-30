@@ -166,7 +166,7 @@ void RowFrameTimeEditDelegate::paint(QPainter *painter, const QStyleOptionViewIt
 {
 	QDateTime value = index.model()->data(index, Qt::DisplayRole).toDateTime();
 	int nYear = value.date().year();
-	if (nYear > 2000)
+	if (nYear > 1999)
 	{
 		nYear = nYear - 2000;
 	}
