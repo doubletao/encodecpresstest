@@ -21,6 +21,7 @@ QtEncodecPlayer::QtEncodecPlayer(QWidget *parent)
 	, m_pMiddleHWidget(nullptr)
 	, m_pInputOutputSettingWidget(nullptr)
 	, m_pListEncodecSetting(nullptr)
+	, m_pTreeTest(nullptr)
 	, m_pOtherSettingWidget(nullptr)
 	, m_pEditInfo(nullptr)
 	, m_pAudioEffectWidget(nullptr)
@@ -96,8 +97,8 @@ void QtEncodecPlayer::CreateCtrl()
 	m_pTopRightWidget = new QWidget(this);
 	m_pMiddleHWidget = new QWidget(this);
 	m_pInputOutputSettingWidget = new QWidget(this);
-	m_pListEncodecSetting = new RowListControl(this);
 	m_pOtherSettingWidget = new QWidget(this);
+	m_pEncodecParamWidget = new QWidget(this);
 
 	m_pEditInfo = new QTextEdit(m_pTopRightWidget);
 	m_pEditInfo->setReadOnly(true);
@@ -150,11 +151,15 @@ void QtEncodecPlayer::CreateCtrl()
 	m_pBtnLastFrame = new QPushButton(tr("IDS_ENCODEC_PLAYER_PLCTRL_LAST_FRAME"), m_pOtherSettingWidget);
 	m_pBtnStop = new QPushButton(tr("IDS_ENCODEC_PLAYER_PLCTRL_STOP"), m_pOtherSettingWidget);
 
+	m_pListEncodecSetting = new RowListControl(m_pEncodecParamWidget);
+	m_pTreeTest = new QTreeView(m_pEncodecParamWidget);
+
 	m_pWholeVLyaout = new QVBoxLayout(this);
 	m_pTopHLayout = new QHBoxLayout(this);
 	m_pTopRightWidgetVLayout = new QVBoxLayout(m_pTopRightWidget);
 	m_pMiddleHLayout = new QHBoxLayout(m_pMiddleHWidget);
 	m_pInputOutputSettingHLayout = new QHBoxLayout(m_pInputOutputSettingWidget);
+	m_pEncodecParamHLayout = new QHBoxLayout(m_pEncodecParamWidget);
 	m_pOtherSettingHLayout = new QHBoxLayout(m_pOtherSettingWidget);
 
 	m_pPlayer = CreateVAPlayer(EM_VAPLayer_SDL);
@@ -167,34 +172,34 @@ void QtEncodecPlayer::CreateCtrl()
 	}
 	m_pPlayer->CreatePayer((void *)m_pPlayerWidget->winId(), 0, 0, nBufWidth, nBugHeight, EmVAPlayerColorFmt_UYVY, nBufWidth, nBugHeight, true, EmVAPlayerSampleFmt_S16SYS, 48000, 2, 1920);
 
-	//填充list数据
-	QStringList lstStrValue;
-	QStandardItemModel * model = new QStandardItemModel(this);
-	for (int i = 0; i < 5; i++)
-	{
-		for (int j = 0; j < 6; j++)
-		{
-			QString strItem = QString("item%1_%2").arg(i).arg(j);
-			model->setItem(i, j, new QStandardItem(strItem));
-			lstStrValue.append(strItem);
-		}
-	}
-
-	m_pListEncodecSetting->setModel(model);
-	m_pListEncodecSetting->setSelectionMode(QAbstractItemView::ExtendedSelection);
-	m_pListEncodecSetting->setSelectionBehavior(QAbstractItemView::SelectRows);
-	m_pListEncodecSetting->SetRowHeight(75);
-	m_pListEncodecSetting->setColumnWidth(0, 80);
-
-	m_pListEncodecSetting->SetColumnType(0, EmRowListColumnType::Icon);
-	m_pListEncodecSetting->SetColumnType(1, EmRowListColumnType::FrameTime);
-	m_pListEncodecSetting->SetColumnType(2, EmRowListColumnType::ReadonlyText);
-	m_pListEncodecSetting->SetColumnType(3, EmRowListColumnType::ReadonlyText);
-	m_pListEncodecSetting->SetColumnType(4, EmRowListColumnType::Text);
-	m_pListEncodecSetting->SetColumnType(5, EmRowListColumnType::Combobox, lstStrValue);
-
+	//填充list测试数据
 	if (true)
 	{
+		QStringList lstStrValue;
+		QStandardItemModel * model = new QStandardItemModel(this);
+		for (int i = 0; i < 5; i++)
+		{
+			for (int j = 0; j < 6; j++)
+			{
+				QString strItem = QString("item%1_%2").arg(i).arg(j);
+				model->setItem(i, j, new QStandardItem(strItem));
+				lstStrValue.append(strItem);
+			}
+		}
+
+		m_pListEncodecSetting->setModel(model);
+		m_pListEncodecSetting->setSelectionMode(QAbstractItemView::ExtendedSelection);
+		m_pListEncodecSetting->setSelectionBehavior(QAbstractItemView::SelectRows);
+		m_pListEncodecSetting->SetRowHeight(75);
+		m_pListEncodecSetting->setColumnWidth(0, 80);
+
+		m_pListEncodecSetting->SetColumnType(0, EmRowListColumnType::Icon);
+		m_pListEncodecSetting->SetColumnType(1, EmRowListColumnType::FrameTime);
+		m_pListEncodecSetting->SetColumnType(2, EmRowListColumnType::ReadonlyText);
+		m_pListEncodecSetting->SetColumnType(3, EmRowListColumnType::ReadonlyText);
+		m_pListEncodecSetting->SetColumnType(4, EmRowListColumnType::Text);
+		m_pListEncodecSetting->SetColumnType(5, EmRowListColumnType::Combobox, lstStrValue);
+
 		QStringList lstImgPath;
 		lstImgPath.append("F:/Media/img/1.png");
 		lstImgPath.append("F:/Media/img/2.jpg");
@@ -218,6 +223,34 @@ void QtEncodecPlayer::CreateCtrl()
 			QDateTime timeValue(QDate(0, 0, 0), QTime(0, 0, 0));
 			m_pListEncodecSetting->model()->setData(m_pListEncodecSetting->model()->index(i, 1), timeValue);
 		}
+	}
+
+	//填充tree测试数据
+	if (true)
+	{
+		QStringList lstImgPath;
+		lstImgPath.append("F:/Media/img/1.png");
+		lstImgPath.append("F:/Media/img/2.jpg");
+		lstImgPath.append("F:/Media/img/3.jpg");
+		lstImgPath.append("F:/Media/img/4.jpg");
+		lstImgPath.append("F:/Media/img/5.png");
+
+		QStandardItemModel * model = new QStandardItemModel(this);
+		for (int i = 0; i < 5; i++)
+		{
+			QString strItem = QString("item%1").arg(i);
+			QStandardItem * item = new QStandardItem(strItem);
+			item->setIcon(QIcon(lstImgPath.at(i)));
+			model->setItem(i, item);
+			for (size_t j = 0; j < 4; j++)
+			{
+				QString strItem = QString("item%1_%2").arg(i).arg(j);
+				QStandardItem * itemChild = new QStandardItem(strItem);
+				itemChild->setIcon(QIcon(lstImgPath.at(i)));
+				item->appendRow(itemChild);
+			}
+		}
+		m_pTreeTest->setModel(model);
 	}
 }
 
@@ -267,8 +300,10 @@ void QtEncodecPlayer::LayoutCtrl()
 	m_pOtherSettingHLayout->addWidget(m_pBtnLastFrame);
 	m_pOtherSettingHLayout->addWidget(m_pBtnStop);
 
-	//m_pWholeVLyaout->addWidget(m_pEncodecSetting);
-	m_pWholeVLyaout->addWidget(m_pListEncodecSetting);
+	m_pWholeVLyaout->addWidget(m_pEncodecParamWidget);
+	m_pEncodecParamWidget->setLayout(m_pEncodecParamHLayout);
+	m_pEncodecParamHLayout->addWidget(m_pListEncodecSetting);
+	m_pEncodecParamHLayout->addWidget(m_pTreeTest);
 }
 
 void QtEncodecPlayer::InitialConnect()

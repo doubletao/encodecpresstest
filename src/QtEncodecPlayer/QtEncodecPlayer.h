@@ -17,6 +17,7 @@
 #include <QTableView>
 #include "VAPlayerExport.h"
 #include "RowListControl.h"
+#include <QTreeView>
 
 class QtEncodecPlayer : public QDialog
 {
@@ -81,13 +82,14 @@ protected:
 	QVBoxLayout * m_pTopRightWidgetVLayout;//上部右侧区域
 	QHBoxLayout * m_pMiddleHLayout;//中部滑条
 	QHBoxLayout * m_pInputOutputSettingHLayout;//输入输出和播放速度横向布局
+	QHBoxLayout * m_pEncodecParamHLayout;//编码参数设置布局
 	QHBoxLayout * m_pOtherSettingHLayout;//底部其他设置布局
 	//第一层
 	QWidget * m_pPlayerWidget;//播放器区域
 	QWidget * m_pTopRightWidget;//播放器右边区域
 	QWidget * m_pMiddleHWidget;//中部滑条区域
 	QWidget * m_pInputOutputSettingWidget;//输入输出及播放速度设置
-	RowListControl * m_pListEncodecSetting;//编码设置列表
+	QWidget * m_pEncodecParamWidget;
 	QWidget * m_pOtherSettingWidget;//其他设置项
 	//第二层
 	//信息窗口及音频设置
@@ -120,4 +122,7 @@ protected:
 	QPushButton * m_pBtnNextFrame;
 	QPushButton * m_pBtnLastFrame;
 	QPushButton * m_pBtnStop;
+	//编码设置
+	RowListControl * m_pListEncodecSetting;//编码设置列表
+	QTreeView * m_pTreeTest;//用来测试qt的树形控件
 };
