@@ -56,6 +56,7 @@ public:
 	virtual bool SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo *pVideoBufInfo, const SDResamplerPara *pResamplerPara) = 0;
 	// 获取先前所设置的解码得到的无压缩视频数据参数
 	virtual bool GetVideoFrameBufInfo(SDVideoFrameImageBufInfo *pVideoBufInfo, SDResamplerPara *pResamplerPara) = 0;
+	virtual bool SetVideoFrameInfo(const SDVideoMediaInfo * pVideoInfo, const SDResamplerPara *pResamplerPara) = 0;//本接口与上一个的差别在于本接口会根据情况进行帧率变化
 	// 根据SetVideoDecodePara输入的视频解码参数取得解码得到的无压缩视频帧占用的缓存字节数
 	// 该函数需要在调用SetVideoDecodePara()后再调用
 	virtual SD_UINT32 GetVideoBufferSize() = 0;

@@ -25,7 +25,7 @@ private:
 	AVPacket * m_pVideoPacket;
 	int64_t m_nCurrentVideoSeekPos;
 	double m_dFramePerUnit;
-	bool m_bVideoSeek;
+	bool m_bVideoSeeking;//标记是否上一次seek还未结束。因为针对frame的seek动作有可能是停在前一个最近关键帧，所以需要继续连续解码以到达准确帧，用该标记指示上一次seek动作还未结束，继续解码，不要再次seek
 
 	int m_nAudioIndex;
 	ecCodecFFmpegAudioDecoder m_AudioDecoder;
@@ -47,6 +47,18 @@ private:
 	unsigned char* m_pAvIoBuffer;
 
 	CRITICAL_SECTION m_lock;
+
+	//帧率变换使用，源和目标的帧率m_dwDesStandardRate/m_dwDesStandardScale
+	SD_UINT32 m_dwDesStandardRate;
+	SD_UINT32 m_dwDesStandardScale;
+	SD_UINT32 m_dwSrcStandardRate;
+	SD_UINT32 m_dwSrcStandardScale;
+	//帧率变换使用，上一帧的buf及info
+	SD_UINT8 * m_pLastFrameBuf;
+	SD_UINT32 m_nLastFrameBufSize;
+	SDRFrameInfo m_stuLastFrameInfo;
+	//GetVABuffer使用的帧号
+	SD_UINT64 m_nCurFrame;
 public:
 	ecCodecFFmpegProtocolDecoder();
 	virtual ~ecCodecFFmpegProtocolDecoder();
@@ -63,6 +75,7 @@ public:
 	virtual bool IsCanReadAudioFrame();
 	virtual bool Start();
 	virtual bool SetVideoFrameBufInfo(const SDVideoFrameImageBufInfo *pVideoBufInfo, const SDResamplerPara *pResamplerPara);
+	virtual bool SetVideoFrameInfo(const SDVideoMediaInfo * pVideoInfo, const SDResamplerPara *pResamplerPara);//本接口与上一个的差别在于本接口会根据情况进行帧率变化
 	virtual bool GetVideoFrameBufInfo(SDVideoFrameImageBufInfo *pVideoBufInfo, SDResamplerPara *pResamplerPara);
 	virtual SD_UINT32 GetVideoBufferSize();
 	virtual SD_UINT32 GetAudioBufferSize();

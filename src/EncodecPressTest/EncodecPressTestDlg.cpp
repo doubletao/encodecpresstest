@@ -286,17 +286,24 @@ void CEncodecPressTestDlg::DoPlay()
 						m_nTimebaseNum = streamMediaInfoEx.sVideoMediaInfo.dwStandardScale;
 						bool bContinue = true;
 						//m_player.SetBufferFWH(SDL_PIXELFORMAT_UYVY, nWidth, nHeight);
-						SDVideoFrameImageBufInfo videoFrameImageBufInfo;
-						videoFrameImageBufInfo.dwXSize = nWidth;
-						videoFrameImageBufInfo.dwYSize = nHeight;
-						videoFrameImageBufInfo.enumColorFormat = SDCOLORFORMAT_UYVY;// streamMediaInfoEx.sVideoMediaInfo.enumColorFormat;
-						bContinue = pDecoder->SetVideoFrameBufInfo(&videoFrameImageBufInfo, nullptr);
+						//SDVideoFrameImageBufInfo videoFrameImageBufInfo;
+						//videoFrameImageBufInfo.dwXSize = nWidth;
+						//videoFrameImageBufInfo.dwYSize = nHeight;
+						//videoFrameImageBufInfo.enumColorFormat = SDCOLORFORMAT_UYVY;// streamMediaInfoEx.sVideoMediaInfo.enumColorFormat;
+
+						SDVideoMediaInfo videoFrameInfo;
+						videoFrameInfo.dwWidth = nWidth;
+						videoFrameInfo.dwHeight = nHeight;
+						videoFrameInfo.enumColorFormat = SDCOLORFORMAT_UYVY;
+						videoFrameInfo.dwStandardRate = 25;
+						videoFrameInfo.dwStandardScale = 1;
+						bContinue = pDecoder->SetVideoFrameInfo(&videoFrameInfo, nullptr);
 
 						//根据帧率及采样率来算出每帧对应的sample数
 						SD_UINT32 SamplePerFrame = 2048;
 						{
 							//每秒的视频帧数
-							double dFramePerSec = streamMediaInfoEx.sVideoMediaInfo.dwStandardRate * 1.0 / streamMediaInfoEx.sVideoMediaInfo.dwStandardScale;
+							double dFramePerSec = videoFrameInfo.dwStandardRate * 1.0 / videoFrameInfo.dwStandardScale;
 							//每秒的采样数
 							double dSamplePerSec = audioInfo.dwSamplesPerSec;
 							//每帧对应的sample数=每秒的采样数/每秒的视频帧数
@@ -386,7 +393,7 @@ void CEncodecPressTestDlg::DoPlay()
 											imageBufInfo.dwXSize = nWidth;
 											imageBufInfo.dwYSize = nHeight;
 											imageBufInfo.dwScanXByteSize = nWidth * 2;
-											imageBufInfo.enumColorFormat = videoFrameImageBufInfo.enumColorFormat;
+											imageBufInfo.enumColorFormat = videoFrameInfo.enumColorFormat;
 											imageBufInfo.enumScanMode = SDVIDEOSCANMODE_FirstFieldTop;
 
 											SDAudioSamplesBufInfo audioBufInfo;

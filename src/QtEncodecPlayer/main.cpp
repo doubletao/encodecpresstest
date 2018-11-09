@@ -16,11 +16,11 @@ int main(int argc, char *argv[])
 	}
 
 	//º”‘ÿ∆§∑Ù
-	QString strSkinPath = a.applicationDirPath().append("/usedefineskin.qss");
-	QFile qss(strSkinPath);
-	qss.open(QFile::ReadOnly);
-	a.setStyleSheet(qss.readAll());
-	qss.close();
+	//QString strSkinPath = a.applicationDirPath().append("/usedefineskin.qss");
+	//QFile qss(strSkinPath);
+	//qss.open(QFile::ReadOnly);
+	//a.setStyleSheet(qss.readAll());
+	//qss.close();
 
 	QtEncodecPlayer w;
 	w.show();
