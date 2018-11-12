@@ -929,7 +929,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex,
 					OutputDebugStringA(szContent);
 				}
 #endif
-				if (m_nCurrentFrame < dwDesFrame)
+				if (m_nCurrentFrame < dwDesFrame || m_nCurrentFrame > dwDesFrame + 5)
 				{
 					bool bRet = GetBufferFromDecoder(dwDesFrame);
 					memcpy(m_pLastFrameBuf, pFrameBuf, nVideoBufSize);
