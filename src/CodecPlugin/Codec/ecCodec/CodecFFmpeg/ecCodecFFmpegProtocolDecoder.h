@@ -34,7 +34,7 @@ private:
 	int32_t m_nDesSamplePerSec;
 	int32_t m_nSrcSamplePerSec;
 	SD_UINT8 * m_pAudioResBuf;
-	bool m_bAudioSeek;
+	bool m_bAudioSeeking;
 	ecCodecFFmpegResampler m_AudioResampler;
 
 	int m_nDesChannelCount;

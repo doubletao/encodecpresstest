@@ -17,7 +17,7 @@ ecCodecFFmpegProtocolDecoder::ecCodecFFmpegProtocolDecoder()
 	, m_nCurrentVideoSeekPos(0)
 	, m_bVideoSeeking(false)
 	, m_nCurrentAudioSeekPos(0)
-	, m_bAudioSeek(false)
+	, m_bAudioSeeking(false)
 	, m_nCurrentFrame(0)
 	, m_nCurrentSample(0)
 	, m_nDesSamplePerSec(0)
@@ -868,14 +868,14 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex,
 					}
 					if (!m_bVideoSeeking)
 					{
-						int nVNum = 0;
-						int nVDen = 0;
-						AVStream * pStream = m_pFormatCtx->streams[m_nVideoIndex];
-						if (pStream)
-						{
-							nVNum = pStream->time_base.num;
-							nVDen = pStream->time_base.den;
-						}
+						//int nVNum = 0;
+						//int nVDen = 0;
+						//AVStream * pStream = m_pFormatCtx->streams[m_nVideoIndex];
+						//if (pStream)
+						//{
+						//	nVNum = pStream->time_base.num;
+						//	nVDen = pStream->time_base.den;
+						//}
 						//double dVideoTm = m_VideoDecoder.GetCurrentMilSecTimestamp(nVNum, nVDen, 0);
 						//char szOutput[256];
 						//sprintf_s(szOutput, 256, "dVideoTm=%f\r\n", dVideoTm);
@@ -906,8 +906,23 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex,
 			else//帧率有变化
 			{
 				//先根据外部帧号算出目标帧号(不需要是整数)
-				SD_UINT64 dwDesFrame = dwCurFrameShowIndex * 1.0f / m_dwDesStandardRate * m_dwDesStandardScale * m_dwSrcStandardRate / m_dwSrcStandardScale;
-				dwDesFrame++;
+				float fDesFrame = dwCurFrameShowIndex * 1.0f / m_dwDesStandardRate * m_dwDesStandardScale * m_dwSrcStandardRate / m_dwSrcStandardScale;
+				SD_UINT64 dwDesFrame = fDesFrame;
+				if (dwDesFrame + 0.01 < fDesFrame)
+				{
+					dwDesFrame++;
+				}
+				else
+				{
+#if 0
+					if (true)
+					{
+						char szContent[512] = { 0 };
+						sprintf_s(szContent, "dwDesFrame no gain\n");
+						OutputDebugStringA(szContent);
+					}
+#endif
+				}
 				SD_UINT32 nVideoBufSize = GetVideoBufferSize();
 				if (m_pLastFrameBuf && m_nLastFrameBufSize != nVideoBufSize)
 				{
@@ -921,7 +936,7 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoBuffer(SD_UINT64 dwCurFrameShowIndex,
 					memset(m_pLastFrameBuf, 0, nVideoBufSize);
 					m_nLastFrameBufSize = nVideoBufSize;
 				}
-#if 1
+#if 0
 				if (true)
 				{
 					char szContent[512] = {0};
@@ -1023,8 +1038,15 @@ bool ecCodecFFmpegProtocolDecoder::GetVideoFrame(SD_UINT64 dwCurFrameShowIndex, 
 					//只要小于总长，就直接seek
 					else if (m_nCurrentVideoSeekPos <= pVideoStream->nb_frames)
 					{
-						int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos / m_dFramePerUnit, AVSEEK_FLAG_BACKWARD);
-						if (nRet >= 0)
+						if (nSeekGap > pVideoStream->r_frame_rate.num * 1.0 / pVideoStream->r_frame_rate.den)//间隙较小，顺序解过去，不走seek路线
+						{
+							int nRet = av_seek_frame(m_pFormatCtx, m_nVideoIndex, m_nCurrentVideoSeekPos / m_dFramePerUnit, AVSEEK_FLAG_BACKWARD);
+							if (nRet >= 0)
+							{
+								bContinue = true;
+							}
+						}
+						else
 						{
 							bContinue = true;
 						}
@@ -1141,7 +1163,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 			{
 				//对于音频来说，gap单位为毫秒，100毫秒以内都视为顺播
 				int64_t nSeekGap = 0;
-				if (dwCurSamplePos != (SD_UINT32)-1 && m_nSrcSamplePerSec > 0)
+				if (dwCurSamplePos != (SD_UINT32)-1 && m_nDesSamplePerSec > 0)
 				{
 					nSeekGap = dwCurSamplePos - m_nCurrentSample;
 					nSeekGap = nSeekGap * 1000.0 / m_nDesSamplePerSec;
@@ -1176,7 +1198,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 					if (m_AudioDecoder.PutFrame(pCompressFrame, &frameInfo))
 					{
 						int nBufferSize = m_AudioDecoder.GetSample(pSamplesBuf, dwSampleNum);
-						if (m_bAudioSeek)
+						if (m_bAudioSeeking)
 						{
 							int nANum = 0;
 							int nADen = 0;
@@ -1192,7 +1214,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 							{
 								//seek结束时，清掉当前缓存的帧
 								ReleaseVideoPackQue();
-								m_bAudioSeek = false;
+								m_bAudioSeeking = false;
 							}
 							else
 							{
@@ -1206,16 +1228,16 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioSamples(SD_UINT32 dwCurSamplePos, SD_
 							{
 								*pdwRetSampleNum = nBufferSize;
 							}
-							if (!m_bVideoSeeking)
+							if (!m_bAudioSeeking)
 							{
-								int nANum = 0;
-								int nADen = 0;
-								AVStream * pStream = m_pFormatCtx->streams[m_nAudioIndex];
-								if (pStream)
-								{
-									nANum = pStream->time_base.num;
-									nADen = pStream->time_base.den;
-								}
+								//int nANum = 0;
+								//int nADen = 0;
+								//AVStream * pStream = m_pFormatCtx->streams[m_nAudioIndex];
+								//if (pStream)
+								//{
+								//	nANum = pStream->time_base.num;
+								//	nADen = pStream->time_base.den;
+								//}
 								//double dAudioTm = m_AudioDecoder.GetCurrentMilSecTimestamp(nANum, nADen, 0);
 								//char szOutput[256];
 								//sprintf_s(szOutput, 256, "dAudioTm=%f\r\n", dAudioTm);
@@ -1268,14 +1290,14 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 			bool bContinue = false;
 			//对于音频来说，gap单位为毫秒，100毫秒以内都视为顺播
 			int64_t nSeekGap = 0;
-			if (dwCurFrameStreamIndex != (SD_UINT32)-1 && m_nSrcSamplePerSec > 0)
+			if (dwCurFrameStreamIndex != (SD_UINT32)-1 && m_nDesSamplePerSec > 0)
 			{
 				nSeekGap = dwCurFrameStreamIndex - m_nCurrentSample;
 				nSeekGap = nSeekGap * 1000.0 / m_nDesSamplePerSec;
 			}
 			if (abs(nSeekGap) > 100)
 			{
-				if (m_bAudioSeek)
+				if (m_bAudioSeeking)
 				{
 					bContinue = true;
 				}
@@ -1320,7 +1342,7 @@ bool ecCodecFFmpegProtocolDecoder::GetAudioFrame(SD_UINT32 dwCurFrameStreamIndex
 						delete[] pBuffer;
 						pBuffer = nullptr;
 					}
-					m_bAudioSeek = true;
+					m_bAudioSeeking = true;
 				}
 			}
 			else
@@ -1464,7 +1486,7 @@ bool ecCodecFFmpegProtocolDecoder::Release()
 	m_nCurrentVideoSeekPos = 0;
 	m_bVideoSeeking = false;
 	m_nCurrentAudioSeekPos = 0;
-	m_bAudioSeek = false;
+	m_bAudioSeeking = false;
 	if (m_pLastFrameBuf)
 	{
 		delete m_pLastFrameBuf;
