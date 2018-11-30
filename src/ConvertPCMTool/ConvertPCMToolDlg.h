@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+#include "IecCodecFactory.h"
 
 // CConvertPCMToolDlg ¶Ô»°¿ò
 class CConvertPCMToolDlg : public CDialogEx
@@ -31,6 +31,8 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+protected:
+	IecCodecAudioDenoise * m_pAudioDeboise;//½µÔë
 public:
 	afx_msg void OnBnClickedBtnScanInputFile();
 	afx_msg void OnBnClickedBtnScanOutputFile();

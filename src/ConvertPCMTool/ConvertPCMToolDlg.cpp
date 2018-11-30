@@ -6,7 +6,6 @@
 #include "ConvertPCMTool.h"
 #include "ConvertPCMToolDlg.h"
 #include "afxdialogex.h"
-#include "IecCodecFactory.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -66,6 +65,7 @@ std::string ConverCStringToStdString(CString & cstrValue)
 
 CConvertPCMToolDlg::CConvertPCMToolDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_CONVERTPCMTOOL_DIALOG, pParent)
+	, m_pAudioDeboise(nullptr)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -117,6 +117,11 @@ BOOL CConvertPCMToolDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+	CEdit * pEdit = (CEdit *)GetDlgItem(IDC_EDIT_SAMPLE_RATE);
+	if (pEdit && ::IsWindow(pEdit->GetSafeHwnd()))
+	{
+		pEdit->SetWindowText(_T("8000"));
+	}
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -218,12 +223,33 @@ void CConvertPCMToolDlg::OnBnClickedBtnStart()
 	{
 		pWnd->GetWindowText(strOutputPath);
 	}
+	int nSampleRate = 16000;
+	CEdit * pEditSampleRate = (CEdit *)GetDlgItem(IDC_EDIT_SAMPLE_RATE);
+	if (pEditSampleRate && ::IsWindow(pEditSampleRate->GetSafeHwnd()))
+	{
+		CString strSampleRate;
+		pEditSampleRate->GetWindowText(strSampleRate);
+		nSampleRate = _ttoi(strSampleRate);
+	}
+	BOOL bDenoise = false;
+	CButton * pChkDenoise = (CButton *)GetDlgItem(IDC_CHK_DENOISE);
+	if (pChkDenoise && ::IsWindow(pChkDenoise->GetSafeHwnd()))
+	{
+		bDenoise = pChkDenoise->GetCheck();
+	}
 
 	if (!strInputPath.IsEmpty() && !strOutputPath.IsEmpty())
 	{
 		IecCodecFactory * ecFacetory = ecCodec_CreateCodecFactory();
 		if (ecFacetory)
 		{
+			if (bDenoise)
+			{
+				m_pAudioDeboise = ecFacetory->GetAudioDenoise();
+				m_pAudioDeboise->InitialAudioDenoise(nSampleRate, 1);
+				m_pAudioDeboise->SetParam(50);
+			}
+
 			IecCodecProtocolDecoder * pDecoder = ecFacetory->GetProtocolDecoder();
 			if (pDecoder)
 			{
@@ -233,7 +259,7 @@ void CConvertPCMToolDlg::OnBnClickedBtnStart()
 					audioInfo.enumAudioType = SDAUDIOTYPE_WAVE_PCM;
 					audioInfo.enumAudioCFG = SDAUDIOCFG_INDEPENDENT;
 					audioInfo.enumChannelSamplesFormat = SDCHANNELSAMPLESFORMAT_Progressive;
-					audioInfo.dwSamplesPerSec = 16000;
+					audioInfo.dwSamplesPerSec = nSampleRate;
 					audioInfo.dwChannels = 1;
 					if (pDecoder->SetAudioSamplesBufInfo(&audioInfo))
 					{
@@ -250,9 +276,14 @@ void CConvertPCMToolDlg::OnBnClickedBtnStart()
 								int nReadSize = 0;
 								if (streamMediaInfoEx.dwAudioStreamCount > 0)
 								{
-									while (pDecoder->GetAudioSamples(0, 100, pAudioData, nullptr))
+									SD_UINT32 nSampleNum = 0;
+									while (pDecoder->GetAudioSamples(0, 100, pAudioData, &nSampleNum))
 									{
-										filePCM.Write(pAudioData, 100 * 2);
+										if (bDenoise)
+										{
+											m_pAudioDeboise->DoDenoise((SD_UINT8 *)pAudioData, nSampleNum * 2);
+										}
+										filePCM.Write(pAudioData, nSampleNum * 2);
 									}
 								}
 
@@ -264,6 +295,11 @@ void CConvertPCMToolDlg::OnBnClickedBtnStart()
 					}
 				}
 				ecFacetory->DeleteProtocolDecoder(pDecoder);
+				if (m_pAudioDeboise)
+				{
+					ecFacetory->DeleteAudioDenoise(m_pAudioDeboise);
+					m_pAudioDeboise = NULL;
+				}
 			}
 		}
 	}
