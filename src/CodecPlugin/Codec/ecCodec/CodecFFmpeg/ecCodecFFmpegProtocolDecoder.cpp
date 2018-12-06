@@ -79,7 +79,8 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath, void * 
 		m_pFormatCtx->interrupt_callback.callback = pCallbackInterupt;
 		m_pFormatCtx->interrupt_callback.opaque = pUserParam;
 		//解封装
-		if (avformat_open_input(&m_pFormatCtx, pFullPath, nullptr, &format_opts) == 0)
+		int err_code = 0;
+		if ((err_code = avformat_open_input(&m_pFormatCtx, pFullPath, nullptr, &format_opts)) == 0)
 		{
 			//得到流数据
 			if (avformat_find_stream_info(m_pFormatCtx, nullptr) >= 0)
@@ -211,6 +212,9 @@ bool ecCodecFFmpegProtocolDecoder::SetSourcePath(const char * pFullPath, void * 
 		}
 		else
 		{
+			char errBuf[1024] = {0};
+			av_strerror(err_code, errBuf, 1024);
+			OutputDebugStringA(errBuf);
 			printf("failed to open input\n");
 		}
 	}
@@ -609,7 +613,8 @@ bool ecCodecFFmpegProtocolDecoder::GetFileGlobalMediaInfo(SDStreamMediaInfoEx * 
 				}
 				else
 				{
-					return false;
+					//取不到长度的情况也可能是流媒体，所以不视为错误
+					//return false;
 				}
 			}
 			if (m_nAudioIndex > -1)
@@ -627,7 +632,8 @@ bool ecCodecFFmpegProtocolDecoder::GetFileGlobalMediaInfo(SDStreamMediaInfoEx * 
 				}
 				else
 				{
-					return false;
+					//取不到长度的情况也可能是流媒体，所以不视为错误
+					//return false;
 				}
 			}
 		}
